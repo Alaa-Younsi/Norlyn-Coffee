@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
+import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatPrice } from "@/lib/format";
 import { ScrollTrigger } from "@/lib/gsap";
@@ -51,16 +52,18 @@ function Variants3D({ products }: { products: Product[] }) {
   return (
     <div ref={zoneRef} id="variants" style={{ height: `${count * 110}vh` }} className="relative">
       <div className="sticky top-0 flex h-screen items-center">
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-2 px-6">
-          {/* start column intentionally empty — the 3D capsule floats there */}
-          <div />
-          <div className="relative">
+        <FloatingBeans count={6} seed={4} />
+        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 px-6 md:grid-cols-2">
+          {/* start column intentionally empty — the 3D capsule floats there
+              (on phones the capsule hovers above the copy instead) */}
+          <div className="hidden md:block" />
+          <div className="relative mt-[26vh] md:mt-0">
             <p className="text-sm uppercase tracking-[0.3em] text-brand">{t("variants.kicker")}</p>
             <h2 className="mt-2 font-display text-3xl font-semibold sm:text-5xl">
               {t("variants.title")}
             </h2>
 
-            <div className="relative mt-8 min-h-72">
+            <div className="relative mt-8 min-h-64 md:min-h-72">
               <AnimatePresence mode="popLayout" initial={false}>
                 {/* transform-only swap: opacity never animated on content */}
                 <motion.div

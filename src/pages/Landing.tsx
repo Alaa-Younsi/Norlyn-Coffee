@@ -3,6 +3,7 @@ import { HeroSection } from "@/sections/HeroSection";
 import { StorySection } from "@/sections/StorySection";
 import { VariantsSection } from "@/sections/VariantsSection";
 import { FeaturedSection } from "@/sections/FeaturedSection";
+import { GallerySection } from "@/sections/GallerySection";
 import { HowItWorksSection } from "@/sections/HowItWorksSection";
 import { ReviewsSection } from "@/sections/ReviewsSection";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -45,25 +46,26 @@ export function Landing() {
 
   return (
     <>
-      {/* fixed 3D layer above the copy (capsule overlaps the headline like the
-          reference art), pointer-events-none so everything stays clickable */}
+      {/* fixed 3D layer UNDER the copy (z-10 vs stage z-20) so text and CTAs
+          always stay readable and clickable above the capsule */}
       {show3D && (
-        <div className="pointer-events-none fixed inset-0 z-20" aria-hidden>
+        <div className="pointer-events-none fixed inset-0 z-10" aria-hidden>
           <Suspense fallback={null}>
-            <Scene colors={colors} dirSign={dir === "rtl" ? -1 : 1} />
+            <Scene colors={colors} dirSign={dir === "rtl" ? -1 : 1} compact={flags.isMobile} />
           </Suspense>
         </div>
       )}
 
       {/* scroll stage — the zone the master ScrollTrigger maps to 0..1 */}
-      <div ref={stageRef} className="relative">
+      <div ref={stageRef} className="relative z-20">
         <HeroSection show3D={show3D} />
         <StorySection />
         <VariantsSection products={variants} show3D={show3D} />
       </div>
 
-      <div className="relative z-10 bg-bg">
+      <div className="relative z-20 bg-bg">
         <FeaturedSection products={products ?? []} />
+        <GallerySection />
         <HowItWorksSection />
         <ReviewsSection />
       </div>

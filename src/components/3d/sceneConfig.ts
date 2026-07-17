@@ -22,7 +22,12 @@ export interface SceneState {
   fade: number;
 }
 
-export function computeSceneState(p: number, dirSign: 1 | -1, colorCount: number): SceneState {
+export function computeSceneState(
+  p: number,
+  dirSign: 1 | -1,
+  colorCount: number,
+  compact = false,
+): SceneState {
   const side = 1.5 * dirSign;
 
   // hero → story: drift to the inline-end side while the story text enters
@@ -31,9 +36,17 @@ export function computeSceneState(p: number, dirSign: 1 | -1, colorCount: number
   const toVariants = segment(p, STORY_END * 0.9, STORY_END + 0.08);
   const variantsP = segment(p, STORY_END, 1);
 
-  const x = lerp(lerp(0, side, easeInOut(toStory)), -side, easeInOut(toVariants));
-  const y = lerp(0.08, 0.1, easeInOut(toStory));
-  const scale = lerp(lerp(0.95, 0.78, easeInOut(toStory)), 0.92, easeInOut(toVariants));
+  // compact (phone): no room at the sides — the capsule rises to the top of
+  // the viewport and shrinks so the copy stays readable underneath it
+  const x = compact
+    ? lerp(lerp(0, side * 0.32, easeInOut(toStory)), 0, easeInOut(toVariants))
+    : lerp(lerp(0, side, easeInOut(toStory)), -side, easeInOut(toVariants));
+  const y = compact
+    ? lerp(lerp(0.42, 1.3, easeInOut(toStory)), 1.22, easeInOut(toVariants))
+    : lerp(0.02, 0.1, easeInOut(toStory));
+  const scale = compact
+    ? lerp(lerp(0.4, 0.36, easeInOut(toStory)), 0.46, easeInOut(toVariants))
+    : lerp(lerp(0.85, 0.78, easeInOut(toStory)), 0.92, easeInOut(toVariants));
 
   // one graceful extra turn per phase change + a turn per variant stop
   const rotY = toStory * Math.PI + toVariants * Math.PI + variantsP * Math.PI * (colorCount - 1);

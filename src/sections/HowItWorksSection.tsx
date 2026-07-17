@@ -1,5 +1,8 @@
 import { HandCoins, MousePointerClick, PhoneCall } from "lucide-react";
 import { Panel } from "@/components/ui/Panel";
+import { CoffeeCupArt } from "@/components/effects/CoffeeCup";
+import { CoffeeDivider } from "@/components/effects/CoffeeDivider";
+import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
 export function HowItWorksSection() {
@@ -11,8 +14,11 @@ export function HowItWorksSection() {
   ] as const;
 
   return (
-    <section className="relative bg-panel-2/50 py-24">
-      <div className="mx-auto max-w-7xl px-6 text-center">
+    <section className="relative overflow-hidden bg-panel-2/50 py-16 sm:py-24">
+      <FloatingBeans count={7} seed={7} />
+      <div className="relative mx-auto max-w-7xl px-6 text-center">
+        {/* a steaming espresso welcomes the section */}
+        <CoffeeCupArt className="mx-auto mb-6 w-24" />
         <p className="text-sm uppercase tracking-[0.3em] text-brand">{t("how.kicker")}</p>
         <h2 className="mt-2 font-display text-3xl font-semibold sm:text-5xl">{t("how.title")}</h2>
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
@@ -27,6 +33,7 @@ export function HowItWorksSection() {
             </Panel>
           ))}
         </div>
+        <CoffeeDivider className="mt-14" />
       </div>
     </section>
   );

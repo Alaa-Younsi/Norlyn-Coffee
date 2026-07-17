@@ -4,6 +4,8 @@ import { ChevronDown, PackageCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Steam } from "@/components/effects/Steam";
 import { HeroFallback } from "@/components/effects/HeroFallback";
+import { FloatingBeans } from "@/components/effects/FloatingBeans";
+import { CoffeeRing } from "@/components/effects/CoffeeRing";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { getLenisInstance } from "@/lib/lenis";
 
@@ -19,9 +21,19 @@ export function HeroSection({ show3D }: { show3D: boolean }) {
   };
 
   return (
-    <section className="fx-hero-vignette relative flex min-h-screen flex-col items-center justify-between px-6 pb-10 pt-28 text-center">
+    <section className="fx-hero-vignette relative flex min-h-screen flex-col items-center justify-between overflow-hidden px-6 pb-10 pt-28 text-center">
+      {/* ambient coffee decor — beans drifting + stain rings in the corners */}
+      <FloatingBeans count={10} seed={2} />
+      <CoffeeRing className="fx-spin-slow -start-20 top-16 w-64 opacity-15 sm:w-80" />
+      <CoffeeRing className="-end-16 bottom-10 w-48 opacity-10 sm:w-64" />
+
       {/* motion = transforms only; opacity stays 1 so content can never be stuck invisible */}
-      <motion.div initial={{ y: 26 }} animate={{ y: 0 }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}>
+      <motion.div
+        className="relative"
+        initial={{ y: 26 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+      >
         <p className="text-sm uppercase tracking-[0.35em] text-brand">{t("hero.kicker")}</p>
         <h1 className="fx-gold-text mt-3 font-display text-7xl leading-none font-semibold sm:text-8xl lg:text-9xl">
           {t("hero.title1")}
@@ -42,7 +54,7 @@ export function HeroSection({ show3D }: { show3D: boolean }) {
       </div>
 
       <motion.div
-        className="flex flex-col items-center gap-5"
+        className="relative flex flex-col items-center gap-5"
         initial={{ y: 30 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}

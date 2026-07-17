@@ -8,8 +8,6 @@ import { scrollProgress } from "@/lib/scrollProgress";
  * drift, gently parallaxing upward as the page scrolls.
  */
 
-const COUNT = 12;
-
 interface BeanSeed {
   base: THREE.Vector3;
   rot: THREE.Euler;
@@ -18,13 +16,13 @@ interface BeanSeed {
   phase: number;
 }
 
-export function Beans() {
+export function Beans({ count = 12 }: { count?: number }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
   const seeds = useMemo<BeanSeed[]>(() => {
     const rng = mulberry32(7);
-    return Array.from({ length: COUNT }, () => ({
+    return Array.from({ length: count }, () => ({
       base: new THREE.Vector3(
         (rng() - 0.5) * 9,
         (rng() - 0.5) * 5.5,
@@ -35,7 +33,7 @@ export function Beans() {
       speed: 0.25 + rng() * 0.5,
       phase: rng() * Math.PI * 2,
     }));
-  }, []);
+  }, [count]);
 
   useFrame(({ clock }) => {
     const mesh = meshRef.current;
@@ -62,7 +60,7 @@ export function Beans() {
   });
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, COUNT]} frustumCulled={false}>
+    <instancedMesh key={count} ref={meshRef} args={[undefined, undefined, count]} frustumCulled={false}>
       <sphereGeometry args={[1, 14, 10]} />
       <meshStandardMaterial color="#5b3620" roughness={0.5} metalness={0.15} />
     </instancedMesh>

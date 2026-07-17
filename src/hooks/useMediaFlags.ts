@@ -19,7 +19,8 @@ export interface MediaFlags {
   isMobile: boolean;
   reducedMotion: boolean;
   saveData: boolean;
-  /** Master gate for the heavy 3D hero — 2D fallback art otherwise. */
+  /** Master gate for the 3D hero — 2D fallback art otherwise.
+      Phones get 3D too, at reduced quality (see isMobile). */
   allow3D: boolean;
 }
 
@@ -30,7 +31,7 @@ export function useMediaFlags(): MediaFlags {
     const isMobile = window.matchMedia("(max-width: 767px)").matches;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const saveData = readSaveData();
-    return { isMobile, reducedMotion, saveData, allow3D: !isMobile && !reducedMotion && !saveData };
+    return { isMobile, reducedMotion, saveData, allow3D: !reducedMotion && !saveData };
   }
 
   useEffect(() => {

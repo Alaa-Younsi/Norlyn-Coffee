@@ -48,6 +48,10 @@ html[data-theme="dark"] {
 /* ------------------------------------------------------------------- base */
 html {
   scroll-behavior: auto; /* Lenis owns smooth scrolling on the landing page */
+  /* clip on <html> itself: body's overflow-x propagates to the viewport,
+     which un-clips the body box — decorative elements hanging past the edge
+     then widen the mobile layout viewport and break fixed headers. */
+  overflow-x: clip;
 }
 
 body {
@@ -179,10 +183,56 @@ input[type="number"]::-webkit-inner-spin-button {
   animation: sheen-sweep 0.9s ease forwards;
 }
 
+/* golden crema breathing on the SVG cups */
+@keyframes crema-pulse {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.fx-crema {
+  animation: crema-pulse 2.8s ease-in-out infinite;
+}
+
+/* live espresso stream — slight thickness wobble from the spout */
+@keyframes pour-stream {
+  0%,
+  100% {
+    transform: scaleY(1) scaleX(1);
+  }
+  50% {
+    transform: scaleY(0.93) scaleX(0.85);
+  }
+}
+
+.fx-pour-stream {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: pour-stream 1.4s ease-in-out infinite;
+}
+
+/* barely-perceptible rotation for the coffee stain rings */
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fx-spin-slow {
+  animation: spin-slow 60s linear infinite;
+}
+
 /* reduced-motion kill switch */
 @media (prefers-reduced-motion: reduce) {
   .fx-steam,
   .fx-float,
+  .fx-crema,
+  .fx-pour-stream,
+  .fx-spin-slow,
   .fx-sheen::after {
     animation: none !important;
   }

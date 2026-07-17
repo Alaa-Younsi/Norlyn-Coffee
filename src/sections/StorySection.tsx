@@ -1,4 +1,6 @@
 import { Panel } from "@/components/ui/Panel";
+import { CoffeeRing } from "@/components/effects/CoffeeRing";
+import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
 export function StorySection() {
@@ -10,9 +12,13 @@ export function StorySection() {
   ] as const;
 
   return (
-    <section id="story" className="relative mx-auto flex min-h-screen max-w-7xl items-center px-6 py-24">
+    <section id="story" className="relative mx-auto flex min-h-screen max-w-7xl items-center overflow-hidden px-6 py-24">
+      <FloatingBeans count={6} seed={3} />
+      {/* stain ring floats behind the capsule's parking spot on the end side */}
+      <CoffeeRing className="fx-spin-slow end-0 top-1/4 hidden w-80 opacity-15 md:block" />
+
       {/* text on the start side — the capsule parks on the end side of the viewport */}
-      <div className="max-w-xl">
+      <div className="relative max-w-xl">
         <p className="text-sm uppercase tracking-[0.3em] text-brand">{t("story.kicker")}</p>
         <h2 className="mt-3 font-display text-4xl font-semibold leading-tight sm:text-6xl">
           {t("story.title")}

@@ -52,6 +52,14 @@ export const translations = {
     "shop.empty": "Aucun produit trouvé.",
     "shop.outOfStock": "Rupture de stock",
 
+    // gallery / ritual
+    "gallery.kicker": "L'expérience",
+    "gallery.title": "Le rituel Moriva",
+    "gallery.caption1": "Une crema dense et dorée",
+    "gallery.caption2": "Des grains torréfiés avec précision",
+    "gallery.caption3": "L'extraction parfaite, à chaque tasse",
+    "gallery.placeholder": "Photo à venir",
+
     // how it works
     "how.kicker": "Simple et sûr",
     "how.title": "Commande en 3 étapes",
@@ -272,6 +280,13 @@ export const translations = {
     "shop.allCategories": "كل الفئات",
     "shop.empty": "لا توجد منتجات.",
     "shop.outOfStock": "نفد المخزون",
+
+    "gallery.kicker": "التجربة",
+    "gallery.title": "طقوس موريفا",
+    "gallery.caption1": "كريما ذهبية كثيفة",
+    "gallery.caption2": "حبوب محمّصة بدقة",
+    "gallery.caption3": "استخلاص مثالي في كل فنجان",
+    "gallery.placeholder": "الصورة قريباً",
 
     "how.kicker": "بسيط وآمن",
     "how.title": "اطلب في 3 خطوات",

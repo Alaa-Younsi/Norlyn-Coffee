@@ -3,6 +3,11 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatPrice } from "@/lib/format";
 import type { Product } from "@/types/db";
 
+/**
+ * Frosted rather than solid: on the landing page the 3D espresso machine brews
+ * behind this grid, and the blur turns it into soft depth instead of a shape
+ * fighting the card.
+ */
 export function ProductCard({ product }: { product: Product }) {
   const { t, lang } = useLanguage();
   const name = lang === "ar" ? product.name_ar : product.name_fr;
@@ -12,7 +17,7 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <Link
       to={`/product/${product.slug}`}
-      className="fx-sheen group relative block overflow-hidden rounded-3xl border border-line bg-panel/80 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-brand/50 hover:shadow-[0_24px_60px_-24px_rgb(var(--c-brand)/0.45)]"
+      className="fx-sheen group relative block overflow-hidden rounded-3xl border border-line bg-panel/75 backdrop-blur-md p-5 transition-all duration-300 hover:-translate-y-1 hover:border-brand/50 hover:shadow-[0_24px_60px_-24px_rgb(var(--c-brand)/0.45)]"
     >
       <div
         className="relative mx-auto aspect-square w-full max-w-56"

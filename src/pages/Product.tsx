@@ -1,9 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Check, ChevronLeft, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
+import { CoffeeDivider } from "@/components/effects/CoffeeDivider";
+import { CoffeeRing } from "@/components/effects/CoffeeRing";
+import { FloatingBeans } from "@/components/effects/FloatingBeans";
+import { ScrollProgressBar } from "@/components/effects/ScrollProgressBar";
+import { Steam } from "@/components/effects/Steam";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useProduct } from "@/hooks/useProducts";
 import { useSeo } from "@/hooks/useSeo";
@@ -106,24 +112,37 @@ export function Product() {
   };
 
   return (
-    <main className="mx-auto min-h-screen max-w-7xl px-6 pb-24 pt-24">
+    <main className="relative mx-auto min-h-screen max-w-7xl overflow-x-clip px-6 pb-24 pt-24">
+      <ScrollProgressBar />
+      {/* coffee ambience tinted by the variant's accent */}
+      <FloatingBeans count={8} seed={13} />
+      <CoffeeRing className="fx-spin-slow -start-20 top-40 w-64 opacity-10" />
+      <CoffeeRing className="-end-16 bottom-24 w-52 opacity-10" />
+
       <Link
         to="/shop"
-        className="inline-flex items-center gap-1 text-sm text-muted hover:text-brand transition-colors"
+        className="relative inline-flex items-center gap-1 text-sm text-muted hover:text-brand transition-colors"
       >
         <ChevronLeft size={16} className="rtl:rotate-180" />
         {t("product.backToShop")}
       </Link>
 
-      <div className="mt-6 grid gap-10 lg:grid-cols-2">
+      <div className="relative mt-6 grid gap-10 lg:grid-cols-2">
         {/* gallery */}
         <div>
           <div
             className="relative flex aspect-square items-center justify-center overflow-hidden rounded-3xl border border-line bg-panel"
             style={{ background: `radial-gradient(ellipse at 50% 65%, ${accent}22, rgb(var(--c-panel)) 70%)` }}
           >
+            {/* steam curling off the capsule, like it just finished brewing */}
+            <Steam className="absolute top-6 start-1/2 -translate-x-1/2 opacity-70" />
             {images[imageIndex] && (
-              <img
+              // transform-only swap: the new shot rises into place
+              <motion.img
+                key={images[imageIndex].id}
+                initial={{ y: 30, scale: 0.96 }}
+                animate={{ y: 0, scale: 1 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 src={images[imageIndex].url}
                 alt={images[imageIndex].alt ?? name}
                 width={1000}
@@ -197,6 +216,41 @@ export function Product() {
 
           {description && <p className="mt-5 leading-relaxed text-muted">{description}</p>}
 
+          {/* intensity + dosage, same language as the landing showcase */}
+          {(product.intensity !== null || product.dosage) && (
+            <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-3">
+              {product.intensity !== null && (
+                <div>
+                  <dt className="text-xs uppercase tracking-widest text-muted">
+                    {t("variants.intensity")}
+                  </dt>
+                  <dd className="mt-1.5 flex items-center gap-1.5">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <span
+                        key={i}
+                        className="h-2 w-7 rounded-full"
+                        style={{
+                          backgroundColor:
+                            i < Math.round(((product.intensity ?? 0) / 100) * 5)
+                              ? accent
+                              : "rgb(var(--c-line))",
+                        }}
+                      />
+                    ))}
+                  </dd>
+                </div>
+              )}
+              {product.dosage && (
+                <div>
+                  <dt className="text-xs uppercase tracking-widest text-muted">
+                    {t("variants.dosage")}
+                  </dt>
+                  <dd className="mt-1 font-display text-2xl">{product.dosage}</dd>
+                </div>
+              )}
+            </dl>
+          )}
+
           {details.length > 0 && (
             <ul className="mt-5 space-y-2">
               {details.map((detail) => (
@@ -235,7 +289,8 @@ export function Product() {
 
           {/* quick-buy — bypasses the cart entirely */}
           {!out && (
-            <Panel className="mt-8 p-6">
+            <Panel className="fx-sheen mt-8 p-6">
+              <CoffeeDivider className="mb-5" />
               <h2 className="font-display text-2xl">{t("product.orderNow")}</h2>
               <p className="mt-1 mb-5 text-sm text-muted">{t("product.orderNowSub")}</p>
               <CheckoutForm

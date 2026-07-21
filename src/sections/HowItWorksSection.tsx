@@ -1,12 +1,17 @@
+import { useRef } from "react";
 import { HandCoins, MousePointerClick, PhoneCall } from "lucide-react";
 import { Panel } from "@/components/ui/Panel";
 import { CoffeeCupArt } from "@/components/effects/CoffeeCup";
 import { CoffeeDivider } from "@/components/effects/CoffeeDivider";
 import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { useRevealOnScroll, useVelocitySkew } from "@/hooks/useScrollFX";
 
 export function HowItWorksSection() {
   const { t } = useLanguage();
+  const stepsRef = useRef<HTMLDivElement>(null);
+  useRevealOnScroll(stepsRef);
+  useVelocitySkew(stepsRef, 1.6);
   const steps = [
     { icon: MousePointerClick, title: t("how.s1t"), text: t("how.s1d") },
     { icon: PhoneCall, title: t("how.s2t"), text: t("how.s2d") },
@@ -21,9 +26,9 @@ export function HowItWorksSection() {
         <CoffeeCupArt className="mx-auto mb-6 w-24" />
         <p className="text-sm uppercase tracking-[0.3em] text-brand">{t("how.kicker")}</p>
         <h2 className="mt-2 font-display text-3xl font-semibold sm:text-5xl">{t("how.title")}</h2>
-        <div className="mt-12 grid gap-6 sm:grid-cols-3">
+        <div ref={stepsRef} className="mt-12 grid gap-6 sm:grid-cols-3" style={{ perspective: "1200px" }}>
           {steps.map((step, i) => (
-            <Panel key={step.title} className="fx-sheen relative px-6 py-10">
+            <Panel key={step.title} data-reveal className="fx-sheen relative px-6 py-10">
               <span className="fx-gold-text absolute top-4 start-5 font-display text-5xl font-bold opacity-40">
                 {i + 1}
               </span>

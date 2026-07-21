@@ -1,8 +1,10 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { mulberry32 } from "@/lib/random";
+import { softCircleTexture } from "./softCircle";
 
-/** Fine gold particles drifting upward — additive, very cheap. */
+/** Fine gold particles drifting upward — very cheap. */
 
 export function GoldDust({ count = 140 }: { count?: number }) {
   const pointsRef = useRef<THREE.Points>(null);
@@ -39,8 +41,9 @@ export function GoldDust({ count = 140 }: { count?: number }) {
       </bufferGeometry>
       {/* normal blending — additive vanishes on the light cream theme */}
       <pointsMaterial
+        map={softCircleTexture()}
         color="#b98a3c"
-        size={0.03}
+        size={0.035}
         sizeAttenuation
         transparent
         opacity={0.55}
@@ -48,15 +51,4 @@ export function GoldDust({ count = 140 }: { count?: number }) {
       />
     </points>
   );
-}
-
-function mulberry32(seed: number): () => number {
-  let a = seed;
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }

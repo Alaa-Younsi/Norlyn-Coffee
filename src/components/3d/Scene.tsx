@@ -3,19 +3,30 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 import { CapsuleModel } from "./CapsuleModel";
+import { CupModel } from "./CupModel";
+import { MachineModel } from "./MachineModel";
+import { MorphSlot } from "./MorphSlot";
+import { AromaSwirl, BeanBurst, CremaShockwave, MorphVortex, Steam3D } from "./MorphFX";
 import { Beans } from "./Beans";
 import { GoldDust } from "./GoldDust";
 import { computeSceneState } from "./sceneConfig";
-import { scrollProgress } from "@/lib/scrollProgress";
+import { mulberry32 } from "@/lib/random";
+import { lerp } from "@/lib/utils";
+import { sceneBounds, scrollProgress } from "@/lib/scrollProgress";
 
 interface SceneProps {
   /** variant accent colors, in showcase order (hero starts on the first) */
   colors: string[];
   dirSign: 1 | -1;
-  /** phone layout: capsule parks at the top of the viewport, lighter effects */
+  /** phone layout: object parks at the top of the viewport, lighter effects */
   compact: boolean;
 }
 
+/**
+ * One object, four forms. The rig moves and rotates a single group while the
+ * three models inside it cross-dissolve on scroll — espresso cup → Moriva
+ * capsule → espresso machine → gone. See sceneConfig for the choreography.
+ */
 function Rig({ colors, dirSign, compact }: SceneProps) {
   const groupRef = useRef<THREE.Group>(null);
   const materialRef = useRef<THREE.MeshPhysicalMaterial>(null);
@@ -23,24 +34,56 @@ function Rig({ colors, dirSign, compact }: SceneProps) {
   const colorA = useRef(new THREE.Color());
   const colorB = useRef(new THREE.Color());
 
+  // per-act drive values, read by the slots and FX in their own useFrame
+  const cupWeight = useRef(1);
+  const capsuleWeight = useRef(0);
+  const machineWeight = useRef(0);
+  const energy = useRef(0);
+  const pour = useRef(0);
+  // the shared plume rises off the cup's crema; the machine brews with its
+  // own steam positioned at its little cup (inside MachineModel)
+  const steamWeight = useRef(1);
+
   useFrame(({ clock, gl, pointer }, delta) => {
     const group = groupRef.current;
     if (!group) return;
-    const state = computeSceneState(scrollProgress.current, dirSign, colors.length, compact);
+    const state = computeSceneState(
+      scrollProgress.current,
+      dirSign,
+      colors.length,
+      sceneBounds,
+      compact,
+    );
     const damp = Math.min(1, delta * 5);
 
     group.position.x += (state.x - group.position.x) * damp;
     group.position.y +=
       (state.y + Math.sin(clock.elapsedTime * 0.9) * 0.06 - group.position.y) * damp;
+
+    // squash-and-stretch through a morph: the object pinches in, then springs
+    // back out as the new form settles
     const scale = group.scale.x + (state.scale - group.scale.x) * damp;
-    group.scale.setScalar(scale);
-    // pointer parallax rides on top of the scroll choreography (0 on touch);
-    // the base +0.3 tilt leans the faceted crown toward the camera so the
-    // capsule reads like the product shots instead of a silhouette
-    group.rotation.y +=
-      (state.rotY + clock.elapsedTime * 0.28 + pointer.x * 0.3 - group.rotation.y) * damp;
-    group.rotation.x += (0.3 + pointer.y * -0.14 - group.rotation.x) * damp;
+    group.scale.set(scale, scale * state.stretch, scale);
+
+    // Pointer parallax rides on top of the scroll choreography (0 on touch).
+    // The idle motion blends from a continuous turn — right for a cup or a
+    // capsule, which read from any angle — to a slow sway once the machine has
+    // formed, so it stays facing the camera instead of presenting its back.
+    const idle = lerp(
+      Math.sin(clock.elapsedTime * 0.35) * 0.3,
+      clock.elapsedTime * 0.28,
+      state.spin,
+    );
+    group.rotation.y += (state.rotY + idle + pointer.x * 0.3 - group.rotation.y) * damp;
+    group.rotation.x += (state.tilt + pointer.y * -0.14 - group.rotation.x) * damp;
     group.rotation.z += (state.rotZ - group.rotation.z) * damp;
+
+    cupWeight.current = state.cupWeight;
+    capsuleWeight.current = state.capsuleWeight;
+    machineWeight.current = state.machineWeight;
+    energy.current = state.energy;
+    pour.current = state.pour;
+    steamWeight.current = state.cupWeight;
 
     const material = materialRef.current;
     if (material) {
@@ -57,7 +100,24 @@ function Rig({ colors, dirSign, compact }: SceneProps) {
 
   return (
     <group ref={groupRef} position={[0, -0.02, 0]}>
-      <CapsuleModel materialRef={materialRef} initialColor={colors[0]} />
+      <MorphSlot weight={cupWeight}>
+        <CupModel />
+      </MorphSlot>
+      <MorphSlot weight={capsuleWeight}>
+        <CapsuleModel materialRef={materialRef} initialColor={colors[0]} />
+      </MorphSlot>
+      <MorphSlot weight={machineWeight}>
+        <MachineModel pourRef={pour} />
+      </MorphSlot>
+
+      {/* transformation FX — only visible while a morph is in flight */}
+      <BeanBurst energy={energy} count={compact ? 12 : 22} />
+      <MorphVortex energy={energy} count={compact ? 50 : 90} />
+      <CremaShockwave energy={energy} />
+
+      {/* ambient coffee FX that follow the object around */}
+      <Steam3D weight={steamWeight} count={compact ? 14 : 26} />
+      <AromaSwirl count={compact ? 28 : 60} />
       <OrbitBeans count={compact ? 3 : 5} />
       <Sparkles
         count={compact ? 14 : 26}
@@ -72,7 +132,7 @@ function Rig({ colors, dirSign, compact }: SceneProps) {
   );
 }
 
-/** A few coffee beans in slow elliptical orbit around the capsule. */
+/** A few coffee beans in slow elliptical orbit around the object. */
 function OrbitBeans({ count }: { count: number }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
@@ -146,15 +206,4 @@ export function Scene({ colors, dirSign, compact }: SceneProps) {
       <GoldDust count={compact ? 70 : 140} />
     </Canvas>
   );
-}
-
-function mulberry32(seed: number): () => number {
-  let a = seed;
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }

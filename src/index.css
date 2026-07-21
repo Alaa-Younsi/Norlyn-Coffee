@@ -102,8 +102,102 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .fx-hero-vignette {
   background:
-    radial-gradient(60% 45% at 50% 42%, rgb(var(--c-gold-hi) / 0.18), transparent 70%),
-    radial-gradient(120% 90% at 50% 110%, rgb(var(--c-brand) / 0.12), transparent 60%);
+    radial-gradient(60% 45% at 50% 42%, rgb(var(--c-gold-hi) / 0.22), transparent 70%),
+    radial-gradient(90% 60% at 50% -10%, rgb(var(--c-brand) / 0.1), transparent 60%),
+    radial-gradient(120% 90% at 50% 110%, rgb(var(--c-brand) / 0.16), transparent 60%);
+}
+
+/* Hero title gold: anchored by deep bronze endpoints so it holds contrast on
+   the cream theme, with a slow shimmer sweeping through the highlight. */
+@keyframes gold-shimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.fx-gold-text-deep {
+  background: linear-gradient(
+    105deg,
+    #7a5016 0%,
+    rgb(var(--c-brand)) 28%,
+    rgb(var(--c-gold-hi)) 50%,
+    rgb(var(--c-brand)) 72%,
+    #7a5016 100%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gold-shimmer 7s ease-in-out infinite;
+  filter: drop-shadow(0 10px 30px rgb(var(--c-brand) / 0.38));
+}
+
+html[data-theme="dark"] .fx-gold-text-deep {
+  background-image: linear-gradient(
+    105deg,
+    rgb(var(--c-brand)) 0%,
+    rgb(var(--c-gold-hi)) 35%,
+    #f6e3b4 50%,
+    rgb(var(--c-gold-hi)) 65%,
+    rgb(var(--c-brand)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 10px 34px rgb(var(--c-gold-hi) / 0.3));
+}
+
+/* slowly-turning conic gold halo behind the hero object */
+@keyframes halo-spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.fx-halo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgb(var(--c-gold-hi) / 0.16) 40deg,
+    transparent 110deg,
+    rgb(var(--c-brand) / 0.12) 200deg,
+    transparent 280deg,
+    rgb(var(--c-gold-hi) / 0.1) 330deg,
+    transparent 360deg
+  );
+  filter: blur(38px);
+  animation: halo-spin 36s linear infinite;
+  will-change: transform;
+}
+
+/* mouse-style scroll cue: a dot dropping inside a capsule outline */
+@keyframes scroll-dot {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+}
+
+.fx-scroll-dot {
+  animation: scroll-dot 1.8s ease-in-out infinite;
 }
 
 .fx-podium {
@@ -233,6 +327,9 @@ input[type="number"]::-webkit-inner-spin-button {
   .fx-crema,
   .fx-pour-stream,
   .fx-spin-slow,
+  .fx-gold-text-deep,
+  .fx-halo,
+  .fx-scroll-dot,
   .fx-sheen::after {
     animation: none !important;
   }

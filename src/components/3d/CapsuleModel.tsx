@@ -64,6 +64,9 @@ export function CapsuleModel({ materialRef, initialColor }: CapsuleModelProps) {
         roughness: 0.2,
         clearcoat: 1,
         clearcoatRoughness: 0.18,
+        // the scroll story cross-dissolves the capsule into the cup and the
+        // machine, so every material on it has to be fadeable
+        transparent: true,
       }),
     [initialColor],
   );
@@ -91,6 +94,7 @@ export function CapsuleModel({ materialRef, initialColor }: CapsuleModelProps) {
           roughness={0.25}
           clearcoat={0.6}
           clearcoatRoughness={0.25}
+          transparent
         />
       </mesh>
 
@@ -106,6 +110,7 @@ export function CapsuleModel({ materialRef, initialColor }: CapsuleModelProps) {
           roughness={0.35}
           clearcoat={0.5}
           clearcoatRoughness={0.3}
+          transparent
         />
       </mesh>
     </group>

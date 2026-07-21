@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef } from "react";
+import { ScrollProgressBar } from "@/components/effects/ScrollProgressBar";
 import { HeroSection } from "@/sections/HeroSection";
 import { StorySection } from "@/sections/StorySection";
 import { VariantsSection } from "@/sections/VariantsSection";
@@ -46,6 +47,7 @@ export function Landing() {
 
   return (
     <>
+      <ScrollProgressBar />
       {/* fixed 3D layer UNDER the copy (z-10 vs stage z-20) so text and CTAs
           always stay readable and clickable above the capsule */}
       {show3D && (
@@ -56,17 +58,32 @@ export function Landing() {
         </div>
       )}
 
-      {/* scroll stage — the zone the master ScrollTrigger maps to 0..1 */}
+      {/* Scroll stage — the zone the master ScrollTrigger maps to 0..1, and
+          the span the hero object's four acts play out over. The `data-act`
+          markers are measured (not hardcoded) into the act boundaries: the
+          variants zone's height depends on how many products loaded, so every
+          fraction below it moves. Nothing in here may set an opaque
+          background — the machine acts play out behind these sections. */}
       <div ref={stageRef} className="relative z-20">
         <HeroSection show3D={show3D} />
-        <StorySection />
-        <VariantsSection products={variants} show3D={show3D} />
-      </div>
-
-      <div className="relative z-20 bg-bg">
-        <FeaturedSection products={products ?? []} />
-        <GallerySection />
-        <HowItWorksSection />
+        <div data-act="story">
+          <StorySection />
+        </div>
+        <div data-act="variants">
+          <VariantsSection products={variants} show3D={show3D} />
+        </div>
+        <div data-act="tail">
+          <FeaturedSection products={products ?? []} />
+          <GallerySection />
+        </div>
+        {/* The exit act needs scroll room to play out: progress hits 1 when the
+            stage's bottom reaches the viewport's bottom, so if the stage ended
+            at "Commande en 3 étapes" that act would span (its height − one
+            viewport) ≈ 0px and the machine would vanish instantly. Reviews
+            rides along to give the dissolve somewhere to happen. */}
+        <div data-act="outro">
+          <HowItWorksSection />
+        </div>
         <ReviewsSection />
       </div>
     </>

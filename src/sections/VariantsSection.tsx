@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { FloatingBeans } from "@/components/effects/FloatingBeans";
+import { useDriftIn } from "@/hooks/useScrollFX";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatPrice } from "@/lib/format";
 import { ScrollTrigger } from "@/lib/gsap";
@@ -27,8 +28,12 @@ export function VariantsSection({ products, show3D }: VariantsSectionProps) {
 function Variants3D({ products }: { products: Product[] }) {
   const { t, lang } = useLanguage();
   const zoneRef = useRef<HTMLDivElement>(null);
+  const copyRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const count = products.length;
+  // the capsule swoops to the start side as this zone arrives — the copy
+  // mirrors it by sliding in from the end side
+  useDriftIn(copyRef, "end", 90);
 
   useEffect(() => {
     const zone = zoneRef.current;
@@ -57,7 +62,16 @@ function Variants3D({ products }: { products: Product[] }) {
           {/* start column intentionally empty — the 3D capsule floats there
               (on phones the capsule hovers above the copy instead) */}
           <div className="hidden md:block" />
-          <div className="relative mt-[26vh] md:mt-0">
+          <div ref={copyRef} className="relative mt-[26vh] md:mt-0">
+            {/* soft wash of the active variant's accent behind the copy — the
+                content visibly answers the capsule's recolor */}
+            <div
+              className="pointer-events-none absolute -inset-x-10 -inset-y-8 -z-10 rounded-[3rem] blur-3xl transition-colors duration-700"
+              style={{
+                background: `radial-gradient(60% 55% at 50% 40%, ${product.accent_color ?? "#b08439"}2e, transparent 75%)`,
+              }}
+              aria-hidden
+            />
             <p className="text-sm uppercase tracking-[0.3em] text-brand">{t("variants.kicker")}</p>
             <h2 className="mt-2 font-display text-3xl font-semibold sm:text-5xl">
               {t("variants.title")}

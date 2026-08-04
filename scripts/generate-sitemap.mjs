@@ -9,9 +9,9 @@ import { writeFileSync } from "node:fs";
 const SITE_URL = (process.env.SITE_URL ?? "https://norlyn.dz").replace(/\/$/, "");
 
 // Must mirror the public <Route> list in src/App.tsx — never advertise a 404.
-const STATIC_ROUTES = ["/", "/shop"];
+const STATIC_ROUTES = ["/", "/shop", "/about", "/journal", "/contact"];
 
-async function fetchActiveSlugs() {
+async function fetchRows(path, label) {
   const url = process.env.VITE_SUPABASE_URL;
   const key = process.env.VITE_SUPABASE_ANON_KEY;
   if (!url || !key) {
@@ -19,19 +19,26 @@ async function fetchActiveSlugs() {
     return [];
   }
   try {
-    const res = await fetch(
-      `${url}/rest/v1/products?select=slug,updated_at&status=eq.active`,
-      { headers: { apikey: key, Authorization: `Bearer ${key}` } },
-    );
+    const res = await fetch(`${url}/rest/v1/${path}`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (err) {
-    console.warn(`[sitemap] product fetch failed (${err.message}) — static routes only.`);
+    console.warn(`[sitemap] ${label} fetch failed (${err.message}) — skipped.`);
     return [];
   }
 }
 
-const products = await fetchActiveSlugs();
+const products = await fetchRows(
+  "products?select=slug,updated_at&status=eq.active",
+  "product",
+);
+// the blog is a real SEO surface — published articles belong in the sitemap
+const articles = await fetchRows(
+  "articles?select=slug,updated_at&status=eq.published",
+  "article",
+);
 const today = new Date().toISOString().slice(0, 10);
 
 const urls = [
@@ -39,6 +46,10 @@ const urls = [
   ...products.map((p) => ({
     loc: `${SITE_URL}/product/${p.slug}`,
     lastmod: (p.updated_at ?? today).slice(0, 10),
+  })),
+  ...articles.map((a) => ({
+    loc: `${SITE_URL}/journal/${a.slug}`,
+    lastmod: (a.updated_at ?? today).slice(0, 10),
   })),
 ];
 

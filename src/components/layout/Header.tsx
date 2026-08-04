@@ -19,6 +19,9 @@ export function Header() {
   const links = [
     { to: "/", label: t("nav.home") },
     { to: "/shop", label: t("nav.shop") },
+    { to: "/about", label: t("nav.about") },
+    { to: "/journal", label: t("nav.blog") },
+    { to: "/contact", label: t("nav.contact") },
   ];
 
   return (
@@ -35,7 +38,7 @@ export function Header() {
           />
         </Link>
 
-        <nav className="hidden items-center gap-1 rounded-full border border-line/70 bg-panel/70 px-2 py-1 backdrop-blur-md md:flex">
+        <nav className="hidden items-center gap-1 rounded-full border border-line/70 bg-panel/70 px-2 py-1 backdrop-blur-md lg:flex">
           {links.map((link) => (
             <Link
               key={link.to}
@@ -81,7 +84,7 @@ export function Header() {
           </button>
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="rounded-full border border-line/70 bg-panel/70 p-2 text-muted backdrop-blur-md md:hidden cursor-pointer"
+            className="rounded-full border border-line/70 bg-panel/70 p-2 text-muted backdrop-blur-md lg:hidden cursor-pointer"
             aria-label="menu"
           >
             {menuOpen ? <X size={16} /> : <Menu size={16} />}
@@ -92,7 +95,7 @@ export function Header() {
       <AnimatePresence>
         {menuOpen && (
           <motion.nav
-            className="mx-4 rounded-2xl border border-line bg-panel p-2 shadow-xl md:hidden"
+            className="mx-4 rounded-2xl border border-line bg-panel p-2 shadow-xl lg:hidden"
             initial={{ y: -8 }}
             animate={{ y: 0 }}
             exit={{ y: -8, opacity: 0 }}

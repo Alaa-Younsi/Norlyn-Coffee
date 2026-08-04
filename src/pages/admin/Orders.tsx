@@ -1,38 +1,94 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Download, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
+import { Price } from "@/components/ui/Price";
 import { Select } from "@/components/ui/Field";
+import { DeleteAllOrdersModal } from "@/components/admin/DeleteAllOrdersModal";
 import { StatusBadge } from "./components/StatusBadge";
 import { useOrders } from "@/hooks/useOrders";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { formatDate, formatPrice } from "@/lib/format";
+import { exportOrders } from "@/lib/exportOrders";
+import { supabase } from "@/lib/supabase";
+import { formatDate } from "@/lib/format";
 import type { OrderStatus } from "@/types/db";
 
 const STATUSES: OrderStatus[] = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
 
 export function AdminOrders() {
   const { t, lang } = useLanguage();
+  const queryClient = useQueryClient();
   const [filter, setFilter] = useState<OrderStatus | "">("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const { data: orders, isLoading } = useOrders(filter || undefined);
+
+  const rows = orders ?? [];
+
+  const deleteAll = useMutation({
+    mutationFn: async () => {
+      // Supabase refuses an unfiltered .delete(); order_items go with it via
+      // the FK cascade.
+      const { error } = await supabase.from("orders").delete().not("id", "is", null);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["orders"] });
+      void queryClient.invalidateQueries({ queryKey: ["orders-ledger"] });
+      setConfirmDelete(false);
+    },
+  });
 
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="font-display text-3xl">{t("admin.nav.orders")}</h1>
-        <Select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value as OrderStatus | "")}
-          className="w-52"
-          aria-label={t("admin.orders.filter")}
-        >
-          <option value="">{t("admin.orders.all")}</option>
-          {STATUSES.map((status) => (
-            <option key={status} value={status}>
-              {t(`admin.status.${status}`)}
-            </option>
-          ))}
-        </Select>
+        <div className="flex flex-wrap items-center gap-2">
+          <Select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as OrderStatus | "")}
+            className="w-44"
+            aria-label={t("admin.orders.filter")}
+          >
+            <option value="">{t("admin.orders.all")}</option>
+            {STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {t(`admin.status.${status}`)}
+              </option>
+            ))}
+          </Select>
+          {/* exports the CURRENTLY FILTERED list */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => exportOrders(rows)}
+            disabled={rows.length === 0}
+          >
+            <Download size={15} />
+            {t("admin.orders.export")}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setConfirmDelete(true)}
+            disabled={rows.length === 0}
+          >
+            <Trash2 size={15} />
+            {t("admin.orders.deleteAll")}
+          </Button>
+        </div>
       </div>
+
+      {confirmDelete && (
+        <DeleteAllOrdersModal
+          count={rows.length}
+          deleting={deleteAll.isPending}
+          onExport={() => exportOrders(rows)}
+          onConfirm={() => deleteAll.mutate()}
+          onClose={() => setConfirmDelete(false)}
+        />
+      )}
 
       <Panel className="mt-6 overflow-x-auto">
         {isLoading ? (
@@ -40,7 +96,7 @@ export function AdminOrders() {
         ) : !orders || orders.length === 0 ? (
           <p className="p-6 text-sm text-muted">{t("admin.dash.none")}</p>
         ) : (
-          <table className="min-w-[680px] w-full text-sm">
+          <table className="min-w-[680px] w-full whitespace-nowrap text-sm">
             <thead>
               <tr className="border-b border-line text-xs uppercase tracking-wider text-muted">
                 <th className="px-5 py-3 text-start">N°</th>
@@ -53,7 +109,7 @@ export function AdminOrders() {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
+              {rows.map((order) => (
                 <tr key={order.id} className="border-b border-line/60 last:border-0 hover:bg-panel-2/50">
                   <td className="px-5 py-3">
                     <Link to={`/admin/orders/${order.id}`} className="font-medium text-brand hover:underline" dir="ltr">
@@ -65,7 +121,9 @@ export function AdminOrders() {
                     {order.customer_phone}
                   </td>
                   <td className="px-5 py-3">{order.wilaya}</td>
-                  <td className="px-5 py-3">{formatPrice(Number(order.total))}</td>
+                  <td className="px-5 py-3">
+                    <Price value={Number(order.total)} />
+                  </td>
                   <td className="px-5 py-3">
                     <StatusBadge status={order.status} />
                   </td>

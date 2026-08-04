@@ -12,7 +12,7 @@ import { useHoneypot } from "@/hooks/useHoneypot";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { orderErrorKey } from "@/lib/orderErrors";
 import { formatPrice } from "@/lib/format";
-import { trackInitiateCheckout, trackPurchase } from "@/lib/pixel";
+import { usePixel } from "@/components/MetaPixelProvider";
 import { cn } from "@/lib/utils";
 import type { DeliveryType } from "@/types/db";
 
@@ -55,6 +55,7 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
   const { isSpam } = useHoneypot();
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const pixel = usePixel();
   const trackedIntentKey = useRef<string | null>(null);
 
   const {
@@ -89,10 +90,9 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
   const handleFormFocus = () => {
     if (intent !== "focus" || trackedIntentKey.current === intentKey) return;
     trackedIntentKey.current = intentKey;
-    trackInitiateCheckout({
+    pixel.track("initiate_checkout", {
       content_ids: lines.map((l) => l.product_id),
       value: subtotal,
-      currency: "DZD",
     });
   };
 
@@ -120,13 +120,9 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
         setServerError(t(orderErrorKey(error.message)));
         return;
       }
-      const orderNumber = data as string;
-      trackPurchase({
-        content_ids: lines.map((l) => l.product_id),
-        value: total ?? subtotal,
-        currency: "DZD",
-      });
-      onSuccess(orderNumber);
+      // Purchase is NOT fired here: OrderConfirmation reads the authoritative
+      // order.total back through get_order_by_number and reports it there.
+      onSuccess(data as string);
     } catch {
       setServerError(t("err.generic"));
     } finally {

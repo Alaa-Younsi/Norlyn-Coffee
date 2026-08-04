@@ -1,6 +1,8 @@
+import { useEffect, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { CircleCheck } from "lucide-react";
+import { usePixel } from "@/components/MetaPixelProvider";
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -28,6 +30,27 @@ export function OrderConfirmation() {
       return data as GuestOrder | null;
     },
   });
+
+  // Purchase reports the authoritative server total, and dedupes on the order
+  // number: a value-compared ref (not a boolean) survives StrictMode's dev
+  // double-invoke and the identity change `pixel.track` gets whenever the
+  // matched pixel set widens.
+  const pixel = usePixel();
+  const trackedOrder = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!order || trackedOrder.current === order.order_number) return;
+    trackedOrder.current = order.order_number;
+    pixel.track(
+      "purchase",
+      {
+        content_ids: order.items.map((item) => item.name_fr),
+        value: Number(order.total),
+        num_items: order.items.reduce((sum, item) => sum + item.quantity, 0),
+      },
+      order.order_number,
+    );
+  }, [order, pixel]);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center px-6 pb-24 pt-32 text-center">

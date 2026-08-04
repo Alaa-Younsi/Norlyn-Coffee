@@ -7,26 +7,31 @@ import { CoffeeRing } from "@/components/effects/CoffeeRing";
 import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useParallaxItems, useRevealOnScroll, useVelocitySkew } from "@/hooks/useScrollFX";
+import { useSiteImages } from "@/hooks/useSiteContent";
+import { cn } from "@/lib/utils";
 
 /**
- * The Moriva ritual — three illustrated tiles that will become real
- * photography later (each carries a "photo coming" pill so the placeholders
- * are obvious). Until then: animated SVG coffee art.
+ * The Moriva ritual — three tiles wired to the `home.gallery.*` image slots.
+ * A filled slot shows the client's photograph; an empty one keeps the animated
+ * SVG coffee art plus a "photo coming" pill, so the section is never a hole.
  */
 export function GallerySection() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const { data: siteImages } = useSiteImages();
   const tilesRef = useRef<HTMLDivElement>(null);
   useRevealOnScroll(tilesRef);
   // adjacent tiles drift at different speeds — the flat grid reads as layers
   useParallaxItems(tilesRef);
   useVelocitySkew(tilesRef, 1.8);
 
-  const tiles: Array<{ caption: string; art: ReactNode }> = [
+  const tiles: Array<{ slot: string; caption: string; art: ReactNode }> = [
     {
+      slot: "home.gallery.1",
       caption: t("gallery.caption1"),
       art: <CoffeeCupArt className="w-36 sm:w-44" />,
     },
     {
+      slot: "home.gallery.2",
       caption: t("gallery.caption2"),
       art: (
         <div className="pointer-events-none relative flex items-end gap-2" aria-hidden>
@@ -46,6 +51,7 @@ export function GallerySection() {
       ),
     },
     {
+      slot: "home.gallery.3",
       caption: t("gallery.caption3"),
       art: <EspressoPour className="w-32 sm:w-40" />,
     },
@@ -68,24 +74,50 @@ export function GallerySection() {
         className="relative mt-12 grid gap-6 sm:grid-cols-3"
         style={{ perspective: "1200px" }}
       >
-        {tiles.map((tile, i) => (
-          // parallax lives on the wrapper, reveal on the tile — two tweens
-          // driving the same element's y would fight each other
-          <div key={tile.caption} data-parallax={[-36, 44, -24][i]}>
-          <div
-            data-reveal
-            className="fx-sheen relative flex aspect-[4/5] flex-col items-center justify-center gap-8 overflow-hidden rounded-3xl border border-line bg-gradient-to-b from-panel/80 to-panel-2/55 backdrop-blur-md p-6"
-          >
-            <span className="absolute end-4 top-4 rounded-full border border-line bg-panel/80 px-3 py-1 text-[10px] uppercase tracking-widest text-muted">
-              {t("gallery.placeholder")}
-            </span>
-            {tile.art}
-            <p className="text-balance text-center font-display text-xl text-ink/90 sm:text-2xl">
-              {tile.caption}
-            </p>
-          </div>
-          </div>
-        ))}
+        {tiles.map((tile, i) => {
+          const photo = siteImages?.[tile.slot];
+          return (
+            // parallax lives on the wrapper, reveal on the tile — two tweens
+            // driving the same element's y would fight each other
+            <div key={tile.slot} data-parallax={[-36, 44, -24][i]}>
+              <div
+                data-reveal
+                className="fx-sheen relative flex aspect-[4/5] flex-col items-center justify-center gap-8 overflow-hidden rounded-3xl border border-line bg-gradient-to-b from-panel/80 to-panel-2/55 p-6 backdrop-blur-md"
+              >
+                {photo ? (
+                  <>
+                    <img
+                      src={photo.url}
+                      alt={(lang === "ar" ? photo.alt_ar : photo.alt_fr) ?? ""}
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                    <span
+                      className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent"
+                      aria-hidden
+                    />
+                  </>
+                ) : (
+                  <>
+                    <span className="absolute end-4 top-4 rounded-full border border-line bg-panel/80 px-3 py-1 text-[10px] uppercase tracking-widest text-muted">
+                      {t("gallery.placeholder")}
+                    </span>
+                    {tile.art}
+                  </>
+                )}
+                <p
+                  className={cn(
+                    "relative mt-auto text-balance text-center font-display text-xl sm:text-2xl",
+                    photo ? "text-cream" : "text-ink/90",
+                  )}
+                >
+                  {tile.caption}
+                </p>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

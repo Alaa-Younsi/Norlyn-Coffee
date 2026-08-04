@@ -15,6 +15,9 @@ html[data-theme="light"] {
   --c-brand: 169 124 55;
   --c-gold-hi: 214 178 112;
   --c-cream: 248 242 233;
+  --viz-revenue: #a97c37;
+  --viz-profit: #2d6a4f;
+  --viz-expense: #a13d2d;
 }
 
 html[data-theme="dark"] {
@@ -28,6 +31,9 @@ html[data-theme="dark"] {
   --c-brand: 201 162 75;
   --c-gold-hi: 232 197 128;
   --c-cream: 30 22 16;
+  --viz-revenue: #e8c580;
+  --viz-profit: #6fcf9b;
+  --viz-expense: #e78a78;
 }
 
 @theme inline {
@@ -41,9 +47,41 @@ html[data-theme="dark"] {
   --color-gold-hi: rgb(var(--c-gold-hi));
   --color-cream: rgb(var(--c-cream));
 
-  --font-display: "Cormorant Garamond", "Cairo", serif;
-  --font-sans: "Manrope", "Cairo", sans-serif;
+  /* ONE family for the whole site — "Gourmand" first, so dropping the licensed
+     woff2 files into /public/fonts and uncommenting the @font-face block below
+     swaps the entire site over with no other change. Fraunces is the stand-in:
+     same warm high-contrast old-style skeleton, a real italic, and an
+     optical-size axis so it reads as display in the hero and as text at 12px.
+     `font-display` = titles, `font-sans` = everything else; the italic accent
+     is just `italic` on top (see .fx-accent). */
+  --font-display: "Gourmand", "Fraunces", "Cairo", Georgia, serif;
+  --font-sans: "Gourmand", "Fraunces", "Cairo", Georgia, serif;
+
+  /* chart series — never hardcoded hexes in a component */
+  --color-viz-revenue: var(--viz-revenue);
+  --color-viz-profit: var(--viz-profit);
+  --color-viz-expense: var(--viz-expense);
 }
+
+/*
+  Licensed Gourmand drop-in — put Gourmand-Regular.woff2 and
+  Gourmand-Italic.woff2 in /public/fonts, then uncomment.
+
+@font-face {
+  font-family: "Gourmand";
+  src: url("/fonts/Gourmand-Regular.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Gourmand";
+  src: url("/fonts/Gourmand-Italic.woff2") format("woff2");
+  font-weight: 300 700;
+  font-style: italic;
+  font-display: swap;
+}
+*/
 
 /* ------------------------------------------------------------------- base */
 html {
@@ -57,6 +95,16 @@ html {
 body {
   @apply bg-bg text-ink font-sans antialiased;
   overflow-x: clip;
+  /* Fraunces/Gourmand carry an optical-size axis: let the browser pick the
+     text cut for small sizes and the display cut for the hero automatically. */
+  font-optical-sizing: auto;
+}
+
+/* the italic accent — used for the ONE emphasised word in a title */
+.fx-accent {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
 }
 
 /* Native <select> popups on Android ignore page color-scheme — styling the
@@ -207,6 +255,18 @@ html[data-theme="dark"] .fx-gold-text-deep {
     rgb(var(--c-brand) / 0.14) 55%,
     transparent 75%
   );
+}
+
+/* An empty picture slot must read as an intentional frame the client is meant
+   to fill, not as a washed-out gap: fine gold hatching + a dashed edge. */
+.fx-slot-empty {
+  background-image:
+    repeating-linear-gradient(
+      -45deg,
+      rgb(var(--c-brand) / 0.07) 0 1px,
+      transparent 1px 11px
+    ),
+    radial-gradient(ellipse at 50% 45%, rgb(var(--c-gold-hi) / 0.18), transparent 72%);
 }
 
 .bg-noise {

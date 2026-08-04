@@ -7,13 +7,14 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCart, cartSubtotal } from "@/store/cart";
 import { useSeo } from "@/hooks/useSeo";
 import { formatPrice } from "@/lib/format";
-import { trackInitiateCheckout } from "@/lib/pixel";
+import { usePixel } from "@/components/MetaPixelProvider";
 
 export function Checkout() {
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const items = useCart((s) => s.items);
   const clear = useCart((s) => s.clear);
+  const pixel = usePixel();
   const intentFired = useRef(false);
 
   useSeo({ title: `${t("checkout.title")} — Norlyn Coffee` });
@@ -22,12 +23,13 @@ export function Checkout() {
   useEffect(() => {
     if (intentFired.current || items.length === 0) return;
     intentFired.current = true;
-    trackInitiateCheckout({
+    pixel.track("initiate_checkout", {
       content_ids: items.map((i) => i.productId),
       value: cartSubtotal(items),
-      currency: "DZD",
     });
-    // fire once for the visit — deliberately not re-run on cart edits
+    // fire once for the visit — deliberately not re-run on cart edits, and not
+    // on `pixel` either: its identity changes every time the matched pixel set
+    // widens, which would re-fire the event.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

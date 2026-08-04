@@ -33,6 +33,21 @@ export function Footer() {
                 {t("nav.shop")}
               </Link>
             </li>
+            <li>
+              <Link to="/about" className="hover:text-brand transition-colors">
+                {t("nav.about")}
+              </Link>
+            </li>
+            <li>
+              <Link to="/journal" className="hover:text-brand transition-colors">
+                {t("nav.blog")}
+              </Link>
+            </li>
+            <li>
+              <Link to="/contact" className="hover:text-brand transition-colors">
+                {t("nav.contact")}
+              </Link>
+            </li>
           </ul>
         </div>
         <div>

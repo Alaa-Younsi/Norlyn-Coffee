@@ -15,7 +15,7 @@ import { useProduct } from "@/hooks/useProducts";
 import { useSeo } from "@/hooks/useSeo";
 import { useCart, MAX_LINE_QTY } from "@/store/cart";
 import { formatPrice } from "@/lib/format";
-import { trackAddToCart, trackViewContent } from "@/lib/pixel";
+import { usePixel } from "@/components/MetaPixelProvider";
 import { cn } from "@/lib/utils";
 
 export function Product() {
@@ -27,6 +27,7 @@ export function Product() {
   const [quantity, setQuantity] = useState(1);
   const [imageIndex, setImageIndex] = useState(0);
   const [added, setAdded] = useState(false);
+  const pixel = usePixel();
   const trackedViewId = useRef<string | null>(null);
 
   const images = useMemo(
@@ -39,16 +40,23 @@ export function Product() {
     : "";
   const details = product ? (lang === "ar" ? product.details_ar : product.details_fr) : [];
 
+  // Registering the slug widens the matched pixel set (a `products`-scoped
+  // pixel only becomes live once the provider knows which product this is).
+  const { setContext } = pixel;
+  useEffect(() => {
+    if (slug) setContext({ productSlug: slug });
+  }, [slug, setContext]);
+
   useEffect(() => {
     if (!product || trackedViewId.current === product.id) return;
     trackedViewId.current = product.id;
-    trackViewContent({
+    pixel.track("view_content", {
       content_ids: [product.id],
       content_name: product.name_fr,
+      content_type: "product",
       value: Number(product.price),
-      currency: "DZD",
     });
-  }, [product]);
+  }, [product, pixel]);
 
   useSeo({
     title: product ? `${product.name_fr} — Norlyn Coffee` : "Norlyn Coffee",
@@ -102,10 +110,12 @@ export function Product() {
       },
       quantity,
     );
-    trackAddToCart({
+    pixel.track("add_to_cart", {
       content_ids: [product.id],
+      content_name: product.name_fr,
+      // coerce: a numeric Postgres column can arrive over PostgREST as a string
       value: Number(product.price) * quantity,
-      currency: "DZD",
+      num_items: quantity,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 1600);

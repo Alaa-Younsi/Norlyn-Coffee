@@ -10,6 +10,14 @@ import { AdminOrderDetail } from "./OrderDetail";
 import { AdminDeliveryPrices } from "./DeliveryPrices";
 import { AdminReviews } from "./Reviews";
 import { AdminSettings } from "./Settings";
+import { AdminAccount } from "./Account";
+import { AdminTeam } from "./Team";
+import { AdminPixels } from "./Pixels";
+import { AdminContent } from "./Content";
+import { AdminArticles } from "./Articles";
+import { AdminMessages } from "./Messages";
+import { AdminFinance } from "./Finance";
+import { AdminStoreLedger } from "./StoreLedger";
 
 /** Lazy-loaded as one chunk — admin code never ships to shoppers. */
 export function AdminApp() {
@@ -26,7 +34,15 @@ export function AdminApp() {
         <Route path="orders/:id" element={<AdminOrderDetail />} />
         <Route path="delivery" element={<AdminDeliveryPrices />} />
         <Route path="reviews" element={<AdminReviews />} />
+        <Route path="content" element={<AdminContent />} />
+        <Route path="articles" element={<AdminArticles />} />
+        <Route path="messages" element={<AdminMessages />} />
+        <Route path="finance" element={<AdminFinance />} />
+        <Route path="store" element={<AdminStoreLedger />} />
+        <Route path="pixels" element={<AdminPixels />} />
+        <Route path="team" element={<AdminTeam />} />
         <Route path="settings" element={<AdminSettings />} />
+        <Route path="account" element={<AdminAccount />} />
       </Route>
     </Routes>
   );

@@ -1,4 +1,7 @@
-export const translations = {
+import { adminTranslations } from "./translations.admin";
+import { siteTranslations } from "./translations.site";
+
+const core = {
   fr: {
     // nav / layout
     "nav.home": "Accueil",
@@ -456,6 +459,15 @@ export const translations = {
     "admin.settings.freeShipHint": "اتركه فارغاً لتعطيل العرض.",
   },
 } as const;
+
+/**
+ * Split across modules purely to keep the files readable — the parity check
+ * below still covers every key from every module.
+ */
+export const translations = {
+  fr: { ...core.fr, ...adminTranslations.fr, ...siteTranslations.fr },
+  ar: { ...core.ar, ...adminTranslations.ar, ...siteTranslations.ar },
+};
 
 export type TranslationKey = keyof typeof translations.fr;
 // Both sides must carry every key — this line fails to compile if AR drifts.

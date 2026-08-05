@@ -16,6 +16,7 @@ import { useSeo } from "@/hooks/useSeo";
 import { useCart, MAX_LINE_QTY } from "@/store/cart";
 import { formatPrice } from "@/lib/format";
 import { usePixel } from "@/components/MetaPixelProvider";
+import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 
 export function Product() {
@@ -34,11 +35,11 @@ export function Product() {
     () => [...(product?.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order),
     [product],
   );
-  const name = product ? (lang === "ar" ? product.name_ar : product.name_fr) : "";
+  const name = product ? pickLang(lang, product.name_fr, product.name_ar) : "";
   const description = product
-    ? (lang === "ar" ? product.description_ar : product.description_fr)
+    ? pickLang(lang, product.description_fr, product.description_ar)
     : "";
-  const details = product ? (lang === "ar" ? product.details_ar : product.details_fr) : [];
+  const details = product ? pickLang(lang, product.details_fr, product.details_ar) : [];
 
   // Registering the slug widens the matched pixel set (a `products`-scoped
   // pixel only becomes live once the provider knows which product this is).

@@ -6,6 +6,7 @@ import { StatusBadge } from "./components/StatusBadge";
 import { useOrder, useUpdateOrderStatus } from "@/hooks/useOrders";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate, formatPrice } from "@/lib/format";
+import { pickLang } from "@/lib/localized";
 import type { OrderStatus } from "@/types/db";
 
 const STATUSES: OrderStatus[] = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
@@ -112,7 +113,7 @@ export function AdminOrderDetail() {
                 />
               )}
               <span className="min-w-0 flex-1 truncate">
-                {lang === "ar" ? item.name_ar : item.name_fr} × {item.quantity}
+                {pickLang(lang, item.name_fr, item.name_ar)} × {item.quantity}
               </span>
               <span className="font-medium">{formatPrice(Number(item.price) * item.quantity)}</span>
             </li>

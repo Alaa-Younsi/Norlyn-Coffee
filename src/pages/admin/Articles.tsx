@@ -9,6 +9,7 @@ import { useAllArticlesAdmin, useDeleteArticle, useSaveArticle } from "@/hooks/u
 import { supabase } from "@/lib/supabase";
 import { slugify } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
+import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 import type { Article, ArticleStatus } from "@/types/db";
 
@@ -309,7 +310,7 @@ export function AdminArticles() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">
-                {lang === "ar" ? article.title_ar : article.title_fr}
+                {pickLang(lang, article.title_fr, article.title_ar)}
               </p>
               <p className="text-xs text-muted">
                 {article.status === "published"

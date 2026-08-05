@@ -7,6 +7,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useArticle, usePublishedArticles } from "@/hooks/useSiteContent";
 import { useSeo } from "@/hooks/useSeo";
 import { formatDate } from "@/lib/format";
+import { pickLang } from "@/lib/localized";
 
 export function Article() {
   const { slug } = useParams();
@@ -14,9 +15,9 @@ export function Article() {
   const { data: article, isLoading } = useArticle(slug);
   const { data: all } = usePublishedArticles();
 
-  const title = article ? (lang === "ar" ? article.title_ar : article.title_fr) : "";
-  const excerpt = article ? (lang === "ar" ? article.excerpt_ar : article.excerpt_fr) : "";
-  const body = article ? (lang === "ar" ? article.body_ar : article.body_fr) : "";
+  const title = article ? pickLang(lang, article.title_fr, article.title_ar) : "";
+  const excerpt = article ? pickLang(lang, article.excerpt_fr, article.excerpt_ar) : "";
+  const body = article ? pickLang(lang, article.body_fr, article.body_ar) : "";
 
   useSeo({
     title: article ? `${title} — Norlyn Coffee` : t("blog.metaTitle"),
@@ -59,7 +60,7 @@ export function Article() {
           <article className="mt-6 text-start">
             {(article.tag_fr || article.tag_ar) && (
               <p className="text-xs uppercase tracking-[0.3em] text-brand">
-                {lang === "ar" ? article.tag_ar : article.tag_fr}
+                {pickLang(lang, article.tag_fr, article.tag_ar)}
               </p>
             )}
             <h1 className="mt-3 font-display text-4xl font-semibold leading-tight sm:text-5xl">
@@ -129,7 +130,7 @@ export function Article() {
                       )}
                     </div>
                     <p className="p-5 font-display text-lg leading-snug">
-                      {lang === "ar" ? entry.title_ar : entry.title_fr}
+                      {pickLang(lang, entry.title_fr, entry.title_ar)}
                     </p>
                   </Panel>
                 </Link>

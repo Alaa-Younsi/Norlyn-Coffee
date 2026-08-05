@@ -4,6 +4,7 @@ import { Camera, ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useMediaSlides } from "@/hooks/useSiteContent";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
+import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 
 const AUTOPLAY_MS = 6000;
@@ -86,7 +87,7 @@ export function MediaSlider({ className }: { className?: string }) {
               ) : (
                 <img
                   src={active?.url}
-                  alt={(lang === "ar" ? active?.title_ar : active?.title_fr) ?? ""}
+                  alt={pickLang(lang, active?.title_fr, active?.title_ar) ?? ""}
                   className="h-full w-full object-cover"
                   loading="eager"
                   fetchPriority="high"
@@ -98,11 +99,11 @@ export function MediaSlider({ className }: { className?: string }) {
               {(active?.title_fr || active?.title_ar) && (
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/75 via-ink/25 to-transparent p-5 pt-16 text-start">
                   <p className="font-display text-lg text-cream">
-                    {lang === "ar" ? active.title_ar : active.title_fr}
+                    {pickLang(lang, active.title_fr, active.title_ar)}
                   </p>
                   {(active.subtitle_fr || active.subtitle_ar) && (
                     <p className="mt-0.5 text-sm text-cream/80">
-                      {lang === "ar" ? active.subtitle_ar : active.subtitle_fr}
+                      {pickLang(lang, active.subtitle_fr, active.subtitle_ar)}
                     </p>
                   )}
                 </div>

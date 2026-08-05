@@ -14,6 +14,7 @@ import {
   useSiteImages,
 } from "@/hooks/useSiteContent";
 import { IMAGE_SLOTS, IMAGE_SLOT_GROUPS } from "@/lib/imageSlots";
+import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 import type { MediaSlide, SlideKind, SlidePlacement } from "@/types/db";
 
@@ -274,7 +275,7 @@ function SlidesSection() {
             </div>
             <div className="p-4">
               <p className="truncate text-sm font-medium">
-                {(lang === "ar" ? slide.title_ar : slide.title_fr) || slide.url.split("/").pop()}
+                {pickLang(lang, slide.title_fr, slide.title_ar) || slide.url.split("/").pop()}
               </p>
               <p className="text-xs text-muted">
                 {slide.placement === "hero"
@@ -323,7 +324,7 @@ function SlotsSection() {
       {IMAGE_SLOT_GROUPS.map((group) => (
         <div key={group.key} className="mt-6">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted">
-            {lang === "ar" ? group.label_ar : group.label_fr}
+            {pickLang(lang, group.label_fr, group.label_ar)}
           </h3>
           <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {IMAGE_SLOTS.filter((slot) => slot.group === group.key).map((slot) => {
@@ -348,7 +349,7 @@ function SlotsSection() {
                   </div>
 
                   <p className="text-sm font-medium">
-                    {lang === "ar" ? slot.label_ar : slot.label_fr}
+                    {pickLang(lang, slot.label_fr, slot.label_ar)}
                   </p>
                   <p className="text-xs text-muted">
                     {row ? t("admin.content.slotFilled") : t("admin.content.slotEmpty")} · {slot.ratio}

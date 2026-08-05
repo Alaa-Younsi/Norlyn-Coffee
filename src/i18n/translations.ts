@@ -458,6 +458,243 @@ const core = {
     "admin.settings.freeShip": "حد التوصيل المجاني (دج)",
     "admin.settings.freeShipHint": "اتركه فارغاً لتعطيل العرض.",
   },
+  en: {
+    // nav / layout
+    "nav.home": "Home",
+    "nav.shop": "Shop",
+    "nav.story": "Our story",
+    "nav.variants": "Our intensities",
+    "nav.cart": "Cart",
+    "nav.theme": "Theme",
+    "brand.tagline": "Coffee house — Algiers",
+
+    // hero
+    "hero.kicker": "Norlyn Coffee presents",
+    "hero.title1": "Moriva",
+    "hero.title2": "Espresso, raised to an art",
+    "hero.subtitle":
+      "Premium Nespresso®-compatible espresso capsules. Four intensities, one standard: excellence.",
+    "hero.ctaOrder": "Order now",
+    "hero.ctaDiscover": "Discover",
+    "hero.codBadge": "Cash on delivery — 58 wilayas",
+    "hero.scroll": "Scroll",
+
+    // story
+    "story.kicker": "The Norlyn house",
+    "story.title": "One craft, four characters",
+    "story.p1":
+      "Norlyn Coffee selects exceptional beans and roasts them with precision to create Moriva: a range of espresso capsules in which every dose is calibrated to a tenth of a gram.",
+    "story.p2":
+      "From the intensely concentrated Ristretto Noir to the featherlight Decaf Verde, each capsule seals its aroma under aluminium, ready to release a dense, golden crema.",
+    "story.stat1n": "58",
+    "story.stat1l": "wilayas delivered",
+    "story.stat2n": "4",
+    "story.stat2l": "intensities",
+    "story.stat3n": "10",
+    "story.stat3l": "capsules per box",
+
+    // variants showcase
+    "variants.kicker": "The collection",
+    "variants.title": "Choose your intensity",
+    "variants.intensity": "Intensity",
+    "variants.dosage": "Dose",
+    "variants.order": "Order",
+    "variants.view": "View the capsule",
+
+    // featured / shop
+    "featured.kicker": "The shop",
+    "featured.title": "Our capsules",
+    "featured.viewAll": "Browse the full shop",
+    "shop.title": "Shop",
+    "shop.kicker": "The Moriva collection",
+    "shop.subtitle": "Premium espresso capsules — delivered anywhere in Algeria.",
+    "shop.search": "Search…",
+    "shop.allCategories": "All categories",
+    "shop.empty": "No products found.",
+    "shop.outOfStock": "Out of stock",
+
+    // gallery / ritual
+    "gallery.kicker": "The experience",
+    "gallery.title": "The Moriva ritual",
+    "gallery.caption1": "A dense, golden crema",
+    "gallery.caption2": "Beans roasted with precision",
+    "gallery.caption3": "The perfect extraction, every cup",
+    "gallery.placeholder": "Photo coming soon",
+
+    // how it works
+    "how.kicker": "Simple and safe",
+    "how.title": "Order in 3 steps",
+    "how.s1t": "Order online",
+    "how.s1d": "Choose your capsules and fill in the form — name, phone, wilaya.",
+    "how.s2t": "Confirmation by phone",
+    "how.s2d": "Our team calls you to confirm your order and the delivery.",
+    "how.s3t": "Pay on arrival",
+    "how.s3d": "Delivered to your door or to a pickup point. You pay in person.",
+
+    // reviews
+    "reviews.kicker": "They trust us",
+    "reviews.title": "What our customers say",
+
+    // footer
+    "footer.desc":
+      "Moriva by Norlyn Coffee — premium espresso capsules, delivered anywhere in Algeria.",
+    "footer.links": "Navigation",
+    "footer.contact": "Contact",
+    "footer.rights": "All rights reserved.",
+
+    // product page
+    "product.details": "Details",
+    "product.quantity": "Quantity",
+    "product.addToCart": "Add to cart",
+    "product.added": "Added ✓",
+    "product.inStock": "In stock",
+    "product.lowStock": "Low stock",
+    "product.outOfStock": "Out of stock",
+    "product.notFound": "Product not found.",
+    "product.backToShop": "Back to the shop",
+    "product.orderNow": "Quick order",
+    "product.orderNowSub": "Delivery anywhere in Algeria — pay on arrival.",
+
+    // cart
+    "cart.title": "Your cart",
+    "cart.empty": "Your cart is empty.",
+    "cart.subtotal": "Subtotal",
+    "cart.checkout": "Check out",
+    "cart.continue": "Continue shopping",
+    "cart.remove": "Remove",
+
+    // checkout
+    "checkout.title": "Complete your order",
+    "checkout.contact": "Your details",
+    "checkout.name": "Full name",
+    "checkout.phone": "Phone",
+    "checkout.wilaya": "Wilaya",
+    "checkout.selectWilaya": "Choose your wilaya",
+    "checkout.city": "Municipality / city",
+    "checkout.deliveryType": "Delivery method",
+    "checkout.home": "To my address",
+    "checkout.office": "Pickup point",
+    "checkout.summary": "Summary",
+    "checkout.subtotal": "Subtotal",
+    "checkout.shipping": "Delivery",
+    "checkout.shippingFree": "Free",
+    "checkout.total": "Total",
+    "checkout.place": "Confirm order",
+    "checkout.placing": "Sending…",
+    "checkout.codNote": "Cash on delivery — no online payment.",
+    "checkout.nameInvalid": "Enter your full name (2 characters minimum).",
+    "checkout.phoneInvalid": "Invalid number — format 05/06/07 XX XX XX XX.",
+    "checkout.wilayaRequired": "Choose your wilaya.",
+    "checkout.cityRequired": "Enter your municipality.",
+
+    // confirmation
+    "confirm.title": "Thank you for your order!",
+    "confirm.sub": "Our team will call you shortly to confirm.",
+    "confirm.number": "Order number",
+    "confirm.delivery": "Delivery",
+    "confirm.notFound": "Order not found.",
+    "confirm.backHome": "Back to home",
+
+    // order errors
+    "err.generic": "Something went wrong. Please try again.",
+    "err.cartEmpty": "Your cart is empty.",
+    "err.stock": "Not enough stock for one of the items.",
+    "err.productUnavailable": "One of the items is no longer available.",
+    "err.wilayaDisabled": "Delivery is not available in this wilaya.",
+    "err.rateLimit": "Too many recent orders from this number. Please try again later.",
+    "err.invalidInput": "Check your details and try again.",
+
+    // common
+    "common.loading": "Loading…",
+    "common.error": "Failed to load.",
+    "common.retry": "Try again",
+    "common.close": "Close",
+    "common.save": "Save",
+    "common.saving": "Saving…",
+    "common.cancel": "Cancel",
+    "common.delete": "Delete",
+    "common.edit": "Edit",
+    "common.add": "Add",
+    "common.back": "Back",
+    "common.notFound": "Page not found.",
+    "common.configMissing": "Shop is being set up — ordering available soon.",
+
+    // admin
+    "admin.login.title": "Admin area",
+    "admin.login.email": "Email",
+    "admin.login.password": "Password",
+    "admin.login.submit": "Sign in",
+    "admin.login.error": "Invalid credentials.",
+    "admin.nav.dashboard": "Dashboard",
+    "admin.nav.products": "Products",
+    "admin.nav.categories": "Categories",
+    "admin.nav.orders": "Orders",
+    "admin.nav.delivery": "Delivery",
+    "admin.nav.reviews": "Reviews",
+    "admin.nav.settings": "Settings",
+    "admin.nav.viewStore": "View shop",
+    "admin.nav.logout": "Sign out",
+    "admin.dash.orders": "Orders",
+    "admin.dash.pending": "Pending",
+    "admin.dash.revenue": "Revenue",
+    "admin.dash.products": "Active products",
+    "admin.dash.recent": "Recent orders",
+    "admin.dash.none": "No orders yet.",
+    "admin.products.new": "New product",
+    "admin.products.name": "Name",
+    "admin.products.price": "Price",
+    "admin.products.stock": "Stock",
+    "admin.products.status": "Status",
+    "admin.products.featured": "Featured",
+    "admin.products.active": "Active",
+    "admin.products.draft": "Draft",
+    "admin.products.deleteConfirm": "Delete this product?",
+    "admin.form.nameFr": "Name (FR)",
+    "admin.form.nameAr": "Name (AR)",
+    "admin.form.descFr": "Description (FR)",
+    "admin.form.descAr": "Description (AR)",
+    "admin.form.detailsFr": "Details (FR) — one per line",
+    "admin.form.detailsAr": "Details (AR) — one per line",
+    "admin.form.price": "Price (DA)",
+    "admin.form.compareAt": "Compare-at price (DA)",
+    "admin.form.category": "Category",
+    "admin.form.noCategory": "No category",
+    "admin.form.stock": "Stock",
+    "admin.form.intensity": "Intensity (0–100)",
+    "admin.form.dosage": "Dose",
+    "admin.form.accent": "Accent colour",
+    "admin.form.videoUrl": "Video URL (optional)",
+    "admin.form.images": "Images",
+    "admin.form.upload": "Upload images",
+    "admin.form.uploading": "Uploading…",
+    "admin.categories.new": "New category",
+    "admin.categories.deleteConfirm": "Delete this category?",
+    "admin.orders.filter": "Filter by status",
+    "admin.orders.all": "All",
+    "admin.orders.customer": "Customer",
+    "admin.orders.total": "Total",
+    "admin.orders.date": "Date",
+    "admin.orders.items": "Items",
+    "admin.orders.updateStatus": "Order status",
+    "admin.orders.phone": "Phone",
+    "admin.status.pending": "Pending",
+    "admin.status.confirmed": "Confirmed",
+    "admin.status.shipped": "Shipped",
+    "admin.status.delivered": "Delivered",
+    "admin.status.cancelled": "Cancelled",
+    "admin.delivery.wilaya": "Wilaya",
+    "admin.delivery.home": "Home (DA)",
+    "admin.delivery.office": "Pickup point (DA)",
+    "admin.delivery.active": "Active",
+    "admin.reviews.new": "New review",
+    "admin.reviews.name": "Customer name",
+    "admin.reviews.stars": "Stars",
+    "admin.reviews.text": "Review",
+    "admin.reviews.visible": "Visible",
+    "admin.settings.shippingFee": "Default delivery fee (DA)",
+    "admin.settings.freeShip": "Free delivery threshold (DA)",
+    "admin.settings.freeShipHint": "Leave empty to disable the offer.",
+  },
 } as const;
 
 /**
@@ -467,9 +704,15 @@ const core = {
 export const translations = {
   fr: { ...core.fr, ...adminTranslations.fr, ...siteTranslations.fr },
   ar: { ...core.ar, ...adminTranslations.ar, ...siteTranslations.ar },
+  en: { ...core.en, ...adminTranslations.en, ...siteTranslations.en },
 };
 
+// FR is the reference: every other language must carry every one of its keys.
 export type TranslationKey = keyof typeof translations.fr;
-// Both sides must carry every key — this line fails to compile if AR drifts.
+
+// These two lines fail to compile the moment AR or EN drifts from FR — that is
+// the only thing stopping a missing key from shipping as `undefined` on screen.
 const _arCheck: Record<TranslationKey, string> = translations.ar;
+const _enCheck: Record<TranslationKey, string> = translations.en;
 void _arCheck;
+void _enCheck;

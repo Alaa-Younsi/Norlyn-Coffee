@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { LANGS } from "./langs";
 import { translations } from "./translations";
 import type { TranslationKey } from "./translations";
 import type { Lang } from "@/types/db";
@@ -18,7 +19,7 @@ const STORAGE_KEY = "norlyn-lang";
 function readStoredLang(): Lang {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored === "ar" ? "ar" : "fr";
+    return LANGS.find((l) => l === stored) ?? "fr";
   } catch {
     return "fr";
   }

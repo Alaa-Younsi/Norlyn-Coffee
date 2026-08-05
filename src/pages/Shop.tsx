@@ -13,6 +13,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { useSeo } from "@/hooks/useSeo";
+import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -86,7 +87,7 @@ export function Shop() {
                 active={categoryId === category.id}
                 onClick={() => setCategoryId(category.id)}
               >
-                {lang === "ar" ? category.name_ar : category.name_fr}
+                {pickLang(lang, category.name_fr, category.name_ar)}
               </CategoryChip>
             ))}
           </div>

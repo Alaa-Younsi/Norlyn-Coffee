@@ -7,6 +7,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCart, cartSubtotal } from "@/store/cart";
 import { useSeo } from "@/hooks/useSeo";
 import { formatPrice } from "@/lib/format";
+import { pickLang } from "@/lib/localized";
 import { usePixel } from "@/components/MetaPixelProvider";
 
 export function Checkout() {
@@ -88,7 +89,7 @@ export function Checkout() {
                   />
                 )}
                 <span className="min-w-0 flex-1 truncate">
-                  {lang === "ar" ? item.nameAr : item.nameFr} × {item.quantity}
+                  {pickLang(lang, item.nameFr, item.nameAr)} × {item.quantity}
                 </span>
                 <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
               </li>

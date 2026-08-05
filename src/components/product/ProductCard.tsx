@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatPrice } from "@/lib/format";
+import { pickLang } from "@/lib/localized";
 import type { Product } from "@/types/db";
 
 /**
@@ -10,7 +11,7 @@ import type { Product } from "@/types/db";
  */
 export function ProductCard({ product }: { product: Product }) {
   const { t, lang } = useLanguage();
-  const name = lang === "ar" ? product.name_ar : product.name_fr;
+  const name = pickLang(lang, product.name_fr, product.name_ar);
   const image = [...(product.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0];
   const out = product.stock <= 0;
 

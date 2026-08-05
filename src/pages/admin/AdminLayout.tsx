@@ -5,6 +5,7 @@ import { LogOut, Menu, Moon, ShieldAlert, Store, Sun, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminProfile } from "@/hooks/useAdminProfile";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { LANG_LABEL, LANG_NAME, nextLang } from "@/i18n/langs";
 import { useTheme } from "@/theme/ThemeProvider";
 import { ADMIN_SECTIONS, routeToSection } from "@/lib/adminSections";
 import type { AdminSection } from "@/lib/adminSections";
@@ -198,10 +199,11 @@ function QuickToggles() {
   return (
     <div className="flex items-center gap-2">
       <button
-        onClick={() => setLang(lang === "fr" ? "ar" : "fr")}
-        className="rounded-full border border-line px-2.5 py-1 text-xs font-semibold cursor-pointer"
+        onClick={() => setLang(nextLang(lang))}
+        className="min-w-9 rounded-full border border-line px-2.5 py-1 text-xs font-semibold cursor-pointer"
+        aria-label={`Switch language — ${LANG_NAME[nextLang(lang)]}`}
       >
-        {lang === "fr" ? "ع" : "FR"}
+        {LANG_LABEL[nextLang(lang)]}
       </button>
       <button
         onClick={toggleTheme}

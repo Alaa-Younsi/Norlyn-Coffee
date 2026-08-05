@@ -7,6 +7,7 @@ import { useDriftIn } from "@/hooks/useScrollFX";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatPrice } from "@/lib/format";
 import { ScrollTrigger } from "@/lib/gsap";
+import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/db";
 
@@ -51,8 +52,8 @@ function Variants3D({ products }: { products: Product[] }) {
 
   const product = products[index];
   if (!product) return null;
-  const name = lang === "ar" ? product.name_ar : product.name_fr;
-  const description = lang === "ar" ? product.description_ar : product.description_fr;
+  const name = pickLang(lang, product.name_fr, product.name_ar);
+  const description = pickLang(lang, product.description_fr, product.description_ar);
 
   return (
     <div ref={zoneRef} id="variants" style={{ height: `${count * 110}vh` }} className="relative">
@@ -166,7 +167,7 @@ function Variants2D({ products }: { products: Product[] }) {
           const image = [...(product.product_images ?? [])].sort(
             (a, b) => a.sort_order - b.sort_order,
           )[0];
-          const name = lang === "ar" ? product.name_ar : product.name_fr;
+          const name = pickLang(lang, product.name_fr, product.name_ar);
           return (
             <div
               key={product.id}
@@ -195,7 +196,7 @@ function Variants2D({ products }: { products: Product[] }) {
                   {name}
                 </h3>
                 <p className="mt-1 text-sm text-muted line-clamp-2">
-                  {lang === "ar" ? product.description_ar : product.description_fr}
+                  {pickLang(lang, product.description_fr, product.description_ar)}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <span className="font-display text-xl text-brand">{formatPrice(product.price)}</span>

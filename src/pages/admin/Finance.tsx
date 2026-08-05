@@ -36,6 +36,7 @@ import {
 } from "@/lib/finance";
 import type { CostFact, DateRange, SaleFact } from "@/lib/finance";
 import { downloadCsv } from "@/lib/csv";
+import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 
 const TABS: Array<{ value: string; labelKey: TranslationKey }> = [
@@ -68,7 +69,7 @@ export function AdminFinance() {
         .filter((row) => row.product)
         .map((row) => ({
           id: row.product_id,
-          name: (lang === "ar" ? row.product?.name_ar : row.product?.name_fr) ?? "",
+          name: pickLang(lang, row.product?.name_fr, row.product?.name_ar) ?? "",
         })),
     [costRows, lang],
   );
@@ -91,7 +92,7 @@ export function AdminFinance() {
         shipping: Number(order.shipping),
         lines: (order.order_items ?? []).map((item) => ({
           itemKey: item.product_id ?? item.name_fr,
-          itemName: lang === "ar" ? item.name_ar : item.name_fr,
+          itemName: pickLang(lang, item.name_fr, item.name_ar),
           quantity: item.quantity,
           unitPrice: Number(item.price),
           unitCost: Number(item.unit_cost ?? 0),
@@ -246,7 +247,7 @@ function CostsTab() {
   const [search, setSearch] = useState("");
 
   const filtered = (rows ?? []).filter((row) => {
-    const name = lang === "ar" ? row.product?.name_ar : row.product?.name_fr;
+    const name = pickLang(lang, row.product?.name_fr, row.product?.name_ar);
     return (name ?? "").toLowerCase().includes(search.trim().toLowerCase());
   });
 
@@ -269,7 +270,7 @@ function CostsTab() {
             <Panel key={row.product_id} className="flex flex-wrap items-center gap-3 p-4">
               <div className="min-w-0 flex-1">
                 <p className="font-medium">
-                  {lang === "ar" ? row.product?.name_ar : row.product?.name_fr}
+                  {pickLang(lang, row.product?.name_fr, row.product?.name_ar)}
                 </p>
                 <p className="text-xs text-muted">
                   {t("admin.cost.sellPrice")}: <Price value={price} />

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { useCart, cartSubtotal } from "@/store/cart";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatPrice } from "@/lib/format";
+import { pickLang } from "@/lib/localized";
 
 export function CartDrawer() {
   const { t, lang } = useLanguage();
@@ -45,7 +46,7 @@ export function CartDrawer() {
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">
-                    {lang === "ar" ? item.nameAr : item.nameFr}
+                    {pickLang(lang, item.nameFr, item.nameAr)}
                   </p>
                   <p className="mt-0.5 text-sm text-brand font-medium">{formatPrice(item.price)}</p>
                   <div className="mt-2 flex items-center gap-2">

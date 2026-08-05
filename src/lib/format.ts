@@ -1,3 +1,5 @@
+import type { Lang } from "@/types/db";
+
 /**
  * `12 500 DA` — space thousands separator, DA suffix. Wrapped in Unicode
  * LTR-isolate marks (U+2066/U+2069) so the amount doesn't bidi-reorder to
@@ -10,8 +12,16 @@ export function formatPrice(value: number): string {
   return `⁦${grouped}${decPart ? `,${decPart}` : ""} DA⁩`;
 }
 
-export function formatDate(iso: string, lang: "fr" | "ar" = "fr"): string {
-  return new Date(iso).toLocaleDateString(lang === "ar" ? "ar-DZ" : "fr-DZ", {
+const DATE_LOCALE: Record<Lang, string> = {
+  fr: "fr-DZ",
+  ar: "ar-DZ",
+  // en-GB, not en-US: day-before-month matches what the FR/AR views show, so
+  // switching language never silently reorders 05/08 into 08/05.
+  en: "en-GB",
+};
+
+export function formatDate(iso: string, lang: Lang = "fr"): string {
+  return new Date(iso).toLocaleDateString(DATE_LOCALE[lang], {
     year: "numeric",
     month: "short",
     day: "numeric",

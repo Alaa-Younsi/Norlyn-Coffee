@@ -220,4 +220,119 @@ export const siteTranslations = {
     "contact.infoArea": "التوصيل",
     "contact.infoAreaValue": "58 ولاية — الدفع عند الاستلام",
   },
+
+  en: {
+    // nav
+    "nav.about": "The house",
+    "nav.blog": "Journal",
+    "nav.contact": "Contact",
+
+    // hero slider
+    "hero.mediaEmpty": "Your photos and videos here",
+    "hero.mediaEmptyHint": "Add them from the admin area — Content & media",
+    "hero.mediaPrev": "Previous media",
+    "hero.mediaNext": "Next media",
+    "hero.mediaGoTo": "Go to media",
+
+    // shared image placeholder
+    "media.placeholder": "Photo coming soon",
+
+    // ---------------------------------------------------------------- about
+    "about.metaTitle": "The Norlyn house — our coffee and our craft",
+    "about.metaDesc":
+      "The story of Norlyn Coffee, how Moriva capsules are made, and the full range — delivered to all 58 wilayas, cash on delivery.",
+    "about.kicker": "The Norlyn house",
+    "about.title": "Coffee composed",
+    "about.titleAccent": "like a perfume",
+    "about.lead":
+      "Norlyn Coffee was born from a simple conviction: a great espresso owes nothing to chance. Every bean, every gram, every second of extraction is a choice.",
+    "about.story.title": "Our story",
+    "about.story.p1":
+      "Founded in Algiers, Norlyn Coffee brings roasters and enthusiasts together around a single demand: to offer Algeria an espresso on a par with the great European houses, without the compromise of shipping or of price.",
+    "about.story.p2":
+      "Moriva is the result of that work: a range of Nespresso®-compatible capsules in which four characters answer one another, from the most intense to the mellowest, with every dose calibrated to a tenth of a gram.",
+    "about.story.p3":
+      "We deliver to all 58 wilayas, and payment is made on delivery. You only pay once the box is in your hands.",
+    "about.values.kicker": "Our commitments",
+    "about.values.title": "Three promises kept",
+    "about.value1.title": "Beans with an origin",
+    "about.value1.text":
+      "Arabicas and robustas selected lot by lot, never blended blind.",
+    "about.value2.title": "Precise roasting",
+    "about.value2.text":
+      "A dedicated heat profile for each intensity — the same taste, box after box.",
+    "about.value3.title": "Sealed freshness",
+    "about.value3.text":
+      "Every capsule is sealed under aluminium: the aroma stays intact right up to extraction.",
+    "about.process.kicker": "From bean to cup",
+    "about.process.title": "Four steps, nothing improvised",
+    "about.step1.title": "Selection",
+    "about.step1.text": "We taste every lot before buying it. An average lot is turned down.",
+    "about.step2.title": "Roasting",
+    "about.step2.text": "A heat curve specific to each variety, controlled to the degree.",
+    "about.step3.title": "Dosing",
+    "about.step3.text": "From 5.2 g to 6.0 g depending on intensity — weighed, never estimated.",
+    "about.step4.title": "Sealing",
+    "about.step4.text": "Sealed under aluminium, then a quality check on every batch.",
+    "about.products.kicker": "Our products",
+    "about.products.title": "The Moriva range",
+    "about.products.subtitle":
+      "Four intensities for four moments of the day. All Nespresso®-compatible.",
+    "about.products.cta": "Browse the full shop",
+    "about.team.caption": "The Norlyn workshop, Algiers",
+    "about.cta.title": "Care to taste?",
+    "about.cta.text": "Order in seconds, pay on delivery.",
+    "about.cta.button": "Order now",
+
+    // ---------------------------------------------------------------- blog
+    "blog.metaTitle": "The Norlyn journal — coffee tips and culture",
+    "blog.metaDesc":
+      "Extraction guides, origin profiles and Norlyn Coffee news: everything you need to drink your espresso better.",
+    "blog.kicker": "The journal",
+    "blog.title": "Reading coffee",
+    "blog.subtitle":
+      "Our guides, our origins and behind the scenes at the workshop — to get the best from every capsule.",
+    "blog.empty": "The first articles are coming soon.",
+    "blog.emptyHint": "Publish them from the admin area — Journal.",
+    "blog.readMore": "Read the article",
+    "blog.minutes": "min read",
+    "blog.back": "All articles",
+    "blog.featured": "Featured",
+    "blog.notFound": "Article not found.",
+    "blog.more": "Also worth reading",
+    "blog.by": "By",
+
+    // -------------------------------------------------------------- contact
+    "contact.metaTitle": "Contact — Norlyn Coffee",
+    "contact.metaDesc":
+      "A question about our capsules, an order or a partnership? Write to us — we reply within 24 hours.",
+    "contact.kicker": "Let's talk",
+    "contact.title": "Write to us",
+    "contact.subtitle":
+      "A question about an order, extraction advice, or a wholesale project? We reply within 24 hours.",
+    "contact.name": "Your name",
+    "contact.email": "Email",
+    "contact.phone": "Phone",
+    "contact.contactHint": "Email or phone — at least one of the two.",
+    "contact.subject": "Subject",
+    "contact.message": "Your message",
+    "contact.submit": "Send message",
+    "contact.sending": "Sending…",
+    "contact.success": "Message sent",
+    "contact.successBody": "Thank you — we'll get back to you very soon.",
+    "contact.errName": "Enter your name (2 characters minimum).",
+    "contact.errMessage": "Your message must be at least 10 characters.",
+    "contact.errContact": "Leave an email address or a phone number.",
+    "contact.errEmail": "Invalid email address.",
+    "contact.errPhone": "Invalid number — format 0X XX XX XX XX.",
+    "contact.errRate": "Too many messages sent. Try again in an hour.",
+    "contact.errGeneric": "Can't send right now. Please try again.",
+    "contact.infoTitle": "Reach us",
+    "contact.infoPhone": "Phone",
+    "contact.infoEmail": "Email",
+    "contact.infoHours": "Hours",
+    "contact.infoHoursValue": "Sunday – Thursday, 9 am – 6 pm",
+    "contact.infoArea": "Delivery",
+    "contact.infoAreaValue": "58 wilayas — cash on delivery",
+  },
 } as const;

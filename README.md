@@ -2,7 +2,7 @@
 
 Storefront + admin for **Norlyn Coffee** (Algiers). Moriva is the espresso
 capsule line — 4 variants (Espresso Intenso, Ristretto Noir, Lungo Doré,
-Decaf Verde). Cash-on-delivery across the 58 wilayas, FR + AR (RTL).
+Decaf Verde). Cash-on-delivery across the 58 wilayas, FR + AR (RTL) + EN.
 
 3D scroll-driven landing (React Three Fiber + GSAP/Lenis): a procedural
 faceted capsule floats over the page, drifts between sections and recolors
@@ -38,6 +38,12 @@ bun run build      # regenerates sitemap, typechecks, bundles
   route→section map and the owner's grant checklist. Its keys must stay in sync
   with the `has_section('…')` strings in the migrations and with
   `ALLOWED_SECTIONS` in `supabase/functions/create-worker`.
+- `src/i18n` — `translations.ts` merges the `.admin` and `.site` modules and
+  compiler-enforces that AR and EN carry every FR key. `langs.ts` owns the
+  switcher cycle. FR is the source language; **EN covers the interface only** —
+  client-entered content (product names, articles, slide captions) has no
+  `*_en` column, so `lib/localized.ts`'s `pickLang` falls back to FR. Add a
+  column and pass it as the 4th argument to light a field up.
 - `src/lib/finance.ts` — the pure aggregation engine shared by both ledgers
   (ranges, totals, per-product/customer breakdowns, chart series). No Supabase.
 - `src/lib/metaPixel.ts` + `src/components/MetaPixelProvider.tsx` — DB-driven
@@ -53,7 +59,8 @@ bun run build      # regenerates sitemap, typechecks, bundles
   validation, restock-on-cancel trigger) + `get_order_by_number` guest lookup;
   then `0004` staff accounts + per-section RLS, `0005` Meta pixels, `0006` the
   business suite (`create_store_sale` till RPC, cost snapshot trigger), `0007`
-  site content (`submit_contact_message` RPC).
+  site content (`submit_contact_message` RPC), `0008` EN as a third order
+  language (replaces `place_order` verbatim except its language clamp).
 - `supabase/functions/create-worker` — service-role edge function for staff
   account creation (verifies the caller is the owner, re-validates the section
   list, rolls back the auth user if the profile insert fails).

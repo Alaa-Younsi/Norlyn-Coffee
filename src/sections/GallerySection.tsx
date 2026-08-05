@@ -8,6 +8,7 @@ import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useParallaxItems, useRevealOnScroll, useVelocitySkew } from "@/hooks/useScrollFX";
 import { useSiteImages } from "@/hooks/useSiteContent";
+import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 
 /**
@@ -88,7 +89,7 @@ export function GallerySection() {
                   <>
                     <img
                       src={photo.url}
-                      alt={(lang === "ar" ? photo.alt_ar : photo.alt_fr) ?? ""}
+                      alt={pickLang(lang, photo.alt_fr, photo.alt_ar) ?? ""}
                       loading="lazy"
                       decoding="async"
                       className="absolute inset-0 h-full w-full object-cover"

@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, Moon, ShoppingBag, Sun, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { LANG_LABEL, LANG_NAME, nextLang } from "@/i18n/langs";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useCart, cartCount } from "@/store/cart";
 import { cn } from "@/lib/utils";
@@ -57,11 +58,11 @@ export function Header() {
 
         <div className="flex items-center gap-1.5">
           <button
-            onClick={() => setLang(lang === "fr" ? "ar" : "fr")}
-            className="rounded-full border border-line/70 bg-panel/70 px-3 py-1.5 text-sm font-semibold text-muted backdrop-blur-md transition-colors hover:text-ink cursor-pointer"
-            aria-label="switch language"
+            onClick={() => setLang(nextLang(lang))}
+            className="min-w-11 rounded-full border border-line/70 bg-panel/70 px-3 py-1.5 text-sm font-semibold text-muted backdrop-blur-md transition-colors hover:text-ink cursor-pointer"
+            aria-label={`Switch language — ${LANG_NAME[nextLang(lang)]}`}
           >
-            {lang === "fr" ? "ع" : "FR"}
+            {LANG_LABEL[nextLang(lang)]}
           </button>
           <button
             onClick={toggleTheme}

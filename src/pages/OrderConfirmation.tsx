@@ -9,6 +9,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSeo } from "@/hooks/useSeo";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { formatPrice } from "@/lib/format";
+import { pickLang } from "@/lib/localized";
 import type { GuestOrder } from "@/types/db";
 
 export function OrderConfirmation() {
@@ -83,7 +84,7 @@ export function OrderConfirmation() {
                     />
                   )}
                   <span className="min-w-0 flex-1 truncate">
-                    {lang === "ar" ? item.name_ar : item.name_fr} × {item.quantity}
+                    {pickLang(lang, item.name_fr, item.name_ar)} × {item.quantity}
                   </span>
                   <span>{formatPrice(item.price * item.quantity)}</span>
                 </li>

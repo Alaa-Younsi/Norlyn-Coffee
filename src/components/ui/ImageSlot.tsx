@@ -2,6 +2,7 @@ import { Camera } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSiteImages } from "@/hooks/useSiteContent";
 import { IMAGE_SLOTS } from "@/lib/imageSlots";
+import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 
 /**
@@ -31,7 +32,7 @@ export function ImageSlot({
   const definition = IMAGE_SLOTS.find((entry) => entry.slot === slot);
   const row = images?.[slot];
   const aspect = ratio ?? definition?.ratio ?? "4/3";
-  const alt = (lang === "ar" ? row?.alt_ar : row?.alt_fr) ?? "";
+  const alt = pickLang(lang, row?.alt_fr, row?.alt_ar) ?? "";
 
   return (
     <div

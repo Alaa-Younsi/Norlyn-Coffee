@@ -1,7 +1,12 @@
 export type ProductStatus = "active" | "draft";
 export type OrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
 export type DeliveryType = "home" | "office";
-export type Lang = "fr" | "ar";
+/**
+ * FR is the source language: every localized column exists as `*_fr` / `*_ar`,
+ * and EN has no column of its own yet. `pickLang` in lib/localized.ts resolves
+ * that — add a `*_en` column and pass it as the 4th argument to light it up.
+ */
+export type Lang = "fr" | "ar" | "en";
 
 export interface Category {
   id: string;

@@ -54,6 +54,18 @@ function Rig({ colors, dirSign, compact }: SceneProps) {
       sceneBounds,
       compact,
     );
+    // Every transform below is damped toward its target, and damping never
+    // recovers from a bad target: `pos += (NaN - pos) * damp` leaves NaN in the
+    // matrix for every later frame, which drops the whole object — models, FX
+    // and all — until the page is reloaded. Hold the last good pose instead.
+    // (Summing is enough: NaN or ±Infinity anywhere makes the sum non-finite.)
+    if (
+      !Number.isFinite(state.x + state.y + state.scale + state.stretch) ||
+      !Number.isFinite(state.rotY + state.rotZ + state.tilt)
+    ) {
+      return;
+    }
+
     const damp = Math.min(1, delta * 5);
 
     group.position.x += (state.x - group.position.x) * damp;

@@ -48,11 +48,23 @@ export function useScrollStage(stageRef: RefObject<HTMLElement | null>): void {
         const top = el.getBoundingClientRect().top + window.scrollY;
         return Math.min(1, Math.max(0, (top - stageTop) / distance));
       };
+      // The exit act needs somewhere to play out, and the section that gives it
+      // that room (ReviewsSection) renders nothing until the store has reviews.
+      // Its marker then measures at — or past — the stage's scrollable end, and
+      // the dissolve is handed a zero-width span. Keep the last act's share
+      // reserved and every act ordered, whatever the DOM ends up measuring.
+      const MIN_OUTRO = 0.08;
+      const EPSILON = 0.01;
+      const outro = Math.min(at("outro", DEFAULT_BOUNDS.outro), 1 - MIN_OUTRO);
+      const tail = Math.min(at("tail", DEFAULT_BOUNDS.tail), outro - EPSILON);
+      const variants = Math.min(at("variants", DEFAULT_BOUNDS.variants), tail - EPSILON);
+      const story = Math.min(at("story", DEFAULT_BOUNDS.story), variants - EPSILON);
+
       const next: SceneBounds = {
-        story: at("story", DEFAULT_BOUNDS.story),
-        variants: at("variants", DEFAULT_BOUNDS.variants),
-        tail: at("tail", DEFAULT_BOUNDS.tail),
-        outro: at("outro", DEFAULT_BOUNDS.outro),
+        story,
+        variants,
+        tail,
+        outro,
         viewport: Math.min(0.5, window.innerHeight / distance),
       };
       setSceneBounds(next);

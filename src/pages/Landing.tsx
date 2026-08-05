@@ -80,7 +80,9 @@ export function Landing() {
             stage's bottom reaches the viewport's bottom, so if the stage ended
             at "Commande en 3 étapes" that act would span (its height − one
             viewport) ≈ 0px and the machine would vanish instantly. Reviews
-            rides along to give the dissolve somewhere to happen. */}
+            rides along to give the dissolve somewhere to happen — but it
+            renders nothing until the store has reviews, so useScrollStage
+            reserves the last act's span rather than trusting the measurement. */}
         <div data-act="outro">
           <HowItWorksSection />
         </div>

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatPrice } from "@/lib/format";
+import { dbSrcSet } from "@/lib/media";
 import { pickLang } from "@/lib/localized";
 import type { Product } from "@/types/db";
 
@@ -29,6 +30,8 @@ export function ProductCard({ product }: { product: Product }) {
         {image && (
           <img
             src={image.url}
+            srcSet={dbSrcSet(image.url)}
+            sizes="(min-width: 1024px) 224px, (min-width: 640px) 40vw, 70vw"
             alt={image.alt ?? name}
             width={640}
             height={640}

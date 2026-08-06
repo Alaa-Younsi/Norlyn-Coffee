@@ -1,8 +1,16 @@
 # Norlyn Coffee — Moriva
 
 Storefront + admin for **Norlyn Coffee** (Algiers). Moriva is the espresso
-capsule line — 4 variants (Espresso Intenso, Ristretto Noir, Lungo Doré,
-Decaf Verde). Cash-on-delivery across the 58 wilayas, FR + AR (RTL) + EN.
+capsule line: **two families of four**.
+
+- **Espresso 100 % bio** — Noir (robusta-led, max intensity), Brun, Vert
+  (balanced), Or (arabica-led, finest). Natural, 0 % sugar, sealed in pure
+  food-grade aluminium with certified experts.
+- **Capsules aromatisées** — noisette, vanille, caramel, chocolat.
+
+Tea and espresso machines are future lines; the machines already appear on
+La Maison as a "coming soon" band. Cash-on-delivery across the 58 wilayas,
+FR + AR (RTL) + EN.
 
 3D scroll-driven landing (React Three Fiber + GSAP/Lenis): a procedural
 faceted capsule floats over the page, drifts between sections and recolors
@@ -50,6 +58,21 @@ bun run build      # regenerates sitemap, typechecks, bundles
   multi-pixel tracking; every event goes out via `trackSingle`, never `track`.
 - `src/lib/imageSlots.ts` — the named picture slots the design declares and the
   client fills from Admin → Contenu & médias.
+- `src/lib/media.ts` + `src/components/ui/Photo.tsx` — the typed index of the
+  shipped photography and the one way to render it: capped srcSet, explicit
+  width/height, lazy by default. `dbSrcSet`/`dbSize` do the same for URLs that
+  came from the database (local seed paths get renditions, Storage uploads
+  don't). Files are produced by `scripts/optimize-images.mjs` from
+  `assets-src/raw/` — 115 MB of originals in, 3.5 MB of WebP out. The raw
+  folder is gitignored: keep your own backup of it.
+- `src/lib/mascot.ts` + `src/components/mascot/` — the brand cup. Nine drawings
+  of one character that differ only in the face, so stacked frames cross-fade
+  into an expression change instead of a sticker swap. `<ScrollMascot>` reads
+  `data-mascot="<emotion>"` off sections (same pattern as `data-reveal`) and
+  shows the cup only inside the tagged run.
+- `src/lib/contrast.ts` — `readableAccent` treats a product's `accent_color` as
+  a hue, clamping lightness into a band that passes contrast on the active
+  theme. Without it the near-black Noir headline renders invisible on dark.
 - `src/components/3d` — capsule scene; `sceneConfig.ts` maps scroll progress
   to the choreography.
 - `src/hooks/useScrollStage.ts` — Lenis + master ScrollTrigger writing into
@@ -60,14 +83,23 @@ bun run build      # regenerates sitemap, typechecks, bundles
   then `0004` staff accounts + per-section RLS, `0005` Meta pixels, `0006` the
   business suite (`create_store_sale` till RPC, cost snapshot trigger), `0007`
   site content (`submit_contact_message` RPC), `0008` EN as a third order
-  language (replaces `place_order` verbatim except its language clamp).
+  language (replaces `place_order` verbatim except its language clamp), `0009`
+  the real catalogue (2 categories × 4 variants, product images, filled image
+  slots, hero slides and the five launch Journal articles — all ordinary rows
+  the client can edit afterwards; the four invented 0001 variants are deleted).
 - `supabase/functions/create-worker` — service-role edge function for staff
   account creation (verifies the caller is the owner, re-validates the section
   list, rolls back the auth user if the profile insert fails).
 - `middleware.ts` — Vercel Edge link previews for social crawlers on
   `/product/:slug`.
-- `scripts/` — sitemap generation (wired into build), image optimization,
-  OG image generation (one-off).
+- `scripts/` — sitemap generation (wired into build), image optimization
+  (`node scripts/optimize-images.mjs`, idempotent, re-run after adding raw
+  photography), OG image generation (one-off).
+
+**Env vars must be absent or complete, never empty.** `lib/supabase.ts` and
+the sitemap script both coerce `""` to "missing" for exactly this reason — an
+empty `VITE_SUPABASE_URL` used to crash the app at import, and an empty
+`SITE_URL` produced a sitemap of relative `<loc>`s that crawlers drop.
 
 ## Go-live checklist
 
@@ -85,10 +117,15 @@ bun run build      # regenerates sitemap, typechecks, bundles
 4. Create two public-read Storage buckets: `product-images` (product photos,
    review photos, article covers, hero slides, site image slots) and
    `product-videos` (hero/product video uploads). Both are authenticated-write.
-5. Replace seed product photos via the admin (uploads are compressed
-   client-side), set real delivery prices per wilaya, add reviews. Fill the
-   hero slider and the named picture slots in **Contenu & médias** — every
-   empty slot renders a designed placeholder until then.
+5. Migration 0009 already ships the catalogue, the product photos, the hero
+   slides, every named image slot and the launch articles, all pointing at the
+   WebP in `/public/images` — nothing has to be uploaded to go live. What DOES
+   need a human: **the eight prices are placeholders** (Admin → Produits) and
+   so are the contact phone number in `src/pages/Contact.tsx` /
+   `src/components/layout/Footer.tsx`. Set real delivery prices per wilaya, and
+   add real reviews (the three fallback ones only show without Supabase).
+   Anything the client later uploads in **Contenu & médias** overrides the
+   seed — 0009 never overwrites an existing row.
 6. Free shipping is OFF by default (`free_ship_threshold` NULL). Set it in
    Admin → Paramètres only if the promotion is wanted.
 7. Set `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` in the **Vercel project

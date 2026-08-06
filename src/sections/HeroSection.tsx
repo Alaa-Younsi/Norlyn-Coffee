@@ -8,7 +8,7 @@ import { HeroFallback } from "@/components/effects/HeroFallback";
 import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { CoffeeBeanIcon } from "@/components/effects/CoffeeBeanIcon";
 import { CoffeeRing } from "@/components/effects/CoffeeRing";
-import { MediaSlider } from "@/components/effects/MediaSlider";
+import { HeroVideo } from "@/components/effects/HeroVideo";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useParallax } from "@/hooks/useScrollFX";
 import { getLenisInstance } from "@/lib/lenis";
@@ -18,7 +18,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 /**
  * Three columns on desktop: copy at the start edge, the 3D cup in the middle
  * (it lives on the fixed canvas BEHIND this section — the middle column is
- * deliberately empty so nothing ever covers it), the client's media slider at
+ * deliberately empty so nothing ever covers it), the brand's video screen at
  * the end edge. On phones the same three blocks stack in that order.
  */
 export function HeroSection({ show3D }: { show3D: boolean }) {
@@ -157,14 +157,14 @@ export function HeroSection({ show3D }: { show3D: boolean }) {
           </span>
         </motion.div>
 
-        {/* ------------------------------------------------ media slider */}
+        {/* ------------------------------------------------- video screen */}
         <motion.div
           initial={{ y: 30 }}
           animate={{ y: 0 }}
           transition={{ duration: 1, delay: 0.35, ease: EASE }}
           className="mx-auto w-full max-w-sm lg:col-start-3 lg:row-span-2 lg:row-start-1 lg:max-w-none"
         >
-          <MediaSlider />
+          <HeroVideo />
         </motion.div>
       </div>
 

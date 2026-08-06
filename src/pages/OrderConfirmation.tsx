@@ -1,15 +1,16 @@
 import { useEffect, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { CircleCheck } from "lucide-react";
 import { usePixel } from "@/components/MetaPixelProvider";
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
+import { Mascot } from "@/components/mascot/Mascot";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSeo } from "@/hooks/useSeo";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { formatPrice } from "@/lib/format";
 import { pickLang } from "@/lib/localized";
+import { dbSize } from "@/lib/media";
 import type { GuestOrder } from "@/types/db";
 
 export function OrderConfirmation() {
@@ -55,7 +56,7 @@ export function OrderConfirmation() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center px-6 pb-24 pt-32 text-center">
-      <CircleCheck size={56} className="text-brand" strokeWidth={1.4} />
+      <Mascot emotion="excited" palette={["excited"]} size={110} frameSize="lg" />
       <h1 className="mt-4 font-display text-4xl font-semibold sm:text-5xl">{t("confirm.title")}</h1>
       <p className="mt-2 text-muted">{t("confirm.sub")}</p>
 
@@ -74,7 +75,7 @@ export function OrderConfirmation() {
                 <li key={i} className="flex items-center gap-3 text-sm">
                   {item.image_url && (
                     <img
-                      src={item.image_url}
+                      src={dbSize(item.image_url, "sm")}
                       alt=""
                       width={40}
                       height={40}

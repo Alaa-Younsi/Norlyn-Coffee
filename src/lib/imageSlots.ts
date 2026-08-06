@@ -27,9 +27,11 @@ export const IMAGE_SLOTS: ImageSlotDef[] = [
   { slot: "about.sealing", label_fr: "À propos — scellage", label_ar: "من نحن — الختم", ratio: "1/1", group: "about" },
   { slot: "about.team", label_fr: "À propos — l'équipe", label_ar: "من نحن — الفريق", ratio: "16/9", group: "about" },
 
-  { slot: "blog.hero", label_fr: "Journal — bannière", label_ar: "المجلة — الغلاف", ratio: "16/9", group: "blog" },
+  // shown when the Journal has no articles yet, and as the lead article's
+  // cover when that article was published without one
+  { slot: "blog.hero", label_fr: "Journal — visuel de secours", label_ar: "المجلة — صورة احتياطية", ratio: "16/9", group: "blog" },
 
-  { slot: "contact.side", label_fr: "Contact — visuel", label_ar: "اتصل بنا — الصورة", ratio: "3/4", group: "contact" },
+  { slot: "contact.side", label_fr: "Contact — visuel", label_ar: "اتصل بنا — الصورة", ratio: "4/3", group: "contact" },
 ];
 
 export const IMAGE_SLOT_GROUPS: Array<{ key: ImageSlotDef["group"]; label_fr: string; label_ar: string }> = [

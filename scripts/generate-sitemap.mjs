@@ -6,7 +6,10 @@
  */
 import { writeFileSync } from "node:fs";
 
-const SITE_URL = (process.env.SITE_URL ?? "https://norlyn.dz").replace(/\/$/, "");
+// `||`, not `??`: SITE_URL exists but empty in the checked-in .env, and `??`
+// only guards null/undefined — the result was a sitemap of relative <loc>
+// values ("/shop"), which the spec forbids and crawlers drop.
+const SITE_URL = (process.env.SITE_URL || "https://norlyn.dz").replace(/\/$/, "");
 
 // Must mirror the public <Route> list in src/App.tsx — never advertise a 404.
 const STATIC_ROUTES = ["/", "/shop", "/about", "/journal", "/contact"];

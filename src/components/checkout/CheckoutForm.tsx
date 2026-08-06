@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Home, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FieldWrapper, Input, Select } from "@/components/ui/Field";
+import { Mascot } from "@/components/mascot/Mascot";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useDeliveryPrices } from "@/hooks/useDeliveryPrices";
 import { useStoreSettings, resolveShipping } from "@/hooks/useStoreSettings";
@@ -12,6 +13,7 @@ import { useHoneypot } from "@/hooks/useHoneypot";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { orderErrorKey } from "@/lib/orderErrors";
 import { formatPrice } from "@/lib/format";
+import type { MascotEmotion } from "@/lib/mascot";
 import { usePixel } from "@/components/MetaPixelProvider";
 import { cn } from "@/lib/utils";
 import type { DeliveryType } from "@/types/db";
@@ -130,6 +132,15 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
     }
   };
 
+  // anything the buyer has to fix outranks everything else — a cup grinning
+  // over a red error message is the kind of detail that reads as unfinished
+  const mascotFace: MascotEmotion =
+    serverError || Object.keys(errors).length > 0
+      ? "surprised"
+      : submitting
+        ? "excited"
+        : "determined";
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -181,7 +192,9 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
             <label
               key={opt.value}
               className={cn(
-                "flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium transition-colors",
+                // the radio itself is sr-only, so the LABEL has to show the
+                // focus ring or keyboard users lose the caret entirely
+                "flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand/40",
                 deliveryType === opt.value
                   ? "border-brand bg-brand/10 text-brand"
                   : "border-line bg-panel text-muted hover:text-ink",
@@ -227,7 +240,20 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
       <Button type="submit" size="lg" className="w-full" disabled={submitting || lines.length === 0}>
         {submitting ? t("checkout.placing") : t("checkout.place")}
       </Button>
-      <p className="text-center text-xs text-muted">{t("checkout.codNote")}</p>
+
+      {/* the cup reads the form back to you: steady while you fill it in, taken
+          aback when something was rejected, thrilled once it is on its way.
+          Reassurance at the exact moment a COD buyer decides whether to trust
+          the site — and it costs the layout one 44px box. */}
+      <div className="flex items-center justify-center gap-2.5">
+        <Mascot
+          emotion={mascotFace}
+          palette={["determined", "surprised", "excited"]}
+          size={44}
+          float={false}
+        />
+        <p className="text-start text-xs text-muted">{t("checkout.codNote")}</p>
+      </div>
     </form>
   );
 }

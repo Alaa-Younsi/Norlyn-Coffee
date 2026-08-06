@@ -16,6 +16,7 @@ import { AdminPixels } from "./Pixels";
 import { AdminContent } from "./Content";
 import { AdminArticles } from "./Articles";
 import { AdminMessages } from "./Messages";
+import { AdminNewsletter } from "./Newsletter";
 import { AdminFinance } from "./Finance";
 import { AdminStoreLedger } from "./StoreLedger";
 
@@ -37,6 +38,7 @@ export function AdminApp() {
         <Route path="content" element={<AdminContent />} />
         <Route path="articles" element={<AdminArticles />} />
         <Route path="messages" element={<AdminMessages />} />
+        <Route path="newsletter" element={<AdminNewsletter />} />
         <Route path="finance" element={<AdminFinance />} />
         <Route path="store" element={<AdminStoreLedger />} />
         <Route path="pixels" element={<AdminPixels />} />

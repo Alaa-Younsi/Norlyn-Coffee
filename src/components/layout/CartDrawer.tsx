@@ -2,21 +2,25 @@ import { useNavigate } from "react-router-dom";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
-import { useCart, cartSubtotal } from "@/store/cart";
+import { Mascot } from "@/components/mascot/Mascot";
+import { useCart, cartCount, cartSubtotal } from "@/store/cart";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatPrice } from "@/lib/format";
 import { pickLang } from "@/lib/localized";
+import { dbSize } from "@/lib/media";
 
 export function CartDrawer() {
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const { items, isOpen, closeCart, removeItem, setQuantity } = useCart();
   const subtotal = cartSubtotal(items);
+  const count = cartCount(items);
 
   return (
     <Drawer open={isOpen} onClose={closeCart} title={t("cart.title")}>
       {items.length === 0 ? (
         <div className="flex h-full flex-col items-center justify-center gap-4 p-8 text-center">
+          <Mascot emotion="sleepy" palette={["sleepy"]} size={96} />
           <p className="text-muted">{t("cart.empty")}</p>
           <Button
             variant="outline"
@@ -35,7 +39,7 @@ export function CartDrawer() {
               <li key={item.productId} className="flex gap-3 rounded-2xl border border-line bg-panel-2/50 p-3">
                 {item.imageUrl && (
                   <img
-                    src={item.imageUrl}
+                    src={dbSize(item.imageUrl, "sm")}
                     alt=""
                     width={72}
                     height={72}
@@ -53,7 +57,7 @@ export function CartDrawer() {
                     <button
                       onClick={() => setQuantity(item.productId, item.quantity - 1)}
                       className="rounded-full border border-line p-1 text-muted hover:text-ink cursor-pointer"
-                      aria-label="-"
+                      aria-label={t("product.decrease")}
                     >
                       <Minus size={12} />
                     </button>
@@ -61,7 +65,7 @@ export function CartDrawer() {
                     <button
                       onClick={() => setQuantity(item.productId, item.quantity + 1)}
                       className="rounded-full border border-line p-1 text-muted hover:text-ink cursor-pointer"
-                      aria-label="+"
+                      aria-label={t("product.increase")}
                     >
                       <Plus size={12} />
                     </button>
@@ -78,8 +82,19 @@ export function CartDrawer() {
             ))}
           </ul>
           <div className="border-t border-line p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <span className="text-sm text-muted">{t("cart.subtotal")}</span>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                {/* the same cup that dozed over the empty basket is now wide
+                    awake — the reward for filling it, and the one place the
+                    character has an actual before/after */}
+                <Mascot
+                  emotion={count > 1 ? "love" : "excited"}
+                  palette={["excited", "love"]}
+                  size={40}
+                  float={false}
+                />
+                <span className="text-sm text-muted">{t("cart.subtotal")}</span>
+              </div>
               <span className="font-display text-2xl text-brand">{formatPrice(subtotal)}</span>
             </div>
             <Button

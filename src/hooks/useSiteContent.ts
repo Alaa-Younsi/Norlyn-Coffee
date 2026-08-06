@@ -1,5 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { FALLBACK_ARTICLES } from "@/data/journal";
+import { FALLBACK_HERO_SLIDES } from "@/data/slides";
+import { FALLBACK_SITE_IMAGES } from "@/data/siteImages";
 import type {
   Article,
   ContactMessage,
@@ -14,10 +17,12 @@ import type {
 export function useMediaSlides(placement: SlidePlacement) {
   return useQuery({
     queryKey: ["media-slides", placement],
-    enabled: isSupabaseConfigured,
     retry: 0,
     staleTime: 1000 * 60 * 10,
     queryFn: async (): Promise<MediaSlide[]> => {
+      if (!isSupabaseConfigured) {
+        return placement === "hero" ? FALLBACK_HERO_SLIDES : [];
+      }
       const { data, error } = await supabase
         .from("media_slides")
         .select("*")
@@ -80,10 +85,10 @@ export function useDeleteSlide() {
 export function useSiteImages() {
   return useQuery({
     queryKey: ["site-images"],
-    enabled: isSupabaseConfigured,
     retry: 0,
     staleTime: 1000 * 60 * 10,
     queryFn: async (): Promise<Record<string, SiteImage>> => {
+      if (!isSupabaseConfigured) return FALLBACK_SITE_IMAGES;
       const { data, error } = await supabase.from("site_images").select("*");
       if (error) throw error;
       return Object.fromEntries(((data ?? []) as SiteImage[]).map((row) => [row.slot, row]));
@@ -118,9 +123,12 @@ export function useClearSiteImage() {
 export function usePublishedArticles() {
   return useQuery({
     queryKey: ["articles", "published"],
-    enabled: isSupabaseConfigured,
     retry: 0,
     queryFn: async (): Promise<Article[]> => {
+      // the launch set ships in the bundle too, so the Journal is designed
+      // against real articles in local dev / previews (migration 0009 seeds
+      // the same rows into Supabase, where they become editable)
+      if (!isSupabaseConfigured) return FALLBACK_ARTICLES;
       const { data, error } = await supabase
         .from("articles")
         .select("*")
@@ -135,9 +143,12 @@ export function usePublishedArticles() {
 export function useArticle(slug: string | undefined) {
   return useQuery({
     queryKey: ["article", slug],
-    enabled: Boolean(slug) && isSupabaseConfigured,
+    enabled: Boolean(slug),
     retry: 0,
     queryFn: async (): Promise<Article | null> => {
+      if (!isSupabaseConfigured) {
+        return FALLBACK_ARTICLES.find((entry) => entry.slug === slug) ?? null;
+      }
       const { data, error } = await supabase
         .from("articles")
         .select("*")

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Clock } from "lucide-react";
 import { Panel } from "@/components/ui/Panel";
 import { ImageSlot } from "@/components/ui/ImageSlot";
+import { Mascot } from "@/components/mascot/Mascot";
 import { CoffeeRing } from "@/components/effects/CoffeeRing";
 import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { ScrollProgressBar } from "@/components/effects/ScrollProgressBar";
@@ -12,6 +13,7 @@ import { useSeo } from "@/hooks/useSeo";
 import { useRevealOnScroll } from "@/hooks/useScrollFX";
 import { formatDate } from "@/lib/format";
 import { pickLang } from "@/lib/localized";
+import { dbSrcSet } from "@/lib/media";
 import type { Article } from "@/types/db";
 
 export function Journal() {
@@ -46,23 +48,29 @@ export function Journal() {
         </p>
       </header>
 
-      <div className="mx-auto mt-10 max-w-5xl px-6">
-        <ImageSlot slot="blog.hero" ratio="16/9" priority />
-      </div>
-
       {isLoading && (
         <p className="mt-16 text-center text-sm text-muted">{t("common.loading")}</p>
       )}
 
+      {/* The `blog.hero` slot is the page's picture only while there is nothing
+          to read — once articles exist the lead article's own cover is the
+          banner, and stacking two full-width images would just push the first
+          headline below the fold. */}
       {!isLoading && rows.length === 0 && (
-        <Panel className="mx-auto mt-16 max-w-lg p-10 text-center">
-          <p className="font-display text-xl">{t("blog.empty")}</p>
-          <p className="mt-2 text-sm text-muted">{t("blog.emptyHint")}</p>
-        </Panel>
+        <div className="mx-auto mt-12 max-w-3xl px-6">
+          <ImageSlot slot="blog.hero" ratio="16/9" priority sizes="(min-width: 768px) 48rem, 92vw" />
+          <Panel className="mt-8 flex flex-col items-center p-10 text-center">
+            {/* public copy only — a visitor must never be told to go and
+                publish something from the admin panel */}
+            <Mascot emotion="calm" palette={["calm"]} size={80} />
+            <p className="mt-3 font-display text-xl">{t("blog.empty")}</p>
+            <p className="mt-2 text-sm text-muted">{t("blog.emptyHint")}</p>
+          </Panel>
+        </div>
       )}
 
       {lead && (
-        <section className="mx-auto mt-16 max-w-6xl px-6">
+        <section className="mx-auto mt-12 max-w-6xl px-6">
           <Link
             to={`/journal/${lead.slug}`}
             className="group grid gap-6 md:grid-cols-2 md:items-center"
@@ -71,6 +79,8 @@ export function Journal() {
               {lead.cover_url ? (
                 <img
                   src={lead.cover_url}
+                  srcSet={dbSrcSet(lead.cover_url)}
+                  sizes="(min-width: 768px) 50vw, 90vw"
                   alt=""
                   loading="eager"
                   fetchPriority="high"
@@ -78,7 +88,7 @@ export function Journal() {
                   className="aspect-[16/10] w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
                 />
               ) : (
-                <div className="fx-podium aspect-[16/10] w-full" />
+                <ImageSlot slot="blog.hero" ratio="16/10" priority rounded="rounded-none" />
               )}
             </div>
             <div className="text-start">
@@ -110,6 +120,8 @@ export function Journal() {
                   {article.cover_url ? (
                     <img
                       src={article.cover_url}
+                      srcSet={dbSrcSet(article.cover_url)}
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 90vw"
                       alt=""
                       loading="lazy"
                       decoding="async"

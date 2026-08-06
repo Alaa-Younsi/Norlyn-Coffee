@@ -11,10 +11,13 @@ import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { ScrollProgressBar } from "@/components/effects/ScrollProgressBar";
 import { Steam } from "@/components/effects/Steam";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { useTheme } from "@/theme/ThemeProvider";
+import { BRAND_ACCENT, readableAccent } from "@/lib/contrast";
 import { useProduct } from "@/hooks/useProducts";
 import { useSeo } from "@/hooks/useSeo";
 import { useCart, MAX_LINE_QTY } from "@/store/cart";
 import { formatPrice } from "@/lib/format";
+import { dbSize, dbSrcSet } from "@/lib/media";
 import { usePixel } from "@/components/MetaPixelProvider";
 import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
@@ -23,6 +26,7 @@ export function Product() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
+  const { theme } = useTheme();
   const { data: product, isLoading } = useProduct(slug);
   const addItem = useCart((s) => s.addItem);
   const [quantity, setQuantity] = useState(1);
@@ -97,7 +101,11 @@ export function Product() {
 
   const out = product.stock <= 0;
   const low = !out && product.stock <= 10;
-  const accent = product.accent_color ?? "rgb(var(--c-brand))";
+  // `accent` paints decoration (washes, intensity bars) and may be any colour
+  // the client picked; `titleAccent` is the same hue forced into a legible
+  // lightness band, because a near-black Noir title would vanish on dark.
+  const accent = product.accent_color ?? BRAND_ACCENT;
+  const titleAccent = readableAccent(product.accent_color, theme);
 
   const handleAdd = () => {
     addItem(
@@ -155,6 +163,8 @@ export function Product() {
                 animate={{ y: 0, scale: 1 }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 src={images[imageIndex].url}
+                srcSet={dbSrcSet(images[imageIndex].url)}
+                sizes="(min-width: 1024px) 45vw, 85vw"
                 alt={images[imageIndex].alt ?? name}
                 width={1000}
                 height={1000}
@@ -177,7 +187,7 @@ export function Product() {
                   )}
                 >
                   <img
-                    src={img.url}
+                    src={dbSize(img.url, "sm")}
                     alt=""
                     width={80}
                     height={80}
@@ -202,7 +212,10 @@ export function Product() {
 
         {/* info + buy */}
         <div>
-          <h1 className="font-display text-4xl font-semibold sm:text-5xl" style={{ color: accent }}>
+          <h1
+            className="font-display text-4xl font-semibold sm:text-5xl"
+            style={{ color: titleAccent }}
+          >
             {name}
           </h1>
           <div className="mt-3 flex items-center gap-3">
@@ -279,15 +292,17 @@ export function Product() {
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   className="text-muted hover:text-ink cursor-pointer"
-                  aria-label="-"
+                  aria-label={t("product.decrease")}
                 >
                   <Minus size={15} />
                 </button>
-                <span className="w-6 text-center font-semibold">{quantity}</span>
+                <span className="w-6 text-center font-semibold" aria-live="polite">
+                  {quantity}
+                </span>
                 <button
                   onClick={() => setQuantity((q) => Math.min(MAX_LINE_QTY, q + 1))}
                   className="text-muted hover:text-ink cursor-pointer"
-                  aria-label="+"
+                  aria-label={t("product.increase")}
                 >
                   <Plus size={15} />
                 </button>

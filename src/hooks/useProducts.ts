@@ -17,6 +17,10 @@ export function useProducts(filters: ProductFilters = {}) {
     queryFn: async (): Promise<Product[]> => {
       if (!isSupabaseConfigured) {
         let items = FALLBACK_PRODUCTS;
+        // mirror every server-side filter, or the shop's chips and the
+        // landing's featured row look broken in fallback mode
+        if (categoryId) items = items.filter((p) => p.category_id === categoryId);
+        if (featuredOnly) items = items.filter((p) => p.featured);
         if (search) {
           const term = search.toLowerCase();
           items = items.filter(

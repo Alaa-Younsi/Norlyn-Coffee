@@ -17,7 +17,7 @@ const core = {
     "hero.title1": "Moriva",
     "hero.title2": "L'espresso, élevé en art",
     "hero.subtitle":
-      "Capsules espresso premium compatibles Nespresso®. Quatre intensités, un seul standard : l'excellence.",
+      "Capsules espresso 100 % bio, scellées dans un aluminium alimentaire pur. Quatre intensités, quatre arômes — payées à la livraison.",
     "hero.ctaOrder": "Commander",
     "hero.ctaDiscover": "Découvrir",
     "hero.codBadge": "Paiement à la livraison — 58 wilayas",
@@ -25,15 +25,15 @@ const core = {
 
     // story
     "story.kicker": "La maison Norlyn",
-    "story.title": "Un savoir-faire, quatre caractères",
+    "story.title": "Deux gammes, un seul standard",
     "story.p1":
-      "Norlyn Coffee sélectionne des grains d'exception et les torréfie avec précision pour créer Moriva : une gamme de capsules espresso où chaque dosage est calibré au dixième de gramme.",
+      "Norlyn Coffee sélectionne des grains d'exception et les torréfie avec précision pour créer Moriva : des capsules espresso dont chaque dosage est calibré au dixième de gramme.",
     "story.p2":
-      "Du Ristretto Noir ultra-concentré au Decaf Verde tout en légèreté, chaque capsule scelle son arôme sous aluminium, prête à révéler une crema dense et dorée.",
+      "Du Noir, robusta dominant, à l'Or tout en arabica — et quatre arômes gourmands à côté. Chaque capsule est scellée sous aluminium alimentaire pur, sans sucre ni produit chimique.",
     "story.stat1n": "58",
     "story.stat1l": "wilayas livrées",
-    "story.stat2n": "4",
-    "story.stat2l": "intensités",
+    "story.stat2n": "8",
+    "story.stat2l": "capsules au choix",
     "story.stat3n": "10",
     "story.stat3l": "capsules par boîte",
 
@@ -61,8 +61,8 @@ const core = {
     "gallery.kicker": "L'expérience",
     "gallery.title": "Le rituel Moriva",
     "gallery.caption1": "Une crema dense et dorée",
-    "gallery.caption2": "Des grains torréfiés avec précision",
-    "gallery.caption3": "L'extraction parfaite, à chaque tasse",
+    "gallery.caption2": "La gamme complète, capsule par capsule",
+    "gallery.caption3": "Scellées sous aluminium alimentaire pur",
     "gallery.placeholder": "Photo à venir",
 
     // how it works
@@ -97,6 +97,8 @@ const core = {
     "product.backToShop": "Retour à la boutique",
     "product.orderNow": "Commande rapide",
     "product.orderNowSub": "Livraison partout en Algérie — payez à la réception.",
+    "product.decrease": "Retirer une unité",
+    "product.increase": "Ajouter une unité",
 
     // cart
     "cart.title": "Votre panier",
@@ -251,22 +253,22 @@ const core = {
     "hero.title1": "موريفا",
     "hero.title2": "الإسبريسو، فنٌّ يُتقن",
     "hero.subtitle":
-      "كبسولات إسبريسو فاخرة متوافقة مع نسبريسو®. أربع درجات قوة، ومعيار واحد: التميّز.",
+      "كبسولات إسبريسو 100٪ بيو، مختومة بألمنيوم غذائي خالص. أربع درجات قوة وأربع نكهات — والدفع عند الاستلام.",
     "hero.ctaOrder": "اطلب الآن",
     "hero.ctaDiscover": "اكتشف",
     "hero.codBadge": "الدفع عند الاستلام — 58 ولاية",
     "hero.scroll": "مرّر للأسفل",
 
     "story.kicker": "دار نورلين",
-    "story.title": "حرفية واحدة، أربع شخصيات",
+    "story.title": "تشكيلتان، ومعيار واحد",
     "story.p1":
-      "تنتقي نورلين كوفي حبوباً استثنائية وتحمّصها بدقة لصناعة موريفا: تشكيلة كبسولات إسبريسو تُعاير فيها كل جرعة بعُشر الغرام.",
+      "تنتقي نورلين كوفي حبوباً استثنائية وتحمّصها بدقة لصناعة موريفا: كبسولات إسبريسو تُعاير فيها كل جرعة بعُشر الغرام.",
     "story.p2":
-      "من ريستريتو نوار المركّز إلى ديكاف فيردي الخفيف، كل كبسولة تحفظ نكهتها تحت الألمنيوم، جاهزة لكريما ذهبية كثيفة.",
+      "من الأسود بغلبة الروبوستا إلى الذهبي بكل أرابيكاه — وإلى جانبهما أربع نكهات. كل كبسولة مختومة بألمنيوم غذائي خالص، بلا سكر ولا مواد كيميائية.",
     "story.stat1n": "58",
     "story.stat1l": "ولاية نوصل إليها",
-    "story.stat2n": "4",
-    "story.stat2l": "درجات قوة",
+    "story.stat2n": "8",
+    "story.stat2l": "كبسولة للاختيار",
     "story.stat3n": "10",
     "story.stat3l": "كبسولات في العلبة",
 
@@ -291,8 +293,8 @@ const core = {
     "gallery.kicker": "التجربة",
     "gallery.title": "طقوس موريفا",
     "gallery.caption1": "كريما ذهبية كثيفة",
-    "gallery.caption2": "حبوب محمّصة بدقة",
-    "gallery.caption3": "استخلاص مثالي في كل فنجان",
+    "gallery.caption2": "التشكيلة كاملة، كبسولة كبسولة",
+    "gallery.caption3": "مختومة بألمنيوم غذائي خالص",
     "gallery.placeholder": "الصورة قريباً",
 
     "how.kicker": "بسيط وآمن",
@@ -323,6 +325,8 @@ const core = {
     "product.backToShop": "العودة إلى المتجر",
     "product.orderNow": "طلب سريع",
     "product.orderNowSub": "توصيل إلى كل الجزائر — الدفع عند الاستلام.",
+    "product.decrease": "إنقاص وحدة",
+    "product.increase": "إضافة وحدة",
 
     "cart.title": "سلتك",
     "cart.empty": "سلتك فارغة.",
@@ -473,7 +477,7 @@ const core = {
     "hero.title1": "Moriva",
     "hero.title2": "Espresso, raised to an art",
     "hero.subtitle":
-      "Premium Nespresso®-compatible espresso capsules. Four intensities, one standard: excellence.",
+      "100 % organic espresso capsules, sealed in pure food-grade aluminium. Four intensities, four aromas — paid on delivery.",
     "hero.ctaOrder": "Order now",
     "hero.ctaDiscover": "Discover",
     "hero.codBadge": "Cash on delivery — 58 wilayas",
@@ -481,15 +485,15 @@ const core = {
 
     // story
     "story.kicker": "The Norlyn house",
-    "story.title": "One craft, four characters",
+    "story.title": "Two ranges, one standard",
     "story.p1":
-      "Norlyn Coffee selects exceptional beans and roasts them with precision to create Moriva: a range of espresso capsules in which every dose is calibrated to a tenth of a gram.",
+      "Norlyn Coffee selects exceptional beans and roasts them with precision to create Moriva: espresso capsules in which every dose is calibrated to a tenth of a gram.",
     "story.p2":
-      "From the intensely concentrated Ristretto Noir to the featherlight Decaf Verde, each capsule seals its aroma under aluminium, ready to release a dense, golden crema.",
+      "From the robusta-led Noir to the all-arabica Or — with four flavoured capsules alongside them. Every capsule is sealed in pure food-grade aluminium, with no sugar and no chemicals.",
     "story.stat1n": "58",
     "story.stat1l": "wilayas delivered",
-    "story.stat2n": "4",
-    "story.stat2l": "intensities",
+    "story.stat2n": "8",
+    "story.stat2l": "capsules to choose from",
     "story.stat3n": "10",
     "story.stat3l": "capsules per box",
 
@@ -517,8 +521,8 @@ const core = {
     "gallery.kicker": "The experience",
     "gallery.title": "The Moriva ritual",
     "gallery.caption1": "A dense, golden crema",
-    "gallery.caption2": "Beans roasted with precision",
-    "gallery.caption3": "The perfect extraction, every cup",
+    "gallery.caption2": "The full range, capsule by capsule",
+    "gallery.caption3": "Sealed in pure food-grade aluminium",
     "gallery.placeholder": "Photo coming soon",
 
     // how it works
@@ -554,6 +558,8 @@ const core = {
     "product.backToShop": "Back to the shop",
     "product.orderNow": "Quick order",
     "product.orderNowSub": "Delivery anywhere in Algeria — pay on arrival.",
+    "product.decrease": "Remove one unit",
+    "product.increase": "Add one unit",
 
     // cart
     "cart.title": "Your cart",

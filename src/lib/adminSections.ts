@@ -1,4 +1,5 @@
 import {
+  AtSign,
   BarChart3,
   FolderTree,
   Image,
@@ -24,7 +25,7 @@ import type { TranslationKey } from "@/i18n/translations";
  *
  * ⚠ KEEP IN SYNC — three lists, and a mismatch fails SILENTLY:
  *   1. the `key`s below
- *   2. the has_section('…') strings in supabase/migrations/0004, 0006, 0007
+ *   2. the has_section('…') strings in supabase/migrations/0004, 0006, 0007, 0010
  *   3. ALLOWED_SECTIONS in supabase/functions/create-worker/index.ts
  * A key in the nav but missing from the whitelist is granted in the UI and
  * dropped on save — the worker sees a nav item that redirects.
@@ -51,6 +52,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
   { key: "content", route: "/admin/content", labelKey: "admin.nav.content", icon: Image },
   { key: "articles", route: "/admin/articles", labelKey: "admin.nav.articles", icon: Newspaper },
   { key: "messages", route: "/admin/messages", labelKey: "admin.nav.messages", icon: Mail },
+  { key: "newsletter", route: "/admin/newsletter", labelKey: "admin.nav.newsletter", icon: AtSign },
   { key: "finance", route: "/admin/finance", labelKey: "admin.nav.finance", icon: BarChart3 },
   { key: "store", route: "/admin/store", labelKey: "admin.nav.store", icon: Store },
   { key: "pixels", route: "/admin/pixels", labelKey: "admin.nav.pixels", icon: Target },

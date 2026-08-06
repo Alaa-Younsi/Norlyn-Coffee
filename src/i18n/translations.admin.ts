@@ -3,6 +3,26 @@
  *  compiler-enforced there. */
 export const adminTranslations = {
   fr: {
+    // write feedback — every Supabase write reports through these
+    "admin.nav.newsletter": "Newsletter",
+    "admin.newsletter.title": "Abonnés à la newsletter",
+    "admin.newsletter.activeCount": "abonnés actifs",
+    "admin.newsletter.filterAll": "Tous",
+    "admin.newsletter.filterActive": "Abonnés",
+    "admin.newsletter.filterOut": "Désinscrits",
+    "admin.newsletter.search": "Rechercher une adresse…",
+    "admin.newsletter.none": "Aucun abonné pour le moment.",
+    "admin.newsletter.export": "Exporter (CSV)",
+    "admin.newsletter.unsubscribe": "Désinscrire",
+    "admin.newsletter.resubscribe": "Réabonner",
+    "admin.newsletter.confirmDelete": "Supprimer définitivement cet abonné ?",
+    "admin.toast.saved": "Modifications enregistrées.",
+    "admin.toast.writeError": "L'opération a échoué. Rien n'a été modifié.",
+    "admin.toast.saveError": "Échec de l'enregistrement. Rien n'a été modifié.",
+    "admin.toast.deleteError": "Échec de la suppression. L'élément est toujours là.",
+    "admin.toast.uploadError": "Échec de l'envoi du fichier.",
+    "admin.toast.exportError": "Échec de l'export.",
+
     // nav
     "admin.nav.content": "Contenu & médias",
     "admin.nav.articles": "Journal",
@@ -316,6 +336,25 @@ export const adminTranslations = {
   },
 
   ar: {
+    "admin.nav.newsletter": "النشرة البريدية",
+    "admin.newsletter.title": "المشتركون في النشرة",
+    "admin.newsletter.activeCount": "مشترك نشط",
+    "admin.newsletter.filterAll": "الكل",
+    "admin.newsletter.filterActive": "مشتركون",
+    "admin.newsletter.filterOut": "ملغى اشتراكهم",
+    "admin.newsletter.search": "ابحث عن عنوان…",
+    "admin.newsletter.none": "لا يوجد مشتركون حالياً.",
+    "admin.newsletter.export": "تصدير (CSV)",
+    "admin.newsletter.unsubscribe": "إلغاء الاشتراك",
+    "admin.newsletter.resubscribe": "إعادة الاشتراك",
+    "admin.newsletter.confirmDelete": "حذف هذا المشترك نهائياً؟",
+    "admin.toast.saved": "تم حفظ التعديلات.",
+    "admin.toast.writeError": "فشلت العملية. لم يتغير أي شيء.",
+    "admin.toast.saveError": "فشل الحفظ. لم يتغير أي شيء.",
+    "admin.toast.deleteError": "فشل الحذف. العنصر ما زال موجوداً.",
+    "admin.toast.uploadError": "فشل رفع الملف.",
+    "admin.toast.exportError": "فشل التصدير.",
+
     "admin.nav.content": "المحتوى والوسائط",
     "admin.nav.articles": "المجلة",
     "admin.nav.messages": "الرسائل",
@@ -605,6 +644,25 @@ export const adminTranslations = {
   },
 
   en: {
+    // write feedback — every Supabase write reports through these
+    "admin.nav.newsletter": "Newsletter",
+    "admin.newsletter.title": "Newsletter subscribers",
+    "admin.newsletter.activeCount": "active subscribers",
+    "admin.newsletter.filterAll": "All",
+    "admin.newsletter.filterActive": "Subscribed",
+    "admin.newsletter.filterOut": "Unsubscribed",
+    "admin.newsletter.search": "Search an address…",
+    "admin.newsletter.none": "No subscribers yet.",
+    "admin.newsletter.export": "Export (CSV)",
+    "admin.newsletter.unsubscribe": "Unsubscribe",
+    "admin.newsletter.resubscribe": "Re-subscribe",
+    "admin.newsletter.confirmDelete": "Permanently delete this subscriber?",
+    "admin.toast.saved": "Changes saved.",
+    "admin.toast.writeError": "That didn't go through. Nothing was changed.",
+    "admin.toast.saveError": "Save failed. Nothing was changed.",
+    "admin.toast.deleteError": "Delete failed. The item is still there.",
+    "admin.toast.uploadError": "Upload failed.",
+    "admin.toast.exportError": "Export failed.",
     // nav
     "admin.nav.content": "Content & media",
     "admin.nav.articles": "Journal",

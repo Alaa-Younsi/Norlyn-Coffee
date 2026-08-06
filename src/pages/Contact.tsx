@@ -2,11 +2,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CircleCheck, Clock, Mail, Phone, Truck } from "lucide-react";
+import { Clock, Mail, Phone, Truck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FieldWrapper, Input, Textarea } from "@/components/ui/Field";
 import { Panel } from "@/components/ui/Panel";
 import { ImageSlot } from "@/components/ui/ImageSlot";
+import { Mascot } from "@/components/mascot/Mascot";
 import { CoffeeRing } from "@/components/effects/CoffeeRing";
 import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -102,11 +103,14 @@ export function Contact() {
         </p>
       </header>
 
-      <div className="mx-auto mt-14 grid max-w-6xl gap-10 lg:grid-cols-[1.15fr_0.85fr]">
+      {/* `items-start` matters: without it the grid stretches the form panel to
+          the height of the taller info column, leaving a lake of empty panel
+          under the submit button. */}
+      <div className="mx-auto mt-14 grid max-w-6xl items-start gap-10 lg:grid-cols-[1.15fr_0.85fr]">
         <Panel className="p-6 sm:p-8">
           {sent ? (
             <div className="flex flex-col items-center py-10 text-center">
-              <CircleCheck size={48} className="text-brand" strokeWidth={1.4} />
+              <Mascot emotion="love" palette={["love"]} size={88} />
               <h2 className="mt-4 font-display text-2xl">{t("contact.success")}</h2>
               <p className="mt-2 text-muted">{t("contact.successBody")}</p>
               <Button variant="outline" className="mt-6" onClick={() => setSent(false)}>
@@ -114,7 +118,7 @@ export function Contact() {
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-start">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 text-start">
               {/* honeypot — real users never see or fill this */}
               <input
                 {...register("website")}
@@ -124,19 +128,9 @@ export function Contact() {
                 className="absolute h-0 w-0 opacity-0"
               />
 
-              <FieldWrapper
-                label={t("contact.name")}
-                error={errors.name && t("contact.errName")}
-              >
-                <Input {...register("name")} autoComplete="name" />
-              </FieldWrapper>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FieldWrapper
-                  label={t("contact.email")}
-                  error={errors.email && t("contact.errContact")}
-                >
-                  <Input {...register("email")} type="email" dir="ltr" autoComplete="email" />
+              <div className="grid gap-5 sm:grid-cols-2">
+                <FieldWrapper label={t("contact.name")} error={errors.name && t("contact.errName")}>
+                  <Input {...register("name")} autoComplete="name" placeholder={t("contact.namePlaceholder")} />
                 </FieldWrapper>
                 <FieldWrapper
                   label={t("contact.phone")}
@@ -151,33 +145,61 @@ export function Contact() {
                     placeholder="0555 55 55 55"
                   />
                 </FieldWrapper>
+                <FieldWrapper
+                  label={t("contact.email")}
+                  error={errors.email && t("contact.errContact")}
+                  hint={t("contact.contactHint")}
+                >
+                  <Input
+                    {...register("email")}
+                    type="email"
+                    dir="ltr"
+                    autoComplete="email"
+                    placeholder="nom@exemple.dz"
+                  />
+                </FieldWrapper>
+                <FieldWrapper label={t("contact.subject")} hint={t("contact.subjectHint")}>
+                  <Input {...register("subject")} placeholder={t("contact.subjectPlaceholder")} />
+                </FieldWrapper>
               </div>
-              <p className="-mt-2 text-xs text-muted">{t("contact.contactHint")}</p>
-
-              <FieldWrapper label={t("contact.subject")}>
-                <Input {...register("subject")} />
-              </FieldWrapper>
 
               <FieldWrapper
                 label={t("contact.message")}
                 error={errors.message && t("contact.errMessage")}
               >
-                <Textarea {...register("message")} rows={6} />
+                <Textarea {...register("message")} rows={5} placeholder={t("contact.messagePlaceholder")} />
               </FieldWrapper>
 
               {serverError && (
-                <p className="text-sm text-red-700 dark:text-red-400">{serverError}</p>
+                <p
+                  role="alert"
+                  className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300"
+                >
+                  {serverError}
+                </p>
               )}
 
-              <Button type="submit" size="lg" disabled={isSubmitting}>
-                {isSubmitting ? t("contact.sending") : t("contact.submit")}
-              </Button>
+              {/* the action row carries its own reassurance instead of leaving
+                  a lone pill floating in white space */}
+              <div className="flex flex-col gap-3 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <p className="order-2 text-xs text-muted sm:order-1 sm:max-w-64">
+                  {t("contact.formNote")}
+                </p>
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={isSubmitting}
+                  className="order-1 w-full sm:order-2 sm:w-auto"
+                >
+                  {isSubmitting ? t("contact.sending") : t("contact.submit")}
+                </Button>
+              </div>
             </form>
           )}
         </Panel>
 
         <div className="space-y-6">
-          <ImageSlot slot="contact.side" />
+          <ImageSlot slot="contact.side" sizes="(min-width: 1024px) 30vw, 92vw" />
 
           <Panel className="p-6 text-start">
             <h2 className="font-display text-xl">{t("contact.infoTitle")}</h2>

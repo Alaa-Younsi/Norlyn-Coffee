@@ -10,7 +10,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 // KEEP IN SYNC with src/lib/adminSections.ts and the has_section('…') strings
-// in supabase/migrations/0004, 0006 and 0007.
+// in supabase/migrations/0004, 0006, 0007 and 0010.
 const ALLOWED_SECTIONS = [
   "products",
   "categories",
@@ -20,6 +20,7 @@ const ALLOWED_SECTIONS = [
   "content",
   "articles",
   "messages",
+  "newsletter",
   "pixels",
   "finance",
   "store",

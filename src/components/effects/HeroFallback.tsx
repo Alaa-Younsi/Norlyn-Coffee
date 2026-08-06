@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { mediaSrc, mediaSrcSet, MEDIA } from "@/lib/media";
 
 /**
  * 2D hero art for mobile / save-data / reduced-motion visitors — the 3D
@@ -9,7 +10,9 @@ export function HeroFallback() {
     <div className="pointer-events-none relative mx-auto aspect-square w-full max-w-xs" aria-hidden>
       <div className="fx-podium absolute inset-x-6 bottom-2 h-16 rounded-[50%]" />
       <img
-        src="/images/capsules/lungo-dore-lg.webp"
+        src={mediaSrc(MEDIA.capsule.gold)}
+        srcSet={mediaSrcSet(MEDIA.capsule.gold)}
+        sizes="(min-width: 640px) 320px, 80vw"
         alt=""
         width={1000}
         height={1000}

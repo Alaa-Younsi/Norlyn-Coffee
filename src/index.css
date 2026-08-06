@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* `dark:` must follow the SITE's theme, not the operating system's.
+   Tailwind's stock variant is `prefers-color-scheme`, so before this line a
+   visitor on a light OS who clicked the moon icon still got the light-mode
+   branch of every `dark:` class — dark red error text on a dark panel. The
+   theme lives in html[data-theme], set by ThemeProvider. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /* ------------------------------------------------------------------ tokens */
 /* RGB triplets + data-theme attribute (not Tailwind dark: classes) so every
    component is theme-aware through plain utility classes. */
@@ -116,6 +123,65 @@ option {
 
 ::selection {
   background-color: rgb(var(--c-brand) / 0.25);
+}
+
+/* --------------------------------------------------------------- scrollbars */
+/*
+  The stock Windows scrollbar — grey track, stepper arrows at both ends — is
+  the loudest undesigned element on the site, and it lands right against the
+  admin sidebar's dark panel. `color-scheme` alone does not fix it: it picks a
+  light or dark native bar, never a branded one.
+
+  The two mechanisms are NOT interchangeable, and the order matters. Chromium
+  ignores every ::-webkit-scrollbar rule for a scroller as soon as
+  `scrollbar-color` or `scrollbar-width` is set on it — you get its NATIVE bar
+  merely repainted, which on Windows still carries the stepper arrows. Setting
+  both is therefore worse than setting either.
+
+  So: ::-webkit-scrollbar drives Chrome, Edge and Safari (full control — no
+  arrows, a padded pill), and the standard properties are gated to Firefox,
+  which has no ::-webkit support and renders `thin` without arrows anyway.
+
+  `scrollbar-color`/`scrollbar-width` INHERIT, so declaring them on <html>
+  reaches every scroll container in the app — the sidebar nav, the orders
+  table, the drawers — with no utility class on any of them. The ::-webkit
+  rules are unscoped for the same reason.
+*/
+@supports (-moz-appearance: none) {
+  html {
+    scrollbar-width: thin;
+    /* thumb, then track. A transparent track lets whatever panel the scroller
+       sits on show through, so one rule is correct on bg AND on panel. */
+    scrollbar-color: rgb(var(--c-brand) / 0.4) transparent;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--c-brand) / 0.4);
+  border-radius: 9999px;
+  /* transparent border + content-box clip = a slim pill with breathing room,
+     instead of a bar wedged edge-to-edge against the panel */
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--c-brand) / 0.7);
+}
+
+/* the stepper arrows in the screenshot — nothing else on the site has them */
+::-webkit-scrollbar-button {
+  display: none;
 }
 
 /* Norlyn logo is black text + gold on transparency: invert lifts black→white

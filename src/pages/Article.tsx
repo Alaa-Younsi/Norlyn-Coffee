@@ -8,6 +8,7 @@ import { useArticle, usePublishedArticles } from "@/hooks/useSiteContent";
 import { useSeo } from "@/hooks/useSeo";
 import { formatDate } from "@/lib/format";
 import { pickLang } from "@/lib/localized";
+import { dbSrcSet } from "@/lib/media";
 
 export function Article() {
   const { slug } = useParams();
@@ -88,6 +89,8 @@ export function Article() {
             {article.cover_url && (
               <img
                 src={article.cover_url}
+                srcSet={dbSrcSet(article.cover_url)}
+                sizes="(min-width: 768px) 768px, 92vw"
                 alt=""
                 loading="eager"
                 fetchPriority="high"
@@ -120,6 +123,8 @@ export function Article() {
                       {entry.cover_url ? (
                         <img
                           src={entry.cover_url}
+                          srcSet={dbSrcSet(entry.cover_url)}
+                          sizes="(min-width: 640px) 33vw, 90vw"
                           alt=""
                           loading="lazy"
                           decoding="async"

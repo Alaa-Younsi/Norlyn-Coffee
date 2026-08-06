@@ -2,6 +2,7 @@ import { Camera } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSiteImages } from "@/hooks/useSiteContent";
 import { IMAGE_SLOTS } from "@/lib/imageSlots";
+import { dbSrcSet } from "@/lib/media";
 import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +17,7 @@ export function ImageSlot({
   imgClassName,
   ratio,
   priority,
+  sizes = "100vw",
   rounded = "rounded-3xl",
 }: {
   slot: string;
@@ -24,6 +26,8 @@ export function ImageSlot({
   /** overrides the ratio declared in lib/imageSlots.ts */
   ratio?: string;
   priority?: boolean;
+  /** the CSS width this slot occupies — without it the browser assumes 100vw */
+  sizes?: string;
   rounded?: string;
 }) {
   const { t, lang } = useLanguage();
@@ -46,6 +50,10 @@ export function ImageSlot({
       {row ? (
         <img
           src={row.url}
+          // seeded slots point at /images and have smaller renditions; an
+          // admin upload is a single Storage file and gets no srcSet
+          srcSet={dbSrcSet(row.url)}
+          sizes={sizes}
           alt={alt}
           loading={priority ? "eager" : "lazy"}
           fetchPriority={priority ? "high" : undefined}

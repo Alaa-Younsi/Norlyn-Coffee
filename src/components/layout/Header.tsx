@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, Moon, ShoppingBag, Sun, X } from "lucide-react";
@@ -6,7 +6,24 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { LANG_LABEL, LANG_NAME, nextLang } from "@/i18n/langs";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useCart, cartCount } from "@/store/cart";
+import { reactMascot } from "@/store/mascot";
 import { cn } from "@/lib/utils";
+
+/**
+ * True once the page has left the top. Passive listener + a plain comparison,
+ * so it re-renders the header twice per session rather than on every frame.
+ * Lenis drives real window scroll, so this works on the landing page too.
+ */
+function useScrolled(threshold = 24): boolean {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > threshold);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [threshold]);
+  return scrolled;
+}
 
 export function Header() {
   const { t, lang, setLang } = useLanguage();
@@ -16,6 +33,7 @@ export function Header() {
   const count = cartCount(items);
   const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const scrolled = useScrolled();
 
   const links = [
     { to: "/", label: t("nav.home") },
@@ -26,8 +44,23 @@ export function Header() {
   ];
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 bg-gradient-to-b from-bg/90 via-bg/50 to-transparent pb-3">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+    // At the top the header is a scrim over the hero; once the page scrolls it
+    // condenses into a real bar. Without that, the wordmark — the one element
+    // with no chip behind it — collides with whatever photo scrolls under it.
+    <header
+      className={cn(
+        "fixed inset-x-0 top-0 z-40 transition-all duration-300",
+        scrolled
+          ? "border-b border-line/60 bg-bg/85 pb-0 shadow-[0_10px_30px_-24px_rgb(var(--c-ink)/0.6)] backdrop-blur-md"
+          : "bg-gradient-to-b from-bg/90 via-bg/50 to-transparent pb-3",
+      )}
+    >
+      <div
+        className={cn(
+          "mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 transition-all duration-300 sm:px-6",
+          scrolled ? "py-2" : "py-3",
+        )}
+      >
         <Link to="/" className="flex items-center gap-2" aria-label="Norlyn Coffee">
           <img
             src="/images/norlyn-logo.webp"
@@ -57,15 +90,23 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-1.5">
+          {/* the two toggles that change how the whole site looks or reads get
+              a glance from the cup — see store/mascot.ts */}
           <button
-            onClick={() => setLang(nextLang(lang))}
+            onClick={() => {
+              setLang(nextLang(lang));
+              reactMascot("playful");
+            }}
             className="min-w-11 rounded-full border border-line/70 bg-panel/70 px-3 py-1.5 text-sm font-semibold text-muted backdrop-blur-md transition-colors hover:text-ink cursor-pointer"
             aria-label={`Switch language — ${LANG_NAME[nextLang(lang)]}`}
           >
             {LANG_LABEL[nextLang(lang)]}
           </button>
           <button
-            onClick={toggleTheme}
+            onClick={() => {
+              toggleTheme();
+              reactMascot("wink");
+            }}
             className="rounded-full border border-line/70 bg-panel/70 p-2 text-muted backdrop-blur-md transition-colors hover:text-ink cursor-pointer"
             aria-label={t("nav.theme")}
           >

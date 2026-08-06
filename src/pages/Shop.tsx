@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { ProductCard } from "@/components/product/ProductCard";
+import { Mascot } from "@/components/mascot/Mascot";
 import { CoffeeBeanIcon } from "@/components/effects/CoffeeBeanIcon";
 import { CoffeeDivider } from "@/components/effects/CoffeeDivider";
 import { CoffeeRing } from "@/components/effects/CoffeeRing";
@@ -97,7 +98,9 @@ export function Shop() {
           <p className="mt-16 text-center text-muted">{t("common.loading")}</p>
         ) : !products || products.length === 0 ? (
           <div className="mt-16 flex flex-col items-center gap-4 text-center">
-            <CoffeeBeanIcon className="fx-float w-10 text-brand/50" />
+            {/* the cup looks as stumped as the search did — a shrug lands
+                better than a bean floating over an apology */}
+            <Mascot emotion="surprised" palette={["surprised"]} size={96} />
             <p className="text-muted">{t("shop.empty")}</p>
           </div>
         ) : (

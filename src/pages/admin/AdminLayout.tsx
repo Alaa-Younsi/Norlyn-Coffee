@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut, Menu, Moon, ShieldAlert, Store, Sun, X } from "lucide-react";
+import { AdminToasts } from "@/components/admin/AdminToast";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminProfile } from "@/hooks/useAdminProfile";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -153,6 +154,9 @@ export function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* one renderer for the whole dashboard — every write reports here */}
+      <AdminToasts />
 
       <AnimatePresence>
         {mobileOpen && (

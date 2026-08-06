@@ -6,10 +6,13 @@ import { ChevronLeft, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FieldWrapper, Input, Select, Textarea } from "@/components/ui/Field";
 import { Panel } from "@/components/ui/Panel";
+import { adminToast } from "@/lib/adminToast";
 import { useCategories } from "@/hooks/useCategories";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/image";
+import { deleteUploadedImage } from "@/lib/upload";
+import { invalidateProduct } from "@/lib/queryCache";
 import { slugify } from "@/lib/utils";
 import type { Product, ProductImage } from "@/types/db";
 
@@ -145,11 +148,7 @@ function ProductFormInner({
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
-  const invalidate = () => {
-    void queryClient.invalidateQueries({ queryKey: ["admin-products"] });
-    void queryClient.invalidateQueries({ queryKey: ["admin-product", productId] });
-    void queryClient.invalidateQueries({ queryKey: ["products"] });
-  };
+  const invalidate = () => invalidateProduct(queryClient, productId);
 
   const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!productId) return;
@@ -185,6 +184,7 @@ function ProductFormInner({
       invalidate();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
+      adminToast.error("admin.toast.uploadError");
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -192,7 +192,21 @@ function ProductFormInner({
   };
 
   const removeImage = async (image: ProductImage) => {
-    await supabase.from("product_images").delete().eq("id", image.id);
+    // check the error BEFORE dropping it from the list: an RLS refusal here
+    // used to leave the photo gone from the form and still live on the shop
+    const { error: delError } = await supabase
+      .from("product_images")
+      .delete()
+      .eq("id", image.id);
+    if (delError) {
+      setError(delError.message);
+      adminToast.error("admin.toast.deleteError");
+      return;
+    }
+    // the row is gone, so the file is now unreachable — take it out of the
+    // bucket too rather than paying to store it forever. Best-effort: the
+    // delete the admin asked for has already succeeded.
+    void deleteUploadedImage(image.url);
     setImages((prev) => prev.filter((i) => i.id !== image.id));
     invalidate();
   };
@@ -233,6 +247,7 @@ function ProductFormInner({
           .single();
         if (insError) throw insError;
         invalidate();
+        adminToast.success("admin.toast.saved");
         navigate(`/admin/products/${(data as { id: string }).id}`, { replace: true });
       } else {
         const { error: upError } = await supabase
@@ -241,10 +256,14 @@ function ProductFormInner({
           .eq("id", productId);
         if (upError) throw upError;
         invalidate();
+        adminToast.success("admin.toast.saved");
         navigate("/admin/products");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
+      // the inline message explains WHAT broke; the toast makes sure a save
+      // that failed is never mistaken for one that worked
+      adminToast.error("admin.toast.saveError");
     } finally {
       setSaving(false);
     }

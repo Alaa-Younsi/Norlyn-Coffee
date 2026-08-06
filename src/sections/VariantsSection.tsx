@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/Button";
 import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { useDriftIn } from "@/hooks/useScrollFX";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { useTheme } from "@/theme/ThemeProvider";
+import { readableAccent } from "@/lib/contrast";
 import { formatPrice } from "@/lib/format";
 import { ScrollTrigger } from "@/lib/gsap";
+import { dbSize } from "@/lib/media";
 import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/db";
@@ -28,6 +31,7 @@ export function VariantsSection({ products, show3D }: VariantsSectionProps) {
 
 function Variants3D({ products }: { products: Product[] }) {
   const { t, lang } = useLanguage();
+  const { theme } = useTheme();
   const zoneRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
@@ -88,9 +92,11 @@ function Variants3D({ products }: { products: Product[] }) {
                   exit={{ y: -46, opacity: 0 }}
                   transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                 >
+                  {/* the raw pack colour is the hue, not the ink: Noir is
+                      near-black and would vanish on the dark theme */}
                   <h3
                     className="font-display text-4xl font-bold sm:text-6xl"
-                    style={{ color: product.accent_color ?? "rgb(var(--c-brand))" }}
+                    style={{ color: readableAccent(product.accent_color, theme) }}
                   >
                     {name}
                   </h3>
@@ -158,6 +164,7 @@ function Variants3D({ products }: { products: Product[] }) {
 
 function Variants2D({ products }: { products: Product[] }) {
   const { t, lang } = useLanguage();
+  const { theme } = useTheme();
   return (
     <section id="variants" className="mx-auto max-w-7xl px-6 py-20">
       <p className="text-sm uppercase tracking-[0.3em] text-brand">{t("variants.kicker")}</p>
@@ -178,7 +185,7 @@ function Variants2D({ products }: { products: Product[] }) {
             >
               {image && (
                 <img
-                  src={image.url.replace("-lg.webp", "-md.webp")}
+                  src={dbSize(image.url, "md")}
                   alt={name}
                   width={640}
                   height={640}
@@ -191,7 +198,7 @@ function Variants2D({ products }: { products: Product[] }) {
               <div className="min-w-0">
                 <h3
                   className="font-display text-2xl font-bold"
-                  style={{ color: product.accent_color ?? "rgb(var(--c-brand))" }}
+                  style={{ color: readableAccent(product.accent_color, theme) }}
                 >
                   {name}
                 </h3>

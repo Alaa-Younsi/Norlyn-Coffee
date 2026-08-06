@@ -39,7 +39,11 @@ export function AdminDeliveryPrices() {
               <PriceRow
                 key={price.id}
                 price={price}
-                onSave={(id, patch) => saveMutation.mutate({ id, patch })}
+                onSave={(id, patch, onRefused) =>
+                  // per-call onError, so the row that was refused is the row
+                  // that reverts — a shared handler could not know which
+                  saveMutation.mutate({ id, patch }, { onError: onRefused })
+                }
               />
             ))}
           </tbody>
@@ -54,20 +58,32 @@ function PriceRow({
   onSave,
 }: {
   price: DeliveryPrice;
-  onSave: (id: string, patch: Record<string, unknown>) => void;
+  onSave: (id: string, patch: Record<string, unknown>, onRefused: () => void) => void;
 }) {
   const { t } = useLanguage();
   const [home, setHome] = useState(() => String(price.home_price));
   const [office, setOffice] = useState(() => String(price.office_price));
 
+  /**
+   * These cells are the one place in the admin where a refused write is
+   * actively misleading: the number you typed just sits there, looking saved,
+   * while the database still holds the old one. So a refusal puts the server's
+   * values back on screen — the toast says it failed, the row proves it.
+   */
+  const revert = () => {
+    setHome(String(price.home_price));
+    setOffice(String(price.office_price));
+  };
+
   const commit = () => {
     const homeNum = Number(home);
     const officeNum = Number(office);
     if (!Number.isFinite(homeNum) || !Number.isFinite(officeNum) || homeNum < 0 || officeNum < 0) {
+      revert();
       return;
     }
     if (homeNum === Number(price.home_price) && officeNum === Number(price.office_price)) return;
-    onSave(price.id, { home_price: homeNum, office_price: officeNum });
+    onSave(price.id, { home_price: homeNum, office_price: officeNum }, revert);
   };
 
   return (
@@ -99,7 +115,9 @@ function PriceRow({
         <input
           type="checkbox"
           checked={price.active}
-          onChange={(e) => onSave(price.id, { active: e.target.checked })}
+          // the checkbox reads `price.active` straight from the query, so a
+          // refused toggle un-ticks itself on the next render — no revert needed
+          onChange={(e) => onSave(price.id, { active: e.target.checked }, () => {})}
           className="h-4 w-4 cursor-pointer accent-[rgb(var(--c-brand))]"
           aria-label={`${price.wilaya} ${t("admin.delivery.active")}`}
         />

@@ -13,16 +13,22 @@ const baseInput =
 interface FieldWrapperProps {
   label?: string;
   error?: string;
+  /** quiet guidance under the input — replaced by `error` when one is present */
+  hint?: string;
   children: ReactNode;
   className?: string;
 }
 
-export function FieldWrapper({ label, error, children, className }: FieldWrapperProps) {
+export function FieldWrapper({ label, error, hint, children, className }: FieldWrapperProps) {
   return (
     <label className={cn("block", className)}>
       {label && <span className="mb-1.5 block text-sm font-medium text-ink">{label}</span>}
       {children}
-      {error && <span className="mt-1 block text-xs text-red-700 dark:text-red-400">{error}</span>}
+      {error ? (
+        <span className="mt-1 block text-xs text-red-700 dark:text-red-300">{error}</span>
+      ) : (
+        hint && <span className="mt-1 block text-xs text-muted">{hint}</span>
+      )}
     </label>
   );
 }

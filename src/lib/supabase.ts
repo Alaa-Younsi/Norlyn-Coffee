@@ -1,7 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+// `|| undefined`, not `??`: a var that EXISTS but is empty (the usual shape of
+// a half-filled Vercel project) must read as absent. Left as an empty string it
+// slips past `??` into createClient, which throws "supabaseUrl is required" at
+// module scope — a blank white site instead of the fallback catalogue.
+const url = (import.meta.env.VITE_SUPABASE_URL as string | undefined) || undefined;
+const anonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) || undefined;
 
 /** False when the .env is absent — storefront hooks then serve fallback data. */
 export const isSupabaseConfigured = Boolean(url && anonKey);

@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useRef } from "react";
 import { ScrollProgressBar } from "@/components/effects/ScrollProgressBar";
+import { ScrollMascot } from "@/components/mascot/ScrollMascot";
 import { HeroSection } from "@/sections/HeroSection";
 import { StorySection } from "@/sections/StorySection";
 import { VariantsSection } from "@/sections/VariantsSection";
@@ -7,12 +8,14 @@ import { FeaturedSection } from "@/sections/FeaturedSection";
 import { GallerySection } from "@/sections/GallerySection";
 import { HowItWorksSection } from "@/sections/HowItWorksSection";
 import { ReviewsSection } from "@/sections/ReviewsSection";
+import { NewsletterSection } from "@/sections/NewsletterSection";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useProducts } from "@/hooks/useProducts";
 import { useScrollStage } from "@/hooks/useScrollStage";
 import { useSeo } from "@/hooks/useSeo";
 import { ScrollTrigger } from "@/lib/gsap";
+import { LANDING_PALETTE } from "@/lib/mascot";
 
 // three.js only downloads for visitors who actually get the 3D hero
 const Scene = lazy(() =>
@@ -29,7 +32,7 @@ export function Landing() {
   useSeo({
     title: "Norlyn Coffee — Moriva, capsules espresso premium en Algérie",
     description:
-      "Moriva par Norlyn Coffee — capsules espresso premium compatibles Nespresso. 4 intensités, livraison 58 wilayas, paiement à la livraison.",
+      "Moriva par Norlyn Coffee — capsules espresso 100 % bio en aluminium alimentaire pur. 4 intensités, 4 arômes, livraison 58 wilayas, paiement à la livraison.",
   });
 
   const variants = (products ?? []).slice(0, 4);
@@ -64,15 +67,18 @@ export function Landing() {
           variants zone's height depends on how many products loaded, so every
           fraction below it moves. Nothing in here may set an opaque
           background — the machine acts play out behind these sections. */}
+      {/* the brand cup reacts to whichever section is being read (data-mascot) */}
+      <ScrollMascot palette={LANDING_PALETTE} refreshKey={variants.length} />
+
       <div ref={stageRef} className="relative z-20">
         <HeroSection show3D={show3D} />
-        <div data-act="story">
+        <div data-act="story" data-mascot="calm">
           <StorySection />
         </div>
-        <div data-act="variants">
+        <div data-act="variants" data-mascot="excited">
           <VariantsSection products={variants} show3D={show3D} />
         </div>
-        <div data-act="tail">
+        <div data-act="tail" data-mascot="love">
           <FeaturedSection products={products ?? []} />
           <GallerySection />
         </div>
@@ -83,11 +89,18 @@ export function Landing() {
             rides along to give the dissolve somewhere to happen — but it
             renders nothing until the store has reviews, so useScrollStage
             reserves the last act's span rather than trusting the measurement. */}
-        <div data-act="outro">
+        <div data-act="outro" data-mascot="determined">
           <HowItWorksSection />
         </div>
         <ReviewsSection />
       </div>
+
+      {/* OUTSIDE the stage on purpose. useScrollStage measures the stage
+          element's own offsetHeight, so anything added inside it would shift
+          every measured act boundary and re-time the whole morph. After it,
+          the object has already dissolved and this is the last thing before
+          the footer. */}
+      <NewsletterSection />
     </>
   );
 }

@@ -9,6 +9,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useParallaxItems, useRevealOnScroll, useVelocitySkew } from "@/hooks/useScrollFX";
 import { useSiteImages } from "@/hooks/useSiteContent";
 import { pickLang } from "@/lib/localized";
+import { dbSrcSet } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
 /**
@@ -89,6 +90,8 @@ export function GallerySection() {
                   <>
                     <img
                       src={photo.url}
+                      srcSet={dbSrcSet(photo.url)}
+                      sizes="(min-width: 640px) 33vw, 90vw"
                       alt={pickLang(lang, photo.alt_fr, photo.alt_ar) ?? ""}
                       loading="lazy"
                       decoding="async"

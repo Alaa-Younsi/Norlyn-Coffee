@@ -27,3 +27,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Raw client photography (assets-src/raw) — ~115 MB of originals that
+# scripts/optimize-images.mjs turns into the small WebP under public/images.
+# Only the derived files are committed; keep the originals in your own backup.
+assets-src/raw/

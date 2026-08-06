@@ -324,6 +324,18 @@ export interface ContactMessage {
   created_at: string;
 }
 
+export type SubscriberStatus = "subscribed" | "unsubscribed";
+
+export interface NewsletterSubscriber {
+  id: string;
+  email: string;
+  status: SubscriberStatus;
+  /** where the signup came from — 'site' for the footer form */
+  source: string;
+  created_at: string;
+  unsubscribed_at: string | null;
+}
+
 /** Minimal payload returned by the get_order_by_number RPC (guest-safe). */
 export interface GuestOrder {
   order_number: string;

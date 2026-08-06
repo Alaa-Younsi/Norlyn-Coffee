@@ -22,6 +22,39 @@ export async function uploadImage(file: File, prefix: string): Promise<string> {
 }
 
 /**
+ * Delete the bucket object behind a public URL.
+ *
+ * Removing the row that points at a photo does not remove the photo: the file
+ * keeps sitting in the bucket, unreachable and still counted against the
+ * project's storage. A client who re-shoots their catalogue twice fills the
+ * free tier with images nobody can ever see again.
+ *
+ * Best-effort by design. The database row is the source of truth, so a failed
+ * cleanup must never block or reverse the delete the admin actually asked for —
+ * an orphaned file is a cost, a half-deleted product is a bug. Returns whether
+ * the object went, for callers that want to know.
+ */
+export async function deleteUploadedImage(publicUrl: string): Promise<boolean> {
+  const path = storagePathFromPublicUrl(publicUrl, "product-images");
+  if (!path) return false;
+  const { error } = await supabase.storage.from("product-images").remove([path]);
+  return !error;
+}
+
+/**
+ * Public URLs look like `…/storage/v1/object/public/<bucket>/<path>`. Anything
+ * that doesn't (a pasted external URL, one of the seeded `/images/…` paths)
+ * returns null — those are not ours to delete.
+ */
+function storagePathFromPublicUrl(url: string, bucket: string): string | null {
+  const marker = `/storage/v1/object/public/${bucket}/`;
+  const at = url.indexOf(marker);
+  if (at === -1) return null;
+  const path = url.slice(at + marker.length).split("?")[0];
+  return path ? decodeURIComponent(path) : null;
+}
+
+/**
  * Videos go to their own bucket, but every form ALSO accepts a pasted URL —
  * the <video> player only needs one, so the client can move hosting to
  * Cloudinary/Bunny without a code change when Supabase egress (~5 GB/month,

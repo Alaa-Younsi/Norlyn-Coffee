@@ -291,10 +291,10 @@ export const adminTranslations = {
     "admin.content.deleteConfirm": "Supprimer ce média ?",
     "admin.content.slots": "Emplacements photo du site",
     "admin.content.slotsHint":
-      "Chaque emplacement est déjà intégré au design. Tant qu'il est vide, un visuel de remplacement s'affiche.",
-    "admin.content.slotEmpty": "Vide",
-    "admin.content.slotFilled": "Rempli",
-    "admin.content.clear": "Retirer la photo",
+      "Chaque emplacement est déjà intégré au design et affiche une photo d'origine. Téléversez la vôtre pour la remplacer — le site ne reste jamais vide.",
+    "admin.content.slotEmpty": "Photo d'origine",
+    "admin.content.slotFilled": "Votre photo",
+    "admin.content.clear": "Rétablir l'origine",
     "admin.content.altFr": "Texte alternatif (FR)",
     "admin.content.altAr": "Texte alternatif (AR)",
 
@@ -601,10 +601,11 @@ export const adminTranslations = {
     "admin.content.noSlides": "لا توجد وسائط — يُعرض تصميم بديل.",
     "admin.content.deleteConfirm": "حذف هذا الوسيط؟",
     "admin.content.slots": "أماكن الصور في الموقع",
-    "admin.content.slotsHint": "كل مكان مدمج في التصميم. ما دام فارغاً يُعرض تصميم بديل.",
-    "admin.content.slotEmpty": "فارغ",
-    "admin.content.slotFilled": "مملوء",
-    "admin.content.clear": "إزالة الصورة",
+    "admin.content.slotsHint":
+      "كل مكان مدمج في التصميم ويعرض صورة أصلية. ارفع صورتك لتحل محلها — لا يبقى الموقع فارغاً أبداً.",
+    "admin.content.slotEmpty": "الصورة الأصلية",
+    "admin.content.slotFilled": "صورتك",
+    "admin.content.clear": "استعادة الأصلية",
     "admin.content.altFr": "النص البديل (FR)",
     "admin.content.altAr": "النص البديل (AR)",
 
@@ -931,10 +932,10 @@ export const adminTranslations = {
     "admin.content.deleteConfirm": "Delete this media?",
     "admin.content.slots": "Site photo slots",
     "admin.content.slotsHint":
-      "Each slot is already built into the design. While empty, a placeholder visual is shown.",
-    "admin.content.slotEmpty": "Empty",
-    "admin.content.slotFilled": "Filled",
-    "admin.content.clear": "Remove photo",
+      "Each slot is already built into the design and shows an original photo. Upload your own to replace it — the site is never left empty.",
+    "admin.content.slotEmpty": "Original photo",
+    "admin.content.slotFilled": "Your photo",
+    "admin.content.clear": "Restore original",
     "admin.content.altFr": "Alt text (FR)",
     "admin.content.altAr": "Alt text (AR)",
 

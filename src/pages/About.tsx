@@ -19,7 +19,6 @@ import { useParallaxItems, useRevealOnScroll } from "@/hooks/useScrollFX";
 import { ABOUT_PALETTE } from "@/lib/mascot";
 import { MEDIA } from "@/lib/media";
 import type { TranslationKey } from "@/i18n/translations";
-import type { Media } from "@/lib/media";
 
 const VALUES: Array<{ icon: typeof Leaf; titleKey: TranslationKey; textKey: TranslationKey }> = [
   { icon: Leaf, titleKey: "about.value1.title", textKey: "about.value1.text" },
@@ -108,11 +107,16 @@ export function About() {
         <Panel className="overflow-hidden p-0">
           <div className="grid items-stretch lg:grid-cols-[0.9fr_1.1fr]">
             <div className="relative min-h-64">
-              <Photo
-                media={MEDIA.life.aluminiumMacro}
-                alt={t("about.promise.alt")}
+              <ImageSlot
+                slot="about.promise"
+                fill
+                flat
+                // eager: this one is absolutely positioned, so it has no
+                // height of its own until the grid row resolves — a lazy
+                // loader that measures it before that sees a zero-height box
+                // and can leave the band showing nothing but its scrim
+                priority
                 sizes="(min-width: 1024px) 45vw, 100vw"
-                className="absolute inset-0 h-full w-full"
               />
               {/* plain vertical scrim: Tailwind has no logical gradient
                   direction, and a physical one would point the wrong way in RTL */}
@@ -168,11 +172,11 @@ export function About() {
             beside body copy reads as stock */}
         <div className="grid grid-cols-2 gap-4">
           <div data-parallax="26">
-            <Frame media={MEDIA.life.packBlackTable} alt={t("about.photo.pack")} ratio="3/4" />
+            <ImageSlot slot="about.story.1" sizes="(min-width: 1024px) 22vw, 45vw" />
           </div>
           <div className="mt-10 space-y-4" data-parallax="-22">
-            <Frame media={MEDIA.life.rangeTable} alt={t("about.photo.range")} ratio="1/1" />
-            <Frame media={MEDIA.life.espressoGlass} alt={t("about.photo.cup")} ratio="1/1" />
+            <ImageSlot slot="about.story.2" sizes="(min-width: 1024px) 22vw, 45vw" />
+            <ImageSlot slot="about.story.3" sizes="(min-width: 1024px) 22vw, 45vw" />
           </div>
         </div>
       </section>
@@ -280,12 +284,12 @@ export function About() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <Frame media={MEDIA.fleet.vanSide} alt={t("about.fleet.alt")} ratio="3/2" />
+              <ImageSlot slot="about.fleet.1" sizes="(min-width: 1024px) 45vw, 92vw" />
             </div>
             {/* the yard shot and the studio rear view, not the two yard shots
                 — side by side those read as the same photo twice */}
-            <Frame media={MEDIA.fleet.vansYard} alt="" ratio="1/1" />
-            <Frame media={MEDIA.fleet.vanRear} alt="" ratio="1/1" />
+            <ImageSlot slot="about.fleet.2" sizes="(min-width: 1024px) 22vw, 45vw" />
+            <ImageSlot slot="about.fleet.3" sizes="(min-width: 1024px) 22vw, 45vw" />
           </div>
         </div>
       </section>
@@ -293,7 +297,7 @@ export function About() {
       {/* ------------------------------------------------ retail + machines */}
       <section className="mx-auto mt-24 grid max-w-7xl gap-6 px-6 lg:grid-cols-2">
         <Panel className="overflow-hidden p-0" data-reveal>
-          <Frame media={MEDIA.life.retailAisle} alt={t("about.retail.alt")} ratio="16/10" flat />
+          <ImageSlot slot="about.retail" flat sizes="(min-width: 1024px) 45vw, 92vw" />
           <div className="p-7 text-start">
             <p className="text-xs uppercase tracking-[0.35em] text-brand">
               {t("about.retail.kicker")}
@@ -305,7 +309,7 @@ export function About() {
 
         <Panel className="overflow-hidden p-0" data-reveal>
           <div className="relative">
-            <Frame media={MEDIA.machine.branded} alt={t("about.machines.alt")} ratio="16/10" flat />
+            <ImageSlot slot="about.machines" flat sizes="(min-width: 1024px) 45vw, 92vw" />
             <span className="absolute end-4 top-4 rounded-full border border-brand/40 bg-panel/85 px-3 py-1 text-[11px] uppercase tracking-widest text-brand backdrop-blur">
               {t("about.machines.badge")}
             </span>
@@ -371,40 +375,3 @@ export function About() {
   );
 }
 
-/** a photograph in the site's gold-hairline frame, ratio reserved up front */
-function Frame({
-  media,
-  alt,
-  ratio,
-  flat = false,
-}: {
-  media: Media;
-  alt: string;
-  ratio: string;
-  /** inside a Panel the frame's own border/rounding would double up */
-  flat?: boolean;
-}) {
-  return (
-    <div
-      className={
-        flat
-          ? "relative overflow-hidden"
-          : "relative overflow-hidden rounded-3xl border border-line/70 bg-panel-2/60"
-      }
-      style={{ aspectRatio: ratio }}
-    >
-      <Photo
-        media={media}
-        alt={alt}
-        sizes="(min-width: 1024px) 33vw, 90vw"
-        className="h-full w-full"
-      />
-      {!flat && (
-        <span
-          className="pointer-events-none absolute inset-0 rounded-3xl border border-brand/20"
-          aria-hidden
-        />
-      )}
-    </div>
-  );
-}

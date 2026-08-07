@@ -1,84 +1,27 @@
-import { mediaSrc, MEDIA } from "@/lib/media";
+import { mediaSrc } from "@/lib/media";
+import { IMAGE_SLOTS } from "@/lib/imageSlots";
 import type { SiteImage } from "@/types/db";
 
 /**
- * Mirror of the `site_images` rows seeded by supabase/migrations/0009, so the
- * named slots are filled with real photography when Supabase isn't configured.
- * The client replaces any of them from Admin → Contenu & médias; a database
- * row always wins over this file.
+ * The `site_images` map used when Supabase isn't configured — every slot
+ * filled with the photograph its definition ships.
+ *
+ * Derived, not written out. This file used to repeat each slot's url and alt
+ * text beside `lib/imageSlots.ts`, so a new slot had to be added twice and a
+ * changed photo edited twice; the two lists drifted the moment anyone forgot.
+ * The slot definitions are the source of truth now — see `ImageSlotDef.fallback`.
  */
-const now = "2026-01-01T00:00:00Z";
-
-const image = (slot: string, url: string, alt_fr: string, alt_ar: string): SiteImage => ({
-  slot,
-  url,
-  alt_fr,
-  alt_ar,
-  updated_at: now,
-});
+const SEEDED_AT = "2026-01-01T00:00:00Z";
 
 export const FALLBACK_SITE_IMAGES: Record<string, SiteImage> = Object.fromEntries(
-  [
-    image(
-      "home.gallery.1",
-      mediaSrc(MEDIA.life.espressoGlass),
-      "Un espresso Moriva servi en verre",
-      "إسبريسو موريفا في كأس زجاجي",
-    ),
-    image(
-      "home.gallery.2",
-      mediaSrc(MEDIA.life.rangeCapsules),
-      "La gamme Moriva et ses capsules",
-      "تشكيلة موريفا وكبسولاتها",
-    ),
-    image(
-      "home.gallery.3",
-      mediaSrc(MEDIA.life.aluminiumMacro),
-      "Boîte Moriva — capsules aluminium",
-      "علبة موريفا — كبسولات ألمنيوم",
-    ),
-    image(
-      "about.hero",
-      mediaSrc(MEDIA.life.rangeFan),
-      "Les quatre intensités Moriva",
-      "درجات القوة الأربع من موريفا",
-    ),
-    image(
-      "about.origin",
-      mediaSrc(MEDIA.life.beansCapsules),
-      "Grains de café et capsules Moriva",
-      "حبوب القهوة وكبسولات موريفا",
-    ),
-    image(
-      "about.roastery",
-      mediaSrc(MEDIA.life.packBrownTable),
-      "Boîte Moriva Brun",
-      "علبة موريفا البني",
-    ),
-    image(
-      "about.packaging",
-      mediaSrc(MEDIA.life.rangeTable),
-      "La gamme complète sur l'établi",
-      "التشكيلة الكاملة على الطاولة",
-    ),
-    image(
-      "about.sealing",
-      mediaSrc(MEDIA.life.packGreenTable),
-      "Boîte Moriva Vert scellée",
-      "علبة موريفا الأخضر مختومة",
-    ),
-    image(
-      "about.team",
-      mediaSrc(MEDIA.fleet.vansYard),
-      "Les camionnettes Moriva avant la tournée",
-      "شاحنات موريفا قبل الجولة",
-    ),
-    image("blog.hero", mediaSrc(MEDIA.life.retailFacing), "Moriva en rayon", "موريفا في رفوف المتاجر"),
-    image(
-      "contact.side",
-      mediaSrc(MEDIA.fleet.vanSide),
-      "Camionnette de livraison Moriva",
-      "شاحنة توصيل موريفا",
-    ),
-  ].map((row) => [row.slot, row]),
+  IMAGE_SLOTS.map((definition): [string, SiteImage] => [
+    definition.slot,
+    {
+      slot: definition.slot,
+      url: mediaSrc(definition.fallback),
+      alt_fr: definition.alt_fr,
+      alt_ar: definition.alt_ar,
+      updated_at: SEEDED_AT,
+    },
+  ]),
 );

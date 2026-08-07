@@ -1,15 +1,23 @@
 import { Camera } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSiteImages } from "@/hooks/useSiteContent";
-import { IMAGE_SLOTS } from "@/lib/imageSlots";
-import { dbSrcSet } from "@/lib/media";
+import { imageSlot } from "@/lib/imageSlots";
+import { dbSrcSet, mediaSrc, mediaSrcSet } from "@/lib/media";
 import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 
 /**
- * A designed hole in the layout. The slot's aspect ratio is reserved whether or
- * not a photo exists, so filling one from /admin/content never reflows the page
- * — and an empty slot reads as an intentional frame, not a broken image.
+ * A managed picture: the design owns the frame, the client owns what is in it.
+ *
+ * Three states, in order of preference:
+ *   1. a `site_images` row — what the client uploaded from /admin/content;
+ *   2. the photograph the slot's definition ships (`fallback`), which is why
+ *      putting a picture in a slot is never a downgrade — the page looks the
+ *      same until someone deliberately changes it;
+ *   3. the dashed camera plate, for a slot declared with no photo at all.
+ *
+ * The aspect ratio is reserved in every one of them, so filling a slot never
+ * reflows the page.
  */
 export function ImageSlot({
   slot,
@@ -19,6 +27,8 @@ export function ImageSlot({
   priority,
   sizes = "100vw",
   rounded = "rounded-3xl",
+  flat = false,
+  fill = false,
 }: {
   slot: string;
   className?: string;
@@ -29,30 +39,52 @@ export function ImageSlot({
   /** the CSS width this slot occupies — without it the browser assumes 100vw */
   sizes?: string;
   rounded?: string;
+  /** inside a Panel, the frame's own border and rounding would double up */
+  flat?: boolean;
+  /** fill the positioned parent instead of imposing a ratio box of its own */
+  fill?: boolean;
 }) {
   const { t, lang } = useLanguage();
   const { data: images } = useSiteImages();
 
-  const definition = IMAGE_SLOTS.find((entry) => entry.slot === slot);
+  const definition = imageSlot(slot);
   const row = images?.[slot];
   const aspect = ratio ?? definition?.ratio ?? "4/3";
-  const alt = pickLang(lang, row?.alt_fr, row?.alt_ar) ?? "";
+
+  // an uploaded row brings its own alt; the shipped photo brings the one its
+  // definition describes it with
+  const alt = row
+    ? (pickLang(lang, row.alt_fr, row.alt_ar) ?? "")
+    : (pickLang(lang, definition?.alt_fr, definition?.alt_ar) ?? "");
+
+  const src = row?.url ?? (definition ? mediaSrc(definition.fallback) : null);
+  // a Storage upload is a single file with no renditions; the shipped photo has
+  // the full sm/md/lg set that lib/media.ts knows how to advertise
+  const srcSet = row
+    ? dbSrcSet(row.url)
+    : definition
+      ? mediaSrcSet(definition.fallback)
+      : undefined;
 
   return (
     <div
       className={cn(
-        "relative overflow-hidden border border-line/70 bg-panel-2/60",
-        rounded,
+        // `fill` REPLACES the positioning rather than adding to it. Listing
+        // "relative" and "absolute" together does not resolve by class order —
+        // both are the same specificity, so whichever Tailwind emits later in
+        // the stylesheet wins, which is `relative`. The box then has no height
+        // and the picture disappears behind the scrim.
+        fill ? "absolute inset-0 h-full w-full overflow-hidden" : "relative overflow-hidden",
+        !flat && "border border-line/70 bg-panel-2/60",
+        !flat && rounded,
         className,
       )}
-      style={{ aspectRatio: aspect }}
+      style={fill ? undefined : { aspectRatio: aspect }}
     >
-      {row ? (
+      {src ? (
         <img
-          src={row.url}
-          // seeded slots point at /images and have smaller renditions; an
-          // admin upload is a single Storage file and gets no srcSet
-          srcSet={dbSrcSet(row.url)}
+          src={src}
+          srcSet={srcSet}
           sizes={sizes}
           alt={alt}
           loading={priority ? "eager" : "lazy"}
@@ -76,7 +108,7 @@ export function ImageSlot({
         </div>
       )}
       {/* gold hairline frame, the site-wide picture motif */}
-      {row && (
+      {src && !flat && (
         <span
           className={cn("pointer-events-none absolute inset-0 border border-brand/20", rounded)}
           aria-hidden

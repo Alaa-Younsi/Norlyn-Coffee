@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ImageOff, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FieldWrapper, Input, Select } from "@/components/ui/Field";
 import { Panel } from "@/components/ui/Panel";
@@ -14,6 +14,7 @@ import {
   useSiteImages,
 } from "@/hooks/useSiteContent";
 import { IMAGE_SLOTS, IMAGE_SLOT_GROUPS } from "@/lib/imageSlots";
+import { mediaSrc } from "@/lib/media";
 import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 import type { MediaSlide, SlideKind, SlidePlacement } from "@/types/db";
@@ -329,23 +330,24 @@ function SlotsSection() {
           <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {IMAGE_SLOTS.filter((slot) => slot.group === group.key).map((slot) => {
               const row = images?.[slot.slot];
+              // No row does not mean no picture: the slot ships one, and the
+              // storefront is showing it right now. Previewing the shipped
+              // photo is the only honest answer to "what is on my site?" — the
+              // old empty-icon state described a page that no longer exists.
+              const preview = row?.url ?? mediaSrc(slot.fallback);
               return (
                 <Panel key={slot.slot} className="p-4">
                   <div
                     className="mb-3 flex items-center justify-center overflow-hidden rounded-2xl bg-panel-2"
                     style={{ aspectRatio: slot.ratio }}
                   >
-                    {row ? (
-                      <img
-                        src={row.url}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <ImageOff size={22} className="text-muted" />
-                    )}
+                    <img
+                      src={preview}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover"
+                    />
                   </div>
 
                   <p className="text-sm font-medium">
@@ -378,35 +380,42 @@ function SlotsSection() {
                     )}
                   </div>
 
-                  {row && (
-                    <div className="mt-3 space-y-2">
-                      <Input
-                        placeholder={t("admin.content.altFr")}
-                        defaultValue={row.alt_fr ?? ""}
-                        onBlur={(e) =>
-                          saveImage.mutate({
-                            slot: slot.slot,
-                            url: row.url,
-                            alt_fr: e.target.value,
-                            alt_ar: row.alt_ar ?? undefined,
-                          })
-                        }
-                      />
-                      <Input
-                        dir="rtl"
-                        placeholder={t("admin.content.altAr")}
-                        defaultValue={row.alt_ar ?? ""}
-                        onBlur={(e) =>
-                          saveImage.mutate({
-                            slot: slot.slot,
-                            url: row.url,
-                            alt_fr: row.alt_fr ?? undefined,
-                            alt_ar: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  )}
+                  {/* Editable on every slot, not just customised ones. The alt
+                      text describes whatever picture is currently in the slot,
+                      and the shipped photo is a picture — a blind shopper on
+                      the About page has no way to tell which of the two it is.
+                      Typing here on an untouched slot pins the shipped photo
+                      into a row with the new wording, which is exactly what
+                      "keep this picture, change its description" should do. */}
+                  <div className="mt-3 space-y-2">
+                    <Input
+                      key={`${slot.slot}-fr-${row?.alt_fr ?? slot.alt_fr}`}
+                      placeholder={t("admin.content.altFr")}
+                      defaultValue={row?.alt_fr ?? slot.alt_fr}
+                      onBlur={(e) =>
+                        saveImage.mutate({
+                          slot: slot.slot,
+                          url: preview,
+                          alt_fr: e.target.value,
+                          alt_ar: row?.alt_ar ?? slot.alt_ar,
+                        })
+                      }
+                    />
+                    <Input
+                      dir="rtl"
+                      key={`${slot.slot}-ar-${row?.alt_ar ?? slot.alt_ar}`}
+                      placeholder={t("admin.content.altAr")}
+                      defaultValue={row?.alt_ar ?? slot.alt_ar}
+                      onBlur={(e) =>
+                        saveImage.mutate({
+                          slot: slot.slot,
+                          url: preview,
+                          alt_fr: row?.alt_fr ?? slot.alt_fr,
+                          alt_ar: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
                 </Panel>
               );
             })}

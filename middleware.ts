@@ -5,7 +5,23 @@ export const config = { matcher: "/product/:slug*" };
 const CRAWLER_RE =
   /facebookexternalhit|WhatsApp|Twitterbot|TelegramBot|Discordbot|LinkedInBot|Slackbot|Pinterest|vkShare|redditbot/i;
 
-const SITE_URL = "https://norlyn.dz";
+/**
+ * Where this response says it lives.
+ *
+ * Derived from the request the crawler actually made, because that is the one
+ * thing here that cannot be wrong: Facebook fetched this URL, so this URL is
+ * the page's address. The old hardcoded "https://norlyn.dz" was a domain that
+ * is not registered yet — og:url pointed nowhere and og:image 404'd, which is
+ * a link preview with no picture on every share.
+ *
+ * The env override exists for the case where the canonical host differs from
+ * the one being hit (a preview deployment that should still name production).
+ */
+function siteUrl(request: Request): string {
+  const configured = process.env.VITE_SITE_URL || process.env.SITE_URL;
+  if (configured && configured.trim()) return configured.trim().replace(/\/$/, "");
+  return new URL(request.url).origin;
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -48,11 +64,16 @@ export default async function middleware(request: Request) {
     const description = escapeHtml(
       product.description_fr ?? "Capsules espresso premium Moriva par Norlyn Coffee.",
     );
-    const image = escapeHtml(
+    const origin = siteUrl(request);
+    // The catalogue's seeded photos are stored as site-relative paths
+    // ("/images/capsules/…"); Storage uploads come back absolute. og:image
+    // must be absolute either way — a crawler resolving it is best-effort at
+    // best, and a preview with no picture is most of the click lost.
+    const photo =
       [...product.product_images].sort((a, b) => a.sort_order - b.sort_order)[0]?.url ??
-        `${SITE_URL}/og-image.png`,
-    );
-    const url = escapeHtml(`${SITE_URL}/product/${product.slug}`);
+      "/og-image.png";
+    const image = escapeHtml(photo.startsWith("http") ? photo : `${origin}${photo}`);
+    const url = escapeHtml(`${origin}/product/${product.slug}`);
     const availability = product.stock > 0 ? "in stock" : "out of stock";
 
     const html = `<!doctype html>

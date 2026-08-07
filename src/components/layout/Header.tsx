@@ -50,11 +50,44 @@ export function Header() {
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-40 transition-all duration-300",
-        scrolled
-          ? "border-b border-line/60 bg-bg/85 pb-0 shadow-[0_10px_30px_-24px_rgb(var(--c-ink)/0.6)] backdrop-blur-md"
-          : "bg-gradient-to-b from-bg/90 via-bg/50 to-transparent pb-3",
+        scrolled ? "pb-0" : "pb-3",
       )}
     >
+      {/*
+        The condensed bar's backdrop, as its own layer rather than as styles on
+        the header.
+
+        It used to be a flat `bg-bg/85` with a `border-b`, and both ends were
+        visible against a dark hero: a hairline of --c-line straight across the
+        page, and above it a panel a shade darker than what it covered. So the
+        bar stops with a fade instead of an edge — the gradient takes the tint
+        to zero and the mask takes the BLUR with it, which a background alone
+        cannot do (an unmasked backdrop-filter keeps its own hard boundary
+        however transparent the colour over it becomes).
+
+        Why a child and not the header itself: the mobile menu is also a child
+        of <header>, and a mask on the header would fade the bottom of that
+        open panel too.
+      */}
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 -z-10 h-full transition-opacity duration-300",
+          "bg-gradient-to-b from-bg/92 via-bg/88 to-bg/0 backdrop-blur-md",
+          "[mask-image:linear-gradient(to_bottom,#000_60%,transparent_100%)]",
+          "[-webkit-mask-image:linear-gradient(to_bottom,#000_60%,transparent_100%)]",
+          scrolled ? "opacity-100" : "opacity-0",
+        )}
+      />
+      {/* the top-of-page scrim, which has always faded and needs no mask */}
+      <div
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 -z-10 h-full transition-opacity duration-300",
+          "bg-gradient-to-b from-bg/90 via-bg/50 to-transparent",
+          scrolled ? "opacity-0" : "opacity-100",
+        )}
+      />
       <div
         className={cn(
           "mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 transition-all duration-300 sm:px-6",

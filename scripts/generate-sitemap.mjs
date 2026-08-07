@@ -5,11 +5,10 @@
  * Bun loads .env automatically; wired into the "build" script.
  */
 import { writeFileSync } from "node:fs";
+import { resolveSiteUrl } from "./site-url.mjs";
 
-// `||`, not `??`: SITE_URL exists but empty in the checked-in .env, and `??`
-// only guards null/undefined — the result was a sitemap of relative <loc>
-// values ("/shop"), which the spec forbids and crawlers drop.
-const SITE_URL = (process.env.SITE_URL || "https://norlyn.dz").replace(/\/$/, "");
+// One resolver, shared with vite.config.ts — see scripts/site-url.mjs.
+const SITE_URL = resolveSiteUrl();
 
 // Must mirror the public <Route> list in src/App.tsx — never advertise a 404.
 const STATIC_ROUTES = ["/", "/shop", "/about", "/journal", "/contact"];
@@ -56,6 +55,17 @@ const urls = [
   })),
 ];
 
+// The sitemap spec REQUIRES absolute <loc>, so unlike the meta tags this file
+// cannot fall back to relative. When the origin is unknown — a local build with
+// no Vercel env and no override — leave the committed sitemap alone rather than
+// overwrite it with URLs every crawler will drop.
+if (!SITE_URL) {
+  console.warn(
+    "[sitemap] no site origin (set VITE_SITE_URL, or build on Vercel) — kept the existing sitemap.xml.",
+  );
+  process.exit(0);
+}
+
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${u.loc}</loc><lastmod>${u.lastmod}</lastmod></url>`).join("\n")}
@@ -64,3 +74,17 @@ ${urls.map((u) => `  <url><loc>${u.loc}</loc><lastmod>${u.lastmod}</lastmod></ur
 
 writeFileSync("public/sitemap.xml", xml);
 console.log(`[sitemap] wrote ${urls.length} URLs to public/sitemap.xml`);
+
+// robots.txt carries the sitemap's absolute URL, so it goes stale in exactly
+// the same way and is written from exactly the same origin.
+writeFileSync(
+  "public/robots.txt",
+  `User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+
+Sitemap: ${SITE_URL}/sitemap.xml
+`,
+);
+console.log(`[sitemap] wrote public/robots.txt for ${SITE_URL}`);

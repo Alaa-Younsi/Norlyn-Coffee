@@ -1,7 +1,21 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-const SITE_URL = "https://norlyn.dz";
+/**
+ * The origin to build canonical/og:url from.
+ *
+ * `window.location.origin` — not a constant. This runs in the visitor's
+ * browser, which already knows exactly which host served the page, so there is
+ * nothing to guess and nothing to update when the domain changes. The previous
+ * hardcoded "https://norlyn.dz" was a promise about a domain that is not
+ * registered yet: it told Google every page's real address was a host that
+ * does not resolve. A build-time override stays available for the odd case
+ * where the canonical host is not the one being browsed.
+ */
+function siteUrl(): string {
+  const configured = import.meta.env.VITE_SITE_URL as string | undefined;
+  return (configured || window.location.origin).replace(/\/$/, "");
+}
 
 interface SeoOptions {
   title: string;
@@ -45,7 +59,7 @@ export function useSeo({ title, description, image, jsonLd }: SeoOptions): void 
     const prevTitle = document.title;
     document.title = title;
 
-    const url = `${SITE_URL}${pathname}`;
+    const url = `${siteUrl()}${pathname}`;
     upsertCanonical(url);
     upsertMeta("property", "og:url", url);
     upsertMeta("property", "og:title", title);

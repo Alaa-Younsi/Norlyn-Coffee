@@ -44,6 +44,118 @@ const SIZES = {
   logo: [["lg", 640]],
 };
 
+/**
+ * Framing normalisation for the cut-out product shots.
+ *
+ * The client's renders arrive on whatever canvas the retoucher happened to
+ * use. Measured across what currently ships: the four bio packs sit on a
+ * 1200x800 canvas and the four flavour packs on 1200x1200, so a square gallery
+ * renders the same sleeve at two different scales; the capsule subjects fill
+ * anywhere from 43% to 55% of their frame and sit up to 7% below its centre.
+ * Nothing is wrong with any one file — but side by side in a grid the product
+ * appears to change size from tile to tile, which is the whole "looks
+ * unprofessional" complaint.
+ *
+ * So before resizing, re-frame: trim the dead margin, scale the subject to a
+ * fixed share of ONE axis, and centre it on a canvas of a fixed shape. The
+ * pixels are untouched; only the empty space around them is rebuilt.
+ *
+ * Which axis is the substance of this. Capsules normalise by HEIGHT, because
+ * `capsules/black` is a PAIR of capsules and `capsules/chocolate` is a single
+ * one — matching their widths would blow the single capsule up to twice life
+ * size. Pack shots normalise by WIDTH, because every one is the same sleeve at
+ * a different angle, and the sleeve's length is what the eye measures.
+ *
+ * Photography (`photo`) is deliberately absent: a full-bleed lifestyle frame
+ * is composed, and trimming it would crop the composition.
+ */
+const FRAME = {
+  product: { canvas: 1000, axis: "height", fill: 0.5 },
+  pack: { canvas: 1200, axis: "width", fill: 0.88 },
+};
+
+/**
+ * Per-entry escapes from the preset, by output path.
+ *
+ * `product` exists to make eight capsules the same size as each other, and its
+ * 0.5 is a capsule's share of a frame. The espresso machine rides the same
+ * preset only because it is the same KIND of file — a cut-out render — and it
+ * is a foot tall, so the capsule figure would shrink it by half. It still gets
+ * centred; it just gets to keep its own scale. `null` here would skip
+ * re-framing altogether.
+ */
+const FRAME_OVERRIDE = {
+  "machine/render": { fill: 0.9 },
+};
+
+/** the subject may never touch the edge, whichever axis was normalised */
+const MAX_CROSS_FILL = 0.94;
+
+const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 };
+
+/**
+ * The colour to rebuild the margin with — read from the source's top-left
+ * pixel, which is the same pixel `trim()` uses as its reference. A cut-out on
+ * transparency pads with transparency; a sleeve shot on a white sweep pads
+ * with that white. Guessing transparent for both would leave a white rectangle
+ * floating on the storefront's cream panels.
+ */
+async function marginColour(src) {
+  const { data } = await sharp(src)
+    .ensureAlpha()
+    .extract({ left: 0, top: 0, width: 1, height: 1 })
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  return { r: data[0], g: data[1], b: data[2], alpha: data[3] / 255 };
+}
+
+/**
+ * The framing an output path ends up with, or null when it gets none.
+ * `undefined` from the override table means "no opinion", which is the preset.
+ */
+function framingFor(out, preset) {
+  if (!(preset in FRAME)) return null;
+  const override = FRAME_OVERRIDE[out];
+  if (override === null) return null;
+  return { ...FRAME[preset], ...override };
+}
+
+/** trim → scale to the framing's fill → centre on its canvas */
+async function reframe(src, { canvas, axis, fill }) {
+  const background = await marginColour(src);
+
+  // threshold 12 so JPEG ringing and a soft drop shadow's tail don't read as
+  // subject and defeat the trim
+  const trimmed = await sharp(src).ensureAlpha().trim({ threshold: 12 }).toBuffer();
+
+  let scaled = await sharp(trimmed)
+    .resize(axis === "width" ? { width: Math.round(canvas * fill) } : { height: Math.round(canvas * fill) })
+    .toBuffer();
+  let { width, height } = await sharp(scaled).metadata();
+
+  // a subject far wider (or taller) than it is normalised on would run off the
+  // canvas; fitting it inside costs a little of the target fill and keeps the
+  // whole product in frame
+  const limit = Math.round(canvas * MAX_CROSS_FILL);
+  if (width > limit || height > limit) {
+    scaled = await sharp(trimmed).resize(limit, limit, { fit: "inside" }).toBuffer();
+    ({ width, height } = await sharp(scaled).metadata());
+  }
+
+  const dx = canvas - width;
+  const dy = canvas - height;
+  return sharp(scaled)
+    .extend({
+      left: Math.floor(dx / 2),
+      right: Math.ceil(dx / 2),
+      top: Math.floor(dy / 2),
+      bottom: Math.ceil(dy / 2),
+      background,
+    })
+    .png()
+    .toBuffer();
+}
+
 const F = {
   capsule: (n) => `${RAW}/Capsules/${n}`,
   boite: (n) => `${RAW}/Boites/${n}`,
@@ -136,11 +248,17 @@ let bytes = 0;
 let count = 0;
 
 async function emit(src, out, preset) {
-  const transparent = src.toLowerCase().endsWith(".png");
+  // A re-framed subject already carries its own margin, in its own colour, and
+  // the encoder drops the alpha plane by itself when that margin is opaque.
+  const framing = framingFor(out, preset);
+  const framed = framing ? await reframe(src, framing) : null;
+  const input = framed ?? src;
+  const transparent = framed !== null || src.toLowerCase().endsWith(".png");
+
   for (const [suffix, width] of SIZES[preset]) {
     const file = path.join(OUT, `${out}-${suffix}.webp`);
     await mkdir(path.dirname(file), { recursive: true });
-    const pipeline = sharp(src).resize({ width, withoutEnlargement: true });
+    const pipeline = sharp(input).resize({ width, withoutEnlargement: true });
     // photographs never carry alpha — flattening lets the encoder spend its
     // whole budget on the pixels instead of an all-opaque alpha plane
     const info = await (transparent ? pipeline : pipeline.flatten({ background: "#ffffff" }))

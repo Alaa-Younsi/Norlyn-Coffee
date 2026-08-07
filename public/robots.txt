@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /checkout
 
-Sitemap: https://norlyn.dz/sitemap.xml
+Sitemap: https://norlyn-seven.vercel.app/sitemap.xml

@@ -105,12 +105,17 @@ export const CAPSULE_MEDIA: Record<string, Media> = {
 export const MEDIA = {
   capsule: CAPSULE_MEDIA,
 
-  /** sleeve shots — the 10-capsule boxes */
+  /**
+   * Sleeve shots — the 10-capsule boxes. All square, all framed identically:
+   * `optimize-images.mjs` re-frames every pack to the same canvas with the
+   * sleeve at the same width, so a grid of them reads as one photo shoot
+   * rather than eight.
+   */
   pack: {
-    black: m("packs/black", "pack", 1200, 800),
-    brown: m("packs/brown", "pack", 1200, 800),
-    green: m("packs/green", "pack", 1200, 800),
-    gold: m("packs/gold", "pack", 1200, 800),
+    black: m("packs/black", "pack", 1200, 1200),
+    brown: m("packs/brown", "pack", 1200, 1200),
+    green: m("packs/green", "pack", 1200, 1200),
+    gold: m("packs/gold", "pack", 1200, 1200),
     hazelnut: m("packs/hazelnut", "pack", 1200, 1200),
     vanilla: m("packs/vanilla", "pack", 1200, 1200),
     caramel: m("packs/caramel", "pack", 1200, 1200),

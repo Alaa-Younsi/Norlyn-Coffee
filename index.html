@@ -10,7 +10,7 @@
       content="Moriva par Norlyn Coffee — capsules espresso 100 % bio en aluminium alimentaire pur. 4 intensités, 4 arômes, livraison 58 wilayas, paiement à la livraison."
     />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://norlyn.dz/" />
+    <link rel="canonical" href="%SITE_URL%/" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -20,8 +20,8 @@
       property="og:description"
       content="Capsules espresso Moriva — 100 % bio, 0 % sucre, aluminium alimentaire pur. Livraison partout en Algérie, paiement à la livraison."
     />
-    <meta property="og:url" content="https://norlyn.dz/" />
-    <meta property="og:image" content="https://norlyn.dz/og-image.png" />
+    <meta property="og:url" content="%SITE_URL%/" />
+    <meta property="og:image" content="%SITE_URL%/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Moriva — capsules espresso premium par Norlyn Coffee" />
@@ -35,15 +35,15 @@
       name="twitter:description"
       content="Capsules espresso premium Moriva. Livraison 58 wilayas, paiement à la livraison."
     />
-    <meta name="twitter:image" content="https://norlyn.dz/og-image.png" />
+    <meta name="twitter:image" content="%SITE_URL%/og-image.png" />
 
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "Store",
         "name": "Norlyn Coffee",
-        "url": "https://norlyn.dz",
-        "logo": "https://norlyn.dz/images/norlyn-logo.webp",
+        "url": "%SITE_URL%/",
+        "logo": "%SITE_URL%/images/norlyn-logo.webp",
         "description": "Capsules espresso premium Moriva par Norlyn Coffee. Livraison dans les 58 wilayas d'Algérie.",
         "areaServed": "Algérie",
         "paymentAccepted": "Cash on delivery"
@@ -82,7 +82,73 @@
     -->
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      Everything below is what the visitor sees BEFORE React exists, and it is
+      here because the alternative is a pure white screen. `#root` is empty
+      until the bundle downloads, parses and mounts; on a phone on mobile data
+      inside an in-app browser (Instagram, Facebook) that is seconds, and if
+      the bundle never arrives at all it is forever. A white screen tells the
+      visitor the site is broken and they leave — a mark and a line of copy
+      tell them it is coming.
+
+      React's createRoot() clears the container on mount, so none of this needs
+      removing by hand and none of it can survive into the running app.
+    -->
+    <div id="root">
+      <div
+        style="
+          position: fixed;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 1.25rem;
+          background: rgb(252 248 242);
+          color: rgb(43 29 22);
+          font-family: Georgia, 'Times New Roman', serif;
+          text-align: center;
+          padding: 1.5rem;
+        "
+      >
+        <!-- the wordmark ships on an opaque white square; multiply drops that
+             square into the cream without needing a cut-out -->
+        <img
+          src="/images/logo/moriva-dark-lg.webp"
+          alt="Moriva"
+          width="132"
+          height="132"
+          style="width: 132px; height: auto; mix-blend-mode: multiply"
+        />
+        <p style="margin: 0; font-size: 0.9rem; letter-spacing: 0.08em; color: rgb(169 124 55)">
+          Chargement…
+        </p>
+      </div>
+    </div>
+
+    <noscript>
+      <div
+        style="
+          position: fixed;
+          inset: 0;
+          z-index: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgb(252 248 242);
+          color: rgb(43 29 22);
+          font-family: Georgia, 'Times New Roman', serif;
+          text-align: center;
+          padding: 2rem;
+        "
+      >
+        <p style="max-width: 32rem; line-height: 1.7">
+          Cette boutique a besoin de JavaScript pour fonctionner. Activez-le dans votre navigateur,
+          ou commandez directement par téléphone.
+        </p>
+      </div>
+    </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

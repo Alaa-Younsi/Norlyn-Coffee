@@ -5,6 +5,7 @@ import { Check, ChevronLeft, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
+import { EspressoLoop } from "@/components/product/EspressoLoop";
 import { CoffeeDivider } from "@/components/effects/CoffeeDivider";
 import { CoffeeRing } from "@/components/effects/CoffeeRing";
 import { FloatingBeans } from "@/components/effects/FloatingBeans";
@@ -146,11 +147,19 @@ export function Product() {
         {t("product.backToShop")}
       </Link>
 
-      <div className="relative mt-6 grid gap-10 lg:grid-cols-2">
+      {/*
+        Two columns that are never the same height: the buy side carries the
+        whole checkout form, the gallery carries one square. On desktop the
+        film is placed into that leftover row so the column finishes instead of
+        trailing off; on mobile there is no leftover — the columns stack — so
+        it falls to the bottom of the page in source order, well clear of the
+        price and the order button.
+      */}
+      <div className="relative mt-6 grid gap-10 lg:grid-cols-2 lg:grid-rows-[auto_1fr]">
         {/* gallery */}
-        <div>
+        <div className="lg:col-start-1 lg:row-start-1">
           <div
-            className="relative flex aspect-square items-center justify-center overflow-hidden rounded-3xl border border-line bg-panel"
+            className="relative flex aspect-square items-center justify-center overflow-hidden rounded-3xl border border-line bg-panel p-4 sm:p-6"
             style={{ background: `radial-gradient(ellipse at 50% 65%, ${accent}22, rgb(var(--c-panel)) 70%)` }}
           >
             {/* steam curling off the capsule, like it just finished brewing */}
@@ -171,7 +180,11 @@ export function Product() {
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"
-                className="fx-float h-4/5 w-4/5 object-contain drop-shadow-[0_35px_35px_rgb(var(--c-ink)/0.3)]"
+                // fills its frame: every product shot is re-framed at build
+                // time to carry the same margin around the same subject size
+                // (see scripts/optimize-images.mjs), so shrinking it again
+                // here would only re-introduce the scale drift it removes
+                className="fx-float h-full w-full object-contain drop-shadow-[0_35px_35px_rgb(var(--c-ink)/0.3)]"
               />
             )}
           </div>
@@ -210,8 +223,8 @@ export function Product() {
           )}
         </div>
 
-        {/* info + buy */}
-        <div>
+        {/* info + buy — owns the whole end column, both rows of it */}
+        <div className="lg:col-start-2 lg:row-start-1 lg:row-span-2">
           <h1
             className="font-display text-4xl font-semibold sm:text-5xl"
             style={{ color: titleAccent }}
@@ -336,6 +349,9 @@ export function Product() {
             </Panel>
           )}
         </div>
+
+        {/* the espresso loop, filling out the start column under the gallery */}
+        <EspressoLoop className="lg:col-start-1 lg:row-start-2 lg:h-full" />
       </div>
     </main>
   );

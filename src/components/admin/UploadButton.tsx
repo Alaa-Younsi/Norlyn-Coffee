@@ -26,17 +26,22 @@ export function UploadButton({
   const { t } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(false);
+  // The REASON, not a boolean. A bucket that doesn't exist, a storage policy
+  // that denies the insert, a file over the bucket's ceiling and a wrong mime
+  // type all fail here, and "Erreur de chargement." tells the client nothing
+  // they can act on — it cost this project a round-trip to work out that the
+  // buckets had never been created (see migration 0011).
+  const [error, setError] = useState<string | null>(null);
 
   const handle = async (file: File | undefined) => {
     if (!file) return;
     setBusy(true);
-    setError(false);
+    setError(null);
     try {
       const url = kind === "video" ? await uploadVideo(file) : await uploadImage(file, prefix);
       onUploaded(url);
-    } catch {
-      setError(true);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause));
     } finally {
       setBusy(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -63,7 +68,13 @@ export function UploadButton({
         className="hidden"
         onChange={(e) => void handle(e.target.files?.[0])}
       />
-      {error && <p className="mt-1 text-xs text-red-700 dark:text-red-400">{t("common.error")}</p>}
+      {error && (
+        // admin-only surface, so the raw storage message is safe to show and
+        // is the only thing that makes this diagnosable without a console
+        <p className="mt-1 text-xs text-red-700 dark:text-red-400">
+          {t("admin.toast.uploadError")} <span className="opacity-80">{error}</span>
+        </p>
+      )}
     </div>
   );
 }

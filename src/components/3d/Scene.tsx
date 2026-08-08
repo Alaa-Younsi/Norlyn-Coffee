@@ -1,6 +1,6 @@
-import { useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Sparkles } from "@react-three/drei";
+import { PerformanceMonitor, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 import { CapsuleModel } from "./CapsuleModel";
 import { CupModel } from "./CupModel";
@@ -43,6 +43,14 @@ function Rig({ colors, dirSign, compact }: SceneProps) {
   // the shared plume rises off the cup's crema; the machine brews with its
   // own steam positioned at its little cup (inside MachineModel)
   const steamWeight = useRef(1);
+  // last value written to the canvas' inline opacity — see the fade below
+  const fadeWritten = useRef(-1);
+
+  // How fast the rig chases its scroll target, as a per-second rate rather
+  // than a per-frame fraction (see the damping note below). Phones get a
+  // stiffer spring: their scroll is native and the object has to sit ON the
+  // finger, not trail a fifth of a second behind it.
+  const followRate = compact ? 11 : 5;
 
   useFrame(({ clock, gl, pointer }, delta) => {
     const group = groupRef.current;
@@ -66,11 +74,21 @@ function Rig({ colors, dirSign, compact }: SceneProps) {
       return;
     }
 
-    const damp = Math.min(1, delta * 5);
+    // `delta * rate` is a per-FRAME fraction, so how far the object catches up
+    // per second depends on the frame rate: at 120fps it converges in ~0.2s, at
+    // the 40-ish fps a mid-range phone gives this scene it converges in ~0.5s
+    // and reads as the object skating behind the scroll. The exponential form
+    // is the same curve sampled correctly — identical at 60fps, unchanged on
+    // desktop, and now frame-rate independent. A dropped frame or a backgrounded
+    // tab must not teleport it either, so the step is capped at 1/20s.
+    const damp = 1 - Math.exp(-followRate * Math.min(delta, 0.05));
 
     group.position.x += (state.x - group.position.x) * damp;
-    group.position.y +=
-      (state.y + Math.sin(clock.elapsedTime * 0.9) * 0.06 - group.position.y) * damp;
+    // the idle bob is a slow breath on desktop; on a phone the object is the
+    // one thing centred on screen, and ±13px of drift reads as badly placed
+    // rather than alive, so it breathes about a third as far
+    const bob = Math.sin(clock.elapsedTime * 0.9) * (compact ? 0.022 : 0.06);
+    group.position.y += (state.y + bob - group.position.y) * damp;
 
     // squash-and-stretch through a morph: the object pinches in, then springs
     // back out as the new form settles
@@ -104,10 +122,16 @@ function Rig({ colors, dirSign, compact }: SceneProps) {
       colorA.current.set(colors[idx]);
       colorB.current.set(colors[Math.min(idx + 1, colors.length - 1)]);
       targetColor.current.copy(colorA.current).lerp(colorB.current, frac);
-      material.color.lerp(targetColor.current, Math.min(1, delta * 6));
+      material.color.lerp(targetColor.current, 1 - Math.exp(-6 * Math.min(delta, 0.05)));
     }
 
-    gl.domElement.style.opacity = state.fade.toFixed(3);
+    // `fade` is 1 for all but the last half-percent of the stage. Writing the
+    // inline style anyway dirties the canvas' style every single frame, which
+    // on a phone is a style recalc the scene never needed.
+    if (state.fade !== fadeWritten.current) {
+      gl.domElement.style.opacity = state.fade.toFixed(3);
+      fadeWritten.current = state.fade;
+    }
   });
 
   return (
@@ -119,20 +143,20 @@ function Rig({ colors, dirSign, compact }: SceneProps) {
         <CapsuleModel materialRef={materialRef} initialColor={colors[0]} />
       </MorphSlot>
       <MorphSlot weight={machineWeight}>
-        <MachineModel pourRef={pour} />
+        <MachineModel pourRef={pour} compact={compact} />
       </MorphSlot>
 
       {/* transformation FX — only visible while a morph is in flight */}
-      <BeanBurst energy={energy} count={compact ? 12 : 22} />
-      <MorphVortex energy={energy} count={compact ? 50 : 90} />
+      <BeanBurst energy={energy} count={compact ? 10 : 22} />
+      <MorphVortex energy={energy} count={compact ? 36 : 90} />
       <CremaShockwave energy={energy} />
 
       {/* ambient coffee FX that follow the object around */}
-      <Steam3D weight={steamWeight} count={compact ? 14 : 26} />
-      <AromaSwirl count={compact ? 28 : 60} />
+      <Steam3D weight={steamWeight} count={compact ? 12 : 26} />
+      <AromaSwirl count={compact ? 20 : 60} />
       <OrbitBeans count={compact ? 3 : 5} />
       <Sparkles
-        count={compact ? 14 : 26}
+        count={compact ? 10 : 26}
         scale={2.6}
         size={2.4}
         speed={0.3}
@@ -192,12 +216,41 @@ function OrbitBeans({ count }: { count: number }) {
   );
 }
 
+/**
+ * Phones range from a 2019 budget Android to a current iPhone, and the right
+ * render resolution differs by a factor of four between them. A fixed cap has
+ * to be set for the slow end, which is why the object looked soft next to the
+ * crisp DOM text around it: it was drawn at ~55% of the screen's linear
+ * resolution and upscaled. So the cap is measured instead — start at the
+ * conservative value, climb to native (where the gold filet on the cup's lip
+ * finally resolves) on a device that holds its refresh rate, and drop back if
+ * it cannot. `flipflops` stops the probing after a few reversals so the canvas
+ * is not being resized forever, and `onFallback` pins the safe value.
+ */
+const COMPACT_DPR = { min: 1, start: 1.5, max: 2 } as const;
+
 export function Scene({ colors, dirSign, compact }: SceneProps) {
+  // never render ABOVE the screen's own pixel density — that is pure
+  // supersampling the visitor pays for and cannot see
+  const ceiling = useMemo(() => Math.min(COMPACT_DPR.max, window.devicePixelRatio || 1), []);
+  const [dpr, setDpr] = useState(compact ? Math.min(COMPACT_DPR.start, ceiling) : 1.75);
+
+  const onIncline = useCallback(() => setDpr(ceiling), [ceiling]);
+  const onDecline = useCallback(() => setDpr(COMPACT_DPR.min), []);
+
   return (
     <Canvas
-      dpr={compact ? [1, 1.5] : [1, 1.75]}
+      dpr={compact ? dpr : [1, 1.75]}
       camera={{ position: [0, 0, 6], fov: 35 }}
-      gl={{ alpha: true, antialias: !compact, powerPreference: "high-performance" }}
+      // MSAA is on everywhere now. It used to be a desktop luxury, but the
+      // cup's gold filet is a sub-pixel-thin torus and without it the lip and
+      // the saucer brim render as a dashed brown line rather than a drawn one —
+      // the single most "cheap 3D" thing on the phone screen. Mobile GPUs are
+      // tile-based, where multisampling resolves inside tile memory and costs a
+      // fraction of what the same quality would cost as extra resolution, and
+      // the adaptive dpr above is the safety valve if a device still can't hold
+      // its frame rate.
+      gl={{ alpha: true, antialias: true, powerPreference: "high-performance" }}
       // events live on <html>, NOT on the canvas: r3f's wrapper otherwise sets
       // pointer-events:auto inline and the full-screen layer swallows every
       // click on the page. This keeps the pointer state (parallax) working
@@ -206,6 +259,15 @@ export function Scene({ colors, dirSign, compact }: SceneProps) {
       eventPrefix="client"
       style={{ background: "transparent", pointerEvents: "none" }}
     >
+      {compact && (
+        <PerformanceMonitor
+          flipflops={3}
+          onIncline={onIncline}
+          onDecline={onDecline}
+          onFallback={onDecline}
+        />
+      )}
+
       {/* plain-light studio: reliable color rendition, no HDR download */}
       <ambientLight intensity={0.55} />
       <hemisphereLight args={["#fff6e6", "#5b3a22", 0.7]} />

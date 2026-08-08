@@ -19,6 +19,18 @@ import { Steam3D } from "./MorphFX";
 
 interface MachineModelProps {
   pourRef: RefObject<number>;
+  /**
+   * Phone layout. The machine is the most expensive thing in the scene by a
+   * wide margin — it is assembled from ~50 separate primitives, so it costs
+   * ~56 draw calls a frame against the capsule's 9, and it is drawn while the
+   * variants zone unpins, which is the busiest scroll moment on the page. On a
+   * phone it renders about 140px tall, where the trim below is between one and
+   * zero pixels wide: the grill slats, the pinstripes down the face panel, the
+   * cup-warmer rail and the cups on it, the gauge's dial face and needle, and
+   * the feet all resolve to nothing you can see. Dropping them there costs the
+   * silhouette nothing and buys back a third of the frame's draw calls.
+   */
+  compact: boolean;
 }
 
 const BODY = "#3e2b1e";
@@ -27,7 +39,8 @@ const GOLD = "#c99a45";
 const CHROME = "#d3d6da";
 const ESPRESSO = "#5b3218";
 
-export function MachineModel({ pourRef }: MachineModelProps) {
+export function MachineModel({ pourRef, compact }: MachineModelProps) {
+  const detailed = !compact;
   const streamsRef = useRef<THREE.Group>(null);
   const cremaRef = useRef<THREE.Mesh>(null);
   const lampRef = useRef<THREE.MeshStandardMaterial>(null);
@@ -74,64 +87,73 @@ export function MachineModel({ pourRef }: MachineModelProps) {
   return (
     <group position={[0, 0.02, 0]}>
       {/* feet */}
-      {[-0.62, 0.62].flatMap((x) =>
-        [-0.32, 0.34].map((z) => (
-          <mesh key={`${x}${z}`} material={gold} position={[x, -0.88, z]}>
-            <cylinderGeometry args={[0.055, 0.07, 0.08, 16]} />
-          </mesh>
-        )),
-      )}
+      {detailed &&
+        [-0.62, 0.62].flatMap((x) =>
+          [-0.32, 0.34].map((z) => (
+            <mesh key={`${x}${z}`} material={gold} position={[x, -0.88, z]}>
+              <cylinderGeometry args={[0.055, 0.07, 0.08, 16]} />
+            </mesh>
+          )),
+        )}
 
       {/* base platform + drip tray with grill slats */}
       <mesh geometry={baseGeometry} material={body} position={[0, -0.78, -0.02]} castShadow />
       <mesh geometry={trayGeometry} material={chrome} position={[0, -0.68, 0.18]} />
-      {[-0.18, -0.06, 0.06, 0.18].map((z) => (
-        <mesh key={z} material={body} position={[0, -0.648, 0.18 + z * 0.9]}>
-          <boxGeometry args={[0.86, 0.014, 0.045]} />
-        </mesh>
-      ))}
+      {detailed &&
+        [-0.18, -0.06, 0.06, 0.18].map((z) => (
+          <mesh key={z} material={body} position={[0, -0.648, 0.18 + z * 0.9]}>
+            <boxGeometry args={[0.86, 0.014, 0.045]} />
+          </mesh>
+        ))}
 
       {/* back tower with an ivory face panel */}
       <mesh geometry={towerGeometry} material={body} position={[0, 0.02, -0.28]} castShadow />
       <mesh geometry={facePanelGeometry} material={ivory} position={[0, -0.02, -0.005]} />
       {/* slim gold pinstripes framing the panel */}
-      {[-0.6, 0.6].map((x) => (
-        <mesh key={x} material={gold} position={[x, -0.02, 0.02]}>
-          <boxGeometry args={[0.025, 0.98, 0.02]} />
-        </mesh>
-      ))}
+      {detailed &&
+        [-0.6, 0.6].map((x) => (
+          <mesh key={x} material={gold} position={[x, -0.02, 0.02]}>
+            <boxGeometry args={[0.025, 0.98, 0.02]} />
+          </mesh>
+        ))}
 
       {/* canopy overhanging the brew area */}
       <mesh geometry={canopyGeometry} material={body} position={[0, 0.64, -0.05]} castShadow />
       {/* cup-warmer rail + two cups waiting on top */}
-      {[-0.34, -0.02, 0.3].map((z) => (
-        <mesh key={z} material={gold} position={[0, 0.87, z]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.016, 0.016, 1.34, 10]} />
-        </mesh>
-      ))}
-      {[-0.36, 0.34].map((x) => (
-        <group key={x} position={[x, 0.92, -0.16]}>
-          <mesh material={ivory}>
-            <cylinderGeometry args={[0.09, 0.065, 0.11, 20, 1, true]} />
+      {detailed &&
+        [-0.34, -0.02, 0.3].map((z) => (
+          <mesh key={z} material={gold} position={[0, 0.87, z]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.016, 0.016, 1.34, 10]} />
           </mesh>
-          <mesh material={ivory} position={[0, -0.05, 0]}>
-            <cylinderGeometry args={[0.066, 0.066, 0.02, 20]} />
-          </mesh>
-        </group>
-      ))}
+        ))}
+      {detailed &&
+        [-0.36, 0.34].map((x) => (
+          <group key={x} position={[x, 0.92, -0.16]}>
+            <mesh material={ivory}>
+              <cylinderGeometry args={[0.09, 0.065, 0.11, 20, 1, true]} />
+            </mesh>
+            <mesh material={ivory} position={[0, -0.05, 0]}>
+              <cylinderGeometry args={[0.066, 0.066, 0.02, 20]} />
+            </mesh>
+          </group>
+        ))}
 
       {/* canopy front: gauge, brand plate, power lamp */}
       <group position={[-0.44, 0.64, 0.475]} rotation={[Math.PI / 2, 0, 0]}>
         <mesh material={chrome}>
           <cylinderGeometry args={[0.135, 0.135, 0.05, 28]} />
         </mesh>
-        <mesh material={ivory} position={[0, -0.028, 0]}>
-          <cylinderGeometry args={[0.108, 0.108, 0.01, 28]} />
-        </mesh>
-        {/* needle */}
-        <mesh material={gold} position={[0, -0.036, 0.02]} rotation={[0, -0.7, 0]}>
-          <boxGeometry args={[0.012, 0.008, 0.09]} />
-        </mesh>
+        {detailed && (
+          <>
+            <mesh material={ivory} position={[0, -0.028, 0]}>
+              <cylinderGeometry args={[0.108, 0.108, 0.01, 28]} />
+            </mesh>
+            {/* needle */}
+            <mesh material={gold} position={[0, -0.036, 0.02]} rotation={[0, -0.7, 0]}>
+              <boxGeometry args={[0.012, 0.008, 0.09]} />
+            </mesh>
+          </>
+        )}
       </group>
       <mesh geometry={plateGeometry} material={gold} position={[0, 0.64, 0.48]} />
       <mesh position={[0.44, 0.64, 0.475]} rotation={[Math.PI / 2, 0, 0]}>

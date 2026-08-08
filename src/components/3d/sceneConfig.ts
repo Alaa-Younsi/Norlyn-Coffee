@@ -40,6 +40,23 @@ const MACHINE_MORPH = [0.8, 0.99] as const;
 /** Fraction of the outro act spent dissolving the machine. */
 const EXIT_MORPH = [0.04, 0.5] as const;
 
+/**
+ * Per-act scale on phones. Deliberately close to the desktop numbers: the
+ * object is the page's centrepiece and the old compact values (0.44 at the
+ * hero) drew it at barely a third of the screen width, which read as a thumbnail
+ * floating in the copy rather than as the product. The camera is unchanged, so
+ * one world unit is always viewportHeight / 3.78 — at 0.66 the saucer spans
+ * about 70% of a phone's width.
+ */
+const COMPACT_SCALE = [0.66, 0.58, 0.5, 0.48, 0.35];
+
+/**
+ * The cup+saucer's midpoint in model space, below the group origin (the model
+ * runs from the saucer's foot at −0.72 to the lip at +0.21). Centring the
+ * GROUP is not centring the cup; this is the difference.
+ */
+const CUP_CENTROID = -0.2565;
+
 export interface SceneState {
   x: number;
   y: number;
@@ -142,20 +159,37 @@ export function computeSceneState(
     : track([0, side * 1.02, -side, side * 1.12, side * 1.02], [approach, crossStep, transitStep, outroP]);
 
   const yBase = compact
-    ? track([0.1, -0.26, 1.2, 0.95, 1.5], [approach, crossStep, transitStep, outroP])
-    // ends low enough in the tail act that its base and drip tray clear the
-    // bottom of the tall gallery tiles — the machine reads as standing under
-    // the section rather than as a smudge hidden entirely behind glass
-    : track([0.05, 0.08, 0.02, -1.02, 0.28], [approach, crossStep, transitStep, outroP]);
+    ? // The hero value is not a taste call: the canvas is fixed, so world y = 0
+      // is the exact centre of the viewport, and the cup's own centre of mass
+      // sits CUP_CENTROID below its origin. Cancelling that offset is what puts
+      // the cup in the middle of the phone screen rather than a little above
+      // it. The story value drops it clear of the stat cards instead of leaving
+      // it half-buried behind them, and the last three ride the top band the
+      // variants and featured sections reserve on mobile.
+      track(
+        [0.02 - CUP_CENTROID * COMPACT_SCALE[0], -0.95, 1.25, 0.95, 1.5],
+        [approach, crossStep, transitStep, outroP],
+      )
+    : // ends low enough in the tail act that its base and drip tray clear the
+      // bottom of the tall gallery tiles — the machine reads as standing under
+      // the section rather than as a smudge hidden entirely behind glass
+      track([0.05, 0.08, 0.02, -1.02, 0.28], [approach, crossStep, transitStep, outroP]);
   const y = yBase - crossArc * (compact ? 0.3 : 0.85) - transitArc * (compact ? 0.15 : 0.5);
 
   const baseScale = compact
-    ? track([0.44, 0.42, 0.44, 0.34, 0.24], [approach, crossStep, transitStep, outroP])
+    ? track(COMPACT_SCALE, [approach, crossStep, transitStep, outroP])
     : track([0.72, 0.82, 0.9, 0.58, 0.44], [approach, crossStep, transitStep, outroP]);
+
+  // The three models are not the same size: the machine stands roughly 1.7×
+  // the capsule's height. Desktop parks it in a side gutter where that reads as
+  // presence, but a phone has no gutter — at the act scale that framed the
+  // capsule the machine lands on the section heading. Shrink it as it forms,
+  // on phones only.
+  const machineFit = compact ? lerp(1, 0.62, machineFormed) : 1;
 
   // a morph pinches the object in slightly, then it springs back out; the
   // crossing also shrinks it mid-flight so the swoop reads as depth
-  const scale = baseScale * (1 - energy * 0.16) * (1 - crossArc * 0.22);
+  const scale = baseScale * machineFit * (1 - energy * 0.16) * (1 - crossArc * 0.22);
   const stretch = 1 + energy * 0.3;
 
   // one graceful turn per act, a barrel roll through the crossing, a turn per

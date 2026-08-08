@@ -25,8 +25,18 @@ export function useScrollStage(stageRef: RefObject<HTMLElement | null>): void {
     const lenis = new Lenis({ autoRaf: false, lerp: 0.11 });
     setLenisInstance(lenis);
 
+    // Lenis smooths the WHEEL; touch scrolling stays native on purpose (a
+    // synthetic touch scroll fights the browser's own momentum). Native scroll
+    // events on Android are dispatched off the frame cadence, though, so a
+    // scene that only reads progress when one arrives renders a value that is
+    // one or two frames stale — the object visibly trails the finger and then
+    // catches up in steps. Sampling the scroller once per frame instead costs
+    // one read and keeps the object locked to the touch.
+    const sampleEveryFrame = window.matchMedia("(pointer: coarse)").matches;
+
     const tick = (time: number) => {
       lenis.raf(time * 1000);
+      if (sampleEveryFrame) ScrollTrigger.update();
     };
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);

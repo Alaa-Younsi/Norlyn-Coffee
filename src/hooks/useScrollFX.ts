@@ -60,6 +60,119 @@ export function useRevealOnScroll(ref: RefObject<HTMLElement | null>, deps: unkn
 }
 
 /**
+ * Children marked `data-fade` rise and fade in once, as they first come into
+ * view — the site's general-purpose entrance, for headings, paragraphs and
+ * anything that is not a card in a grid.
+ *
+ * This is the ONE place opacity is animated on content, and it is only safe
+ * because of `immediateRender: false`. Every other effect in this file is a
+ * scrubbed `fromTo`, which applies its from-state the moment it is created —
+ * fine for a transform (worst case a card sits 56px low) and unacceptable for
+ * opacity, because a trigger that mis-measures would leave real copy at zero
+ * and the page would ship with holes in it. Deferring the from-state means the
+ * element renders completely normally until its tween actually starts, so a
+ * trigger that never fires costs the animation and nothing else.
+ *
+ * `once` for the same reason: after it has played, the tween is done and the
+ * content is plain visible DOM again, with no state left to get stuck in.
+ */
+export function useFadeUp(ref: RefObject<HTMLElement | null>, deps: unknown[] = []): void {
+  useEffect(() => {
+    const root = ref.current;
+    if (!root || prefersReducedMotion()) return;
+
+    const items = Array.from(root.querySelectorAll<HTMLElement>("[data-fade]"));
+    if (items.length === 0) return;
+
+    const tweens = items.map((el) =>
+      gsap.fromTo(
+        el,
+        { opacity: 0, y: Number(el.dataset.fade) || 26 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.75,
+          ease: "power2.out",
+          immediateRender: false,
+          scrollTrigger: { trigger: el, start: "top 88%", once: true },
+        },
+      ),
+    );
+
+    return () => {
+      tweens.forEach((tween) => {
+        tween.scrollTrigger?.kill();
+        tween.kill();
+      });
+      // whatever state the tweens were mid-way through, the content ends up
+      // visible — this hook must never be the reason something isn't on screen
+      gsap.set(items, { clearProps: "opacity,transform" });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ref, ...deps]);
+}
+
+/**
+ * Cards marked `data-tilt` lean toward the cursor — the site's 3D hover.
+ *
+ * It writes ONLY `rotationX`/`rotationY`, which is what lets it share an
+ * element with the parallax and reveal tweens above: those drive `y`, and GSAP
+ * composes the two into one matrix without either clobbering the other. Put it
+ * on an element that already carries `data-reveal` and it will fight that
+ * tween's own `rotateX` — the wrapper is the place for it.
+ *
+ * Pointer-fine only. A tilt keyed to cursor position has no meaning on a
+ * touchscreen, where the finger is on the card it is supposedly tilting.
+ */
+export function useTiltCards(ref: RefObject<HTMLElement | null>, deps: unknown[] = []): void {
+  useEffect(() => {
+    const root = ref.current;
+    if (!root || prefersReducedMotion()) return;
+    if (!window.matchMedia("(pointer: fine)").matches) return;
+
+    const cards = Array.from(root.querySelectorAll<HTMLElement>("[data-tilt]"));
+    if (cards.length === 0) return;
+
+    const cleanups = cards.map((card) => {
+      const strength = Number(card.dataset.tilt) || 7;
+      gsap.set(card, { transformPerspective: 900, transformOrigin: "center" });
+      const rotateX = gsap.quickTo(card, "rotationX", { duration: 0.5, ease: "power3.out" });
+      const rotateY = gsap.quickTo(card, "rotationY", { duration: 0.5, ease: "power3.out" });
+
+      // measured once per hover, not per move: a getBoundingClientRect on every
+      // pointermove is a forced layout on a page that is also scrolling
+      let box: DOMRect | null = null;
+      const onEnter = () => (box = card.getBoundingClientRect());
+      const onMove = (event: PointerEvent) => {
+        if (!box) box = card.getBoundingClientRect();
+        const px = (event.clientX - box.left) / box.width - 0.5;
+        const py = (event.clientY - box.top) / box.height - 0.5;
+        rotateX(-py * strength);
+        rotateY(px * strength * 1.2);
+      };
+      const onLeave = () => {
+        box = null;
+        rotateX(0);
+        rotateY(0);
+      };
+
+      card.addEventListener("pointerenter", onEnter);
+      card.addEventListener("pointermove", onMove);
+      card.addEventListener("pointerleave", onLeave);
+      return () => {
+        card.removeEventListener("pointerenter", onEnter);
+        card.removeEventListener("pointermove", onMove);
+        card.removeEventListener("pointerleave", onLeave);
+        gsap.set(card, { rotationX: 0, rotationY: 0 });
+      };
+    });
+
+    return () => cleanups.forEach((off) => off());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ref, ...deps]);
+}
+
+/**
  * Drifts an element against the scroll — used on section headers and decor so
  * they separate in depth from the 3D object passing behind them.
  * `strength` is in pixels of total travel across the element's pass.
@@ -91,11 +204,19 @@ export function useParallax(ref: RefObject<HTMLElement | null>, strength = 60): 
  * the container passes through the viewport — adjacent tiles separating in
  * depth is what makes a flat grid read as layered. Negative values drift
  * against the scroll.
+ *
+ * Phones sit this out, and not to save frames. The effect works by making
+ * neighbours disagree: you read the depth because the tile beside this one is
+ * somewhere else. Collapse that grid to one column — which every grid on this
+ * site does under 768px — and there is no neighbour left to disagree with, so
+ * the same tween stops reading as depth and starts reading as items that
+ * failed to line up. Which is exactly what it looked like.
  */
 export function useParallaxItems(ref: RefObject<HTMLElement | null>, deps: unknown[] = []): void {
   useEffect(() => {
     const root = ref.current;
     if (!root || prefersReducedMotion()) return;
+    if (!window.matchMedia("(min-width: 768px)").matches) return;
 
     const items = Array.from(root.querySelectorAll<HTMLElement>("[data-parallax]"));
     if (items.length === 0) return;
@@ -168,6 +289,11 @@ export function useVelocitySkew(ref: RefObject<HTMLElement | null>, maxDeg = 2.4
   useEffect(() => {
     const el = ref.current;
     if (!el || prefersReducedMotion()) return;
+    // Touch scrolling never goes through Lenis (see useScrollStage), so its
+    // velocity is a flat 0 on a phone and this whole loop shears the grid by
+    // exactly nothing — while still costing a ticker callback and a transform
+    // write every frame, on the device that can least afford one.
+    if (!window.matchMedia("(pointer: fine)").matches) return;
 
     const setSkew = gsap.quickSetter(el, "skewY", "deg");
     let current = 0;

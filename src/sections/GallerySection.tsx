@@ -6,7 +6,13 @@ import { CoffeeBeanIcon } from "@/components/effects/CoffeeBeanIcon";
 import { CoffeeRing } from "@/components/effects/CoffeeRing";
 import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { useParallaxItems, useRevealOnScroll, useVelocitySkew } from "@/hooks/useScrollFX";
+import {
+  useFadeUp,
+  useParallaxItems,
+  useRevealOnScroll,
+  useTiltCards,
+  useVelocitySkew,
+} from "@/hooks/useScrollFX";
 import { useSiteImages } from "@/hooks/useSiteContent";
 import { pickLang } from "@/lib/localized";
 import { dbSrcSet } from "@/lib/media";
@@ -20,11 +26,16 @@ import { cn } from "@/lib/utils";
 export function GallerySection() {
   const { t, lang } = useLanguage();
   const { data: siteImages } = useSiteImages();
+  const sectionRef = useRef<HTMLElement>(null);
   const tilesRef = useRef<HTMLDivElement>(null);
   useRevealOnScroll(tilesRef);
   // adjacent tiles drift at different speeds — the flat grid reads as layers
   useParallaxItems(tilesRef);
   useVelocitySkew(tilesRef, 1.8);
+  // the tilt goes on the parallax WRAPPERS, not the tiles: the tiles' own
+  // reveal already animates rotateX and the two would overwrite each other
+  useTiltCards(tilesRef);
+  useFadeUp(sectionRef);
 
   const tiles: Array<{ slot: string; caption: string; art: ReactNode }> = [
     {
@@ -60,13 +71,18 @@ export function GallerySection() {
   ];
 
   return (
-    <section className="relative mx-auto max-w-7xl overflow-hidden px-6 py-16 sm:py-24">
+    <section
+      ref={sectionRef}
+      className="relative mx-auto max-w-7xl overflow-hidden px-6 py-16 sm:py-24"
+    >
       <FloatingBeans count={7} seed={5} />
       <CoffeeRing className="fx-spin-slow -end-16 top-4 w-56 opacity-15" />
 
       <div className="relative text-center">
-        <p className="text-sm uppercase tracking-[0.3em] text-brand">{t("gallery.kicker")}</p>
-        <h2 className="mt-2 font-display text-3xl font-semibold sm:text-5xl">
+        <p data-fade="16" className="text-sm uppercase tracking-[0.3em] text-brand">
+          {t("gallery.kicker")}
+        </p>
+        <h2 data-fade className="mt-2 font-display text-3xl font-semibold sm:text-5xl">
           {t("gallery.title")}
         </h2>
       </div>
@@ -81,7 +97,7 @@ export function GallerySection() {
           return (
             // parallax lives on the wrapper, reveal on the tile — two tweens
             // driving the same element's y would fight each other
-            <div key={tile.slot} data-parallax={[-36, 44, -24][i]}>
+            <div key={tile.slot} data-parallax={[-36, 44, -24][i]} data-tilt="6">
               <div
                 data-reveal
                 className="fx-sheen relative flex aspect-[4/5] flex-col items-center justify-center gap-8 overflow-hidden rounded-3xl border border-line bg-gradient-to-b from-panel/80 to-panel-2/55 p-6 backdrop-blur-md"

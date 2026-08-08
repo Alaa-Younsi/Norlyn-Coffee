@@ -9,7 +9,7 @@ capsule line: **two families of four**.
 - **Capsules aromatisées** — noisette, vanille, caramel, chocolat.
 
 Tea and espresso machines are future lines; the machines already appear on
-La Maison as a "coming soon" band. Cash-on-delivery across the 58 wilayas,
+La Maison as a "coming soon" band. Cash-on-delivery across the 69 wilayas,
 FR + AR (RTL) + EN.
 
 3D scroll-driven landing (React Three Fiber + GSAP/Lenis): a procedural

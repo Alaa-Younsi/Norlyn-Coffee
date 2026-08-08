@@ -4,16 +4,32 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { MetaPixelProvider } from "@/components/MetaPixelProvider";
+/*
+  What ships in the FIRST download, and what waits to be asked for.
+
+  Eager: the buying path. Landing → Shop → Product → Checkout is the route this
+  store exists to serve, and it is walked on mobile data in Algeria — putting a
+  network round trip between a shopper and the next step of a purchase to save
+  a few kilobytes is the wrong trade every time. They stay in the entry chunk.
+
+  Lazy: everything a shopper reaches deliberately or not at all. The journal,
+  the about page, contact, the confirmation screen and the 404 were all being
+  parsed by every single visitor who landed on the home page and never went
+  anywhere near them.
+*/
 import { Landing } from "@/pages/Landing";
 import { Shop } from "@/pages/Shop";
 import { Product } from "@/pages/Product";
-import { About } from "@/pages/About";
-import { Journal } from "@/pages/Journal";
-import { Article } from "@/pages/Article";
-import { Contact } from "@/pages/Contact";
 import { Checkout } from "@/pages/Checkout";
-import { OrderConfirmation } from "@/pages/OrderConfirmation";
-import { NotFound } from "@/pages/NotFound";
+
+const About = lazy(() => import("@/pages/About").then((m) => ({ default: m.About })));
+const Journal = lazy(() => import("@/pages/Journal").then((m) => ({ default: m.Journal })));
+const Article = lazy(() => import("@/pages/Article").then((m) => ({ default: m.Article })));
+const Contact = lazy(() => import("@/pages/Contact").then((m) => ({ default: m.Contact })));
+const OrderConfirmation = lazy(() =>
+  import("@/pages/OrderConfirmation").then((m) => ({ default: m.OrderConfirmation })),
+);
+const NotFound = lazy(() => import("@/pages/NotFound").then((m) => ({ default: m.NotFound })));
 
 // admin never ships to shoppers
 const AdminApp = lazy(() =>
@@ -33,7 +49,14 @@ function StoreLayout() {
     <>
       <Header />
       <CartDrawer />
-      <Outlet />
+      {/* The fallback is a full-height blank, not a spinner. These chunks are
+          tens of kilobytes and usually arrive within a frame or two, so a
+          spinner would mostly render as a flash of one — but the height has to
+          be reserved either way, or the footer jumps up under the header and
+          then back down as the page lands. */}
+      <Suspense fallback={<div className="min-h-screen" />}>
+        <Outlet />
+      </Suspense>
       <Footer />
     </>
   );

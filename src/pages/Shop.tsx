@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { ProductCard } from "@/components/product/ProductCard";
@@ -14,6 +14,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useProducts } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
 import { useSeo } from "@/hooks/useSeo";
+import { useTiltCards } from "@/hooks/useScrollFX";
 import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +29,9 @@ export function Shop() {
     search: search || undefined,
     categoryId: categoryId || undefined,
   });
+
+  const gridRef = useRef<HTMLDivElement>(null);
+  useTiltCards(gridRef, [products?.length ?? 0]);
 
   useSeo({ title: `${t("shop.title")} — Norlyn Coffee`, description: t("shop.metaDesc") });
 
@@ -100,13 +104,16 @@ export function Shop() {
             <p className="text-muted">{t("shop.empty")}</p>
           </div>
         ) : (
-          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div ref={gridRef} className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {products.map((product, i) => (
-              // transform-only entrance, staggered by column
+              // Staggered by column. This one DOES fade, unlike the scrubbed
+              // reveals on the landing page: Framer drives it from React with
+              // an IntersectionObserver, so "the trigger mis-measured and the
+              // card is stuck at opacity 0" is not a state this can reach.
               <motion.div
                 key={product.id}
-                initial={{ y: 48 }}
-                whileInView={{ y: 0 }}
+                initial={{ y: 48, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ duration: 0.6, delay: (i % 4) * 0.08, ease: EASE }}
                 className="h-full"

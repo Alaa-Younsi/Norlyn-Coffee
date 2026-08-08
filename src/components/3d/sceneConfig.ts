@@ -152,22 +152,33 @@ export function computeSceneState(
   const transitStep = segment(p, lerp(pinEnd, bounds.tail, 0.5), lerp(bounds.tail, bounds.outro, 0.16));
   const transitArc = bell(easeInOut(transitStep));
 
-  // compact (phone): no room at the sides — the object stays centred-ish and
-  // rides the top of the viewport so the copy underneath stays readable
+  // Compact (phone): dead centre, the whole way through.
+  //
+  // Desktop parks the object in the gutter OPPOSITE the copy, and the x track
+  // is what performs that mirroring. A phone has no gutter — the copy sits
+  // UNDER the object rather than beside it — so those side offsets had nothing
+  // left to mirror. What survived was a fraction of a world unit of drift, and
+  // an object that is the only thing on a 393px-wide screen does not read as
+  // "offset by 0.14" but as failing to line up with everything under it.
   const x = compact
-    ? track([0, side * 0.14, side * -0.1, side * 0.08, side * 0.08], [approach, crossStep, transitStep, outroP])
+    ? 0
     : track([0, side * 1.02, -side, side * 1.12, side * 1.02], [approach, crossStep, transitStep, outroP]);
 
   const yBase = compact
-    ? // The hero value is not a taste call: the canvas is fixed, so world y = 0
-      // is the exact centre of the viewport, and the cup's own centre of mass
-      // sits CUP_CENTROID below its origin. Cancelling that offset is what puts
-      // the cup in the middle of the phone screen rather than a little above
-      // it. The story value drops it clear of the stat cards instead of leaving
-      // it half-buried behind them, and the last three ride the top band the
-      // variants and featured sections reserve on mobile.
+    ? // The hero value is not a taste call, and it is not the centre of the
+      // screen either. The canvas is fixed, so world y = 0 is the viewport's
+      // exact middle — but the cup does not belong in the viewport's middle, it
+      // belongs in the middle of the BAND the hero grid reserves for it,
+      // between the title above and the body copy below. That band is 26vh
+      // tall and sits high, so the cup rides about 0.42 world units above
+      // centre; leaving it at 0 is what used to drop the saucer across the
+      // first line of the copy. `CUP_CENTROID` then corrects for the model's
+      // own centre of mass sitting below its origin — centring the GROUP is
+      // not centring the cup. The story value drops it clear of the stat cards
+      // instead of leaving it half-buried behind them, and the last three ride
+      // the top band the variants and featured sections reserve on mobile.
       track(
-        [0.02 - CUP_CENTROID * COMPACT_SCALE[0], -0.95, 1.25, 0.95, 1.5],
+        [0.38 - CUP_CENTROID * COMPACT_SCALE[0], -0.95, 1.25, 0.95, 1.5],
         [approach, crossStep, transitStep, outroP],
       )
     : // ends low enough in the tail act that its base and drip tray clear the

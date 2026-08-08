@@ -4,6 +4,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useMediaSlides, useVideoSlot } from "@/hooks/useSiteContent";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { Mascot } from "@/components/mascot/Mascot";
+import { MediaFrame } from "@/components/ui/MediaFrame";
 import { HERO_VIDEO_SLOT } from "@/lib/videoSlots";
 import { pickLang } from "@/lib/localized";
 import { dbSrcSet } from "@/lib/media";
@@ -117,76 +118,59 @@ export function HeroVideo({ className }: { className?: string }) {
           cream rather than punching a hole in it */}
       <div className="fx-screen-glow pointer-events-none absolute -inset-6" aria-hidden />
 
-      {/*
-        The mat. A film is the one dark rectangle on a page made of cream and
-        gold hairlines, and butting the footage straight against that was what
-        made it read as pasted on. So it gets mounted the way a photograph is:
-        a warm gilded surround with the site's own panel gradient, its blur and
-        its long low shadow — the same surface `Panel` and the gallery tiles
-        are cut from — and the picture held a few millimetres inside it.
-        `fx-sheen` is the site-wide hover motif; the screen answers a cursor
-        like every other card does.
-      */}
-      <div className="fx-sheen relative rounded-[2.25rem] border border-brand/30 bg-gradient-to-b from-panel/80 to-panel-2/55 p-2.5 shadow-[0_40px_90px_-45px_rgb(var(--c-ink)/0.5)] backdrop-blur-md">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-[1.65rem] bg-panel-2">
-          {missing ? (
-            <PosterState poster={poster} />
-          ) : showFilm ? (
-            <video
-              ref={videoRef}
-              src={src}
-              poster={poster}
-              className="pointer-events-none h-full w-full object-cover"
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="metadata"
-              tabIndex={-1}
+      {/* The same mount every photograph on the site wears, one notch wider —
+          this is the biggest picture on the page, and a wider mat is what a
+          bigger print gets. `fx-sheen` is the site-wide hover motif; the screen
+          answers a cursor like every other card does. */}
+      <MediaFrame
+        className="fx-sheen"
+        rounded="rounded-[2.25rem]"
+        innerRounded="rounded-[1.65rem]"
+        pad="p-2.5"
+        innerClassName="aspect-[4/5] bg-panel-2"
+      >
+        {missing ? (
+          <PosterState poster={poster} />
+        ) : showFilm ? (
+          <video
+            ref={videoRef}
+            src={src}
+            poster={poster}
+            className="pointer-events-none h-full w-full object-cover"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            tabIndex={-1}
+            aria-hidden
+            disablePictureInPicture
+            controlsList="nodownload noplaybackrate noremoteplayback"
+            onContextMenu={(event) => event.preventDefault()}
+            onPause={resume}
+            onError={() => setFailedSrc(src)}
+          />
+        ) : (
+          <Still poster={poster} />
+        )}
+
+        {/* The scrim is the caption's background, and nothing else — with no
+            controls left down there, a film with no words to read is just a
+            film with a shadow on it. So it arrives WITH the text or not at
+            all, and the picture keeps its own contrast the rest of the time. */}
+        {caption && !missing && (
+          <>
+            <div
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-shade/75 via-shade/25 to-transparent"
               aria-hidden
-              disablePictureInPicture
-              controlsList="nodownload noplaybackrate noremoteplayback"
-              onContextMenu={(event) => event.preventDefault()}
-              onPause={resume}
-              onError={() => setFailedSrc(src)}
             />
-          ) : (
-            <Still poster={poster} />
-          )}
-
-          {/* A wash of the brand's own gold, pulling the footage's cold whites
-              and greys toward the page's warmth. `soft-light` at this strength
-              tints; it does not darken — the complaint about the old overlay
-              was that it shaded half the picture, and this deliberately has no
-              gradient, no direction and nothing to hide behind it. */}
-          <div
-            className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-brand/25 via-transparent to-gold-hi/20 mix-blend-soft-light"
-            aria-hidden
-          />
-          {/* the gold hairline again, on the inside edge — the glass in the frame */}
-          <div
-            className="pointer-events-none absolute inset-0 rounded-[1.65rem] ring-1 ring-inset ring-gold-hi/25"
-            aria-hidden
-          />
-
-          {/* The scrim is the caption's background, and nothing else — with no
-              controls left down there, a film with no words to read is just a
-              film with a shadow on it. So it arrives WITH the text or not at
-              all, and the picture keeps its own contrast the rest of the time. */}
-          {caption && !missing && (
-            <>
-              <div
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-shade/75 via-shade/25 to-transparent"
-                aria-hidden
-              />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 p-5 text-start">
-                {title && <p className="font-display text-lg text-on-shade">{title}</p>}
-                {subtitle && <p className="mt-0.5 text-sm text-on-shade/80">{subtitle}</p>}
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 p-5 text-start">
+              {title && <p className="font-display text-lg text-on-shade">{title}</p>}
+              {subtitle && <p className="mt-0.5 text-sm text-on-shade/80">{subtitle}</p>}
+            </div>
+          </>
+        )}
+      </MediaFrame>
     </div>
   );
 }

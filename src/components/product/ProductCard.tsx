@@ -17,10 +17,16 @@ export function ProductCard({ product }: { product: Product }) {
   const out = product.stock <= 0;
 
   return (
-    <Link
-      to={`/product/${product.slug}`}
-      className="fx-sheen group relative block overflow-hidden rounded-3xl border border-line bg-panel/75 backdrop-blur-md p-5 transition-all duration-300 hover:-translate-y-1 hover:border-brand/50 hover:shadow-[0_24px_60px_-24px_rgb(var(--c-brand)/0.45)]"
-    >
+    // The tilt rides a WRAPPER, not the card. GSAP drives the tilt by writing
+    // an inline transform, and the card's lift on hover is a Tailwind
+    // `-translate-y-1` — one transform property, two owners, and whichever
+    // wrote last wins. Splitting them across two elements lets the card lean
+    // toward the cursor AND rise off the page at the same time.
+    <div data-tilt="7" className="h-full">
+      <Link
+        to={`/product/${product.slug}`}
+        className="fx-sheen group relative flex h-full flex-col overflow-hidden rounded-3xl border border-line bg-panel/75 backdrop-blur-md p-5 transition-all duration-300 hover:-translate-y-1 hover:border-brand/50 hover:shadow-[0_24px_60px_-24px_rgb(var(--c-brand)/0.45)]"
+      >
       <div
         className="relative mx-auto aspect-square w-full max-w-56"
         style={{
@@ -46,7 +52,7 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         )}
       </div>
-      <div className="mt-4 flex items-end justify-between gap-2">
+      <div className="mt-4 flex flex-1 items-end justify-between gap-2">
         <div>
           <h3 className="font-display text-xl leading-tight">{name}</h3>
           {product.intensity !== null && (
@@ -72,7 +78,8 @@ export function ProductCard({ product }: { product: Product }) {
           )}
           <p className="font-semibold text-brand">{formatPrice(product.price)}</p>
         </div>
-      </div>
-    </Link>
+        </div>
+      </Link>
+    </div>
   );
 }

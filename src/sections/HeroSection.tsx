@@ -41,7 +41,11 @@ export function HeroSection({ show3D, showArt }: { show3D: boolean; showArt: boo
   const titleParts = lang === "ar" ? [t("hero.title1")] : t("hero.title1").split("");
 
   return (
-    <section className="fx-hero-vignette relative min-h-screen overflow-hidden px-6 pb-12 pt-24 lg:pt-32">
+    // Phones get tighter top and bottom padding than the desktop composition.
+    // The hero has to fit the CTAs above the fold on a screen whose browser
+    // chrome already takes ~110px off the 852px it advertises, and on desktop
+    // that pressure simply does not exist.
+    <section className="fx-hero-vignette relative min-h-screen overflow-hidden px-6 pb-6 pt-20 sm:pb-12 sm:pt-24 lg:pt-32">
       {/* layered ambience: rotating gold halo, drifting beans, stain rings */}
       <div className="fx-halo h-[80vmin] w-[80vmin]" aria-hidden />
       <FloatingBeans count={12} seed={2} />
@@ -56,7 +60,7 @@ export function HeroSection({ show3D, showArt }: { show3D: boolean; showArt: boo
         the cup column between them is the reserved gap. On desktop explicit
         row/column placement puts both halves back together in column 1.
       */}
-      <div className="relative mx-auto grid max-w-7xl gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.75fr)_minmax(0,1fr)] lg:grid-rows-[auto_auto] lg:items-center lg:gap-x-8 lg:gap-y-0">
+      <div className="relative mx-auto grid max-w-7xl gap-2 sm:gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.75fr)_minmax(0,1fr)] lg:grid-rows-[auto_auto] lg:items-center lg:gap-x-8 lg:gap-y-0">
         {/* ------------------------------------------------- title block */}
         <div ref={copyRef} className="text-start lg:col-start-1 lg:row-start-1 lg:self-end">
           {/* kicker on a single gold rule, anchored to the start edge */}
@@ -109,7 +113,12 @@ export function HeroSection({ show3D, showArt }: { show3D: boolean; showArt: boo
             behind this section and parks here. Only the podium glow and the
             steam belong on top of it. On phones this is the reserved gap
             between the two halves of the copy. */}
-        <div className="relative flex min-h-[34vh] items-center justify-center lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:min-h-[62vh]">
+        {/* 26vh is measured, not chosen: the cup renders about 222px tall at
+            the hero's compact scale, which is 26% of a 852px phone viewport.
+            The old 34vh reserved a third of the screen for an object that only
+            filled three quarters of it, and the leftover read as a gap between
+            the title and the cup — which is exactly what it was. */}
+        <div className="relative flex min-h-[26vh] items-center justify-center lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:min-h-[62vh]">
           <div
             className="fx-podium absolute left-1/2 top-[58%] h-36 w-72 -translate-x-1/2 -translate-y-1/2 opacity-60 blur-2xl"
             aria-hidden

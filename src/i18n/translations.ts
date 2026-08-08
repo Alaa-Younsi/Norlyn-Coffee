@@ -20,7 +20,7 @@ const core = {
       "Capsules espresso 100 % bio, scellées dans un aluminium alimentaire pur. Quatre intensités, quatre arômes — payées à la livraison.",
     "hero.ctaOrder": "Commander",
     "hero.ctaDiscover": "Découvrir",
-    "hero.codBadge": "Paiement à la livraison — 58 wilayas",
+    "hero.codBadge": "Paiement à la livraison — 69 wilayas",
     "hero.scroll": "Faites défiler",
 
     // story
@@ -30,7 +30,7 @@ const core = {
       "Norlyn Coffee sélectionne des grains d'exception et les torréfie avec précision pour créer Moriva : des capsules espresso dont chaque dosage est calibré au dixième de gramme.",
     "story.p2":
       "Du Noir, robusta dominant, à l'Or tout en arabica — et quatre arômes gourmands à côté. Chaque capsule est scellée sous aluminium alimentaire pur, sans sucre ni produit chimique.",
-    "story.stat1n": "58",
+    "story.stat1n": "69",
     "story.stat1l": "wilayas livrées",
     "story.stat2n": "8",
     "story.stat2l": "capsules au choix",
@@ -259,7 +259,7 @@ const core = {
       "كبسولات إسبريسو 100٪ بيو، مختومة بألمنيوم غذائي خالص. أربع درجات قوة وأربع نكهات — والدفع عند الاستلام.",
     "hero.ctaOrder": "اطلب الآن",
     "hero.ctaDiscover": "اكتشف",
-    "hero.codBadge": "الدفع عند الاستلام — 58 ولاية",
+    "hero.codBadge": "الدفع عند الاستلام — 69 ولاية",
     "hero.scroll": "مرّر للأسفل",
 
     "story.kicker": "دار نورلين",
@@ -268,7 +268,7 @@ const core = {
       "تنتقي نورلين كوفي حبوباً استثنائية وتحمّصها بدقة لصناعة موريفا: كبسولات إسبريسو تُعاير فيها كل جرعة بعُشر الغرام.",
     "story.p2":
       "من الأسود بغلبة الروبوستا إلى الذهبي بكل أرابيكاه — وإلى جانبهما أربع نكهات. كل كبسولة مختومة بألمنيوم غذائي خالص، بلا سكر ولا مواد كيميائية.",
-    "story.stat1n": "58",
+    "story.stat1n": "69",
     "story.stat1l": "ولاية نوصل إليها",
     "story.stat2n": "8",
     "story.stat2l": "كبسولة للاختيار",
@@ -486,7 +486,7 @@ const core = {
       "100 % organic espresso capsules, sealed in pure food-grade aluminium. Four intensities, four aromas — paid on delivery.",
     "hero.ctaOrder": "Order now",
     "hero.ctaDiscover": "Discover",
-    "hero.codBadge": "Cash on delivery — 58 wilayas",
+    "hero.codBadge": "Cash on delivery — 69 wilayas",
     "hero.scroll": "Scroll",
 
     // story
@@ -496,7 +496,7 @@ const core = {
       "Norlyn Coffee selects exceptional beans and roasts them with precision to create Moriva: espresso capsules in which every dose is calibrated to a tenth of a gram.",
     "story.p2":
       "From the robusta-led Noir to the all-arabica Or — with four flavoured capsules alongside them. Every capsule is sealed in pure food-grade aluminium, with no sugar and no chemicals.",
-    "story.stat1n": "58",
+    "story.stat1n": "69",
     "story.stat1l": "wilayas delivered",
     "story.stat2n": "8",
     "story.stat2l": "capsules to choose from",

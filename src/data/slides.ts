@@ -75,9 +75,9 @@ export const FALLBACK_HERO_SLIDES: MediaSlide[] = [
   slide(
     3,
     mediaSrc(MEDIA.fleet.vansLoading),
-    "Livrées dans les 58 wilayas",
-    "توصيل إلى 58 ولاية",
-    "Delivered to all 58 wilayas",
+    "Livrées dans les 69 wilayas",
+    "توصيل إلى 69 ولاية",
+    "Delivered to all 69 wilayas",
     "Paiement à la livraison",
     "الدفع عند الاستلام",
     "Cash on delivery",

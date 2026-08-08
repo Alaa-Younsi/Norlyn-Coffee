@@ -227,16 +227,36 @@ function OrbitBeans({ count }: { count: number }) {
  * it cannot. `flipflops` stops the probing after a few reversals so the canvas
  * is not being resized forever, and `onFallback` pins the safe value.
  */
-const COMPACT_DPR = { min: 1, start: 1.5, max: 2 } as const;
+/**
+ * The rungs the compact canvas climbs, softest first. It used to be a pair —
+ * a "safe" value and native — and a device that could not quite hold native
+ * fell all the way to 1.0 on a 2.75x screen, which is the muddy look: the
+ * scene drawn at a third of the resolution of the text beside it. A ladder
+ * moves ONE rung at a time, so a phone that is merely close to its budget
+ * settles at 1.6 instead of bottoming out, and 1.25 is the floor rather than 1.
+ */
+const COMPACT_DPR = [1.25, 1.6, 2] as const;
+/** where a phone starts before the monitor has an opinion — one rung down from native */
+const COMPACT_START = 1;
 
 export function Scene({ colors, dirSign, compact }: SceneProps) {
   // never render ABOVE the screen's own pixel density — that is pure
   // supersampling the visitor pays for and cannot see
-  const ceiling = useMemo(() => Math.min(COMPACT_DPR.max, window.devicePixelRatio || 1), []);
-  const [dpr, setDpr] = useState(compact ? Math.min(COMPACT_DPR.start, ceiling) : 1.75);
+  const ladder = useMemo(() => {
+    const density = window.devicePixelRatio || 1;
+    const rungs = COMPACT_DPR.filter((rung) => rung <= density);
+    return rungs.length > 0 ? rungs : [density];
+  }, []);
+  const [rung, setRung] = useState(() => Math.min(COMPACT_START, ladder.length - 1));
+  const dpr = ladder[rung];
 
-  const onIncline = useCallback(() => setDpr(ceiling), [ceiling]);
-  const onDecline = useCallback(() => setDpr(COMPACT_DPR.min), []);
+  // `flipflops` on the monitor caps how many times these can reverse, so a
+  // device that sits exactly on the boundary stops being resized forever
+  const onIncline = useCallback(
+    () => setRung((r) => Math.min(r + 1, ladder.length - 1)),
+    [ladder.length],
+  );
+  const onDecline = useCallback(() => setRung((r) => Math.max(r - 1, 0)), []);
 
   return (
     <Canvas

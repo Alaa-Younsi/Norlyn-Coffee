@@ -6,11 +6,19 @@ import { CoffeeDivider } from "@/components/effects/CoffeeDivider";
 import { CoffeeRing } from "@/components/effects/CoffeeRing";
 import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { useDriftIn, useParallax, useRevealOnScroll, useVelocitySkew } from "@/hooks/useScrollFX";
+import {
+  useDriftIn,
+  useFadeUp,
+  useParallax,
+  useRevealOnScroll,
+  useTiltCards,
+  useVelocitySkew,
+} from "@/hooks/useScrollFX";
 import type { Product } from "@/types/db";
 
 export function FeaturedSection({ products }: { products: Product[] }) {
   const { t, dir } = useLanguage();
+  const sectionRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   useRevealOnScroll(gridRef, [products.length]);
@@ -19,16 +27,23 @@ export function FeaturedSection({ products }: { products: Product[] }) {
   useDriftIn(headerRef, "start", 70);
   // fast flicks shear the grid a couple of degrees — scroll with mass
   useVelocitySkew(gridRef);
+  useTiltCards(gridRef, [products.length]);
+  useFadeUp(sectionRef, [products.length]);
 
   return (
-    <section className="relative mx-auto max-w-7xl overflow-hidden px-6 py-16 sm:py-24">
+    <section
+      ref={sectionRef}
+      className="relative mx-auto max-w-7xl overflow-hidden px-6 py-16 sm:py-24"
+    >
       <FloatingBeans count={6} seed={6} />
       <CoffeeRing className="fx-spin-slow -start-16 -top-8 w-56 opacity-10" />
       <CoffeeDivider className="mb-12" />
       <div ref={headerRef} className="relative flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm uppercase tracking-[0.3em] text-brand">{t("featured.kicker")}</p>
-          <h2 className="mt-2 font-display text-3xl font-semibold sm:text-5xl">
+          <p data-fade="16" className="text-sm uppercase tracking-[0.3em] text-brand">
+            {t("featured.kicker")}
+          </p>
+          <h2 data-fade className="mt-2 font-display text-3xl font-semibold sm:text-5xl">
             {t("featured.title")}
           </h2>
         </div>

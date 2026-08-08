@@ -43,7 +43,7 @@ $fmt = New-Object System.Drawing.StringFormat
 $fmt.Alignment = [System.Drawing.StringAlignment]::Center
 
 $g.DrawString("MORIVA", $fontTitle, $gold, [System.Drawing.RectangleF]::new(0, 400, $width, 80), $fmt)
-$g.DrawString("Capsules espresso premium - Paiement a la livraison, 58 wilayas", $fontTag, $cream, [System.Drawing.RectangleF]::new(0, 490, $width, 50), $fmt)
+$g.DrawString("Capsules espresso premium - Paiement a la livraison, 69 wilayas", $fontTag, $cream, [System.Drawing.RectangleF]::new(0, 490, $width, 50), $fmt)
 
 $out = "$PSScriptRoot\..\public\og-image.png"
 $bmp.Save($out, [System.Drawing.Imaging.ImageFormat]::Png)

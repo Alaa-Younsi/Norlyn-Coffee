@@ -51,7 +51,9 @@ export function Header() {
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-40 transition-all duration-300",
-        scrolled ? "pb-0" : "pb-3",
+        // the condensed bar keeps a little tail on phones: with pb-0 the fade
+        // had nowhere to happen and the mask ate into the buttons themselves
+        scrolled ? "pb-1.5 sm:pb-0" : "pb-3",
       )}
     >
       {/*
@@ -70,13 +72,22 @@ export function Header() {
         of <header>, and a mask on the header would fade the bottom of that
         open panel too.
       */}
+      {/*
+        Where the fade stops matters more than it looks. At 60% the tint was
+        already dropping through the row the logo and the buttons sit in, so on
+        a phone — where the bar is barely taller than the wordmark — whatever
+        scrolled underneath showed straight through the controls and the bar
+        read as half-drawn. The opaque part now covers the full control row and
+        only the last stretch fades, which is the part that exists to avoid a
+        hard edge in the first place.
+      */}
       <div
         aria-hidden
         className={cn(
           "pointer-events-none absolute inset-x-0 top-0 -z-10 h-full transition-opacity duration-300",
-          "bg-gradient-to-b from-bg/92 via-bg/88 to-bg/0 backdrop-blur-md",
-          "[mask-image:linear-gradient(to_bottom,#000_60%,transparent_100%)]",
-          "[-webkit-mask-image:linear-gradient(to_bottom,#000_60%,transparent_100%)]",
+          "bg-gradient-to-b from-bg/96 via-bg/94 to-bg/0 backdrop-blur-lg",
+          "[mask-image:linear-gradient(to_bottom,#000_82%,transparent_100%)]",
+          "[-webkit-mask-image:linear-gradient(to_bottom,#000_82%,transparent_100%)]",
           scrolled ? "opacity-100" : "opacity-0",
         )}
       />
@@ -92,7 +103,9 @@ export function Header() {
       <div
         className={cn(
           "mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 transition-all duration-300 sm:px-6",
-          scrolled ? "py-2" : "py-3",
+          // 8px of padding around a 36px wordmark left it all but touching the
+          // top of the screen once the browser's own chrome slid away
+          scrolled ? "py-2.5 sm:py-2" : "py-3",
         )}
       >
         <Link to="/" className="flex items-center gap-2" aria-label="Norlyn Coffee">
@@ -106,7 +119,20 @@ export function Header() {
           />
         </Link>
 
-        <nav className="hidden items-center gap-1 rounded-full border border-line/70 bg-panel/70 px-2 py-1 backdrop-blur-md lg:flex">
+        {/*
+          None of the chips in this bar are frosted any more, and the bar they
+          sit in still is.
+
+          `backdrop-filter` is not a colour — it promotes its element to its own
+          compositing surface and re-reads and re-blurs the pixels behind it on
+          every frame that anything moves. Six of those were pinned to the top
+          of the screen for the entire scroll, each one blurring a backdrop that
+          is either the bar's OWN blurred panel (already frosted, so the second
+          pass adds nothing) or, at the top of the page, a flat cream gradient
+          with nothing in it to blur. Raising the fill from /70 to /85 is
+          visually indistinguishable and costs a paint instead of a surface.
+        */}
+        <nav className="hidden items-center gap-1 rounded-full border border-line/70 bg-panel/85 px-2 py-1 lg:flex">
           {links.map((link) => (
             <Link
               key={link.to}
@@ -131,7 +157,7 @@ export function Header() {
               setLang(nextLang(lang));
               reactMascot("playful");
             }}
-            className="min-w-11 rounded-full border border-line/70 bg-panel/70 px-3 py-1.5 text-sm font-semibold text-muted backdrop-blur-md transition-colors hover:text-ink cursor-pointer"
+            className="min-w-11 rounded-full border border-line/70 bg-panel/85 px-3 py-1.5 text-sm font-semibold text-muted transition-colors hover:text-ink cursor-pointer"
             aria-label={`Switch language — ${LANG_NAME[nextLang(lang)]}`}
           >
             {LANG_LABEL[nextLang(lang)]}
@@ -141,14 +167,14 @@ export function Header() {
               toggleTheme();
               reactMascot("wink");
             }}
-            className="rounded-full border border-line/70 bg-panel/70 p-2 text-muted backdrop-blur-md transition-colors hover:text-ink cursor-pointer"
+            className="rounded-full border border-line/70 bg-panel/85 p-2 text-muted transition-colors hover:text-ink cursor-pointer"
             aria-label={t("nav.theme")}
           >
             {theme === "dark" ? <SunIcon size={17} /> : <MoonIcon size={17} />}
           </button>
           <button
             onClick={openCart}
-            className="relative rounded-full border border-brand/50 bg-panel/70 p-2 text-brand backdrop-blur-md transition-colors hover:bg-brand/10 cursor-pointer"
+            className="relative rounded-full border border-brand/50 bg-panel/85 p-2 text-brand transition-colors hover:bg-brand/10 cursor-pointer"
             aria-label={t("nav.cart")}
           >
             <CoffeeBagIcon size={17} />
@@ -160,7 +186,7 @@ export function Header() {
           </button>
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="rounded-full border border-line/70 bg-panel/70 p-2 text-muted backdrop-blur-md lg:hidden cursor-pointer"
+            className="rounded-full border border-line/70 bg-panel/85 p-2 text-muted lg:hidden cursor-pointer"
             aria-label="menu"
           >
             {menuOpen ? <X size={16} /> : <Menu size={16} />}

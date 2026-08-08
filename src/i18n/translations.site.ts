@@ -39,7 +39,7 @@ export const siteTranslations = {
     // ---------------------------------------------------------------- about
     "about.metaTitle": "La maison Norlyn — nos cafés et notre savoir-faire",
     "about.metaDesc":
-      "L'histoire de Norlyn Coffee, la fabrication des capsules Moriva et la gamme complète — livrée dans les 58 wilayas, paiement à la livraison.",
+      "L'histoire de Norlyn Coffee, la fabrication des capsules Moriva et la gamme complète — livrée dans les 69 wilayas, paiement à la livraison.",
     "about.kicker": "La maison Norlyn",
     "about.title": "Un café pensé",
     "about.titleAccent": "comme un parfum",
@@ -51,7 +51,7 @@ export const siteTranslations = {
     "about.story.p2":
       "Moriva est le résultat de ce travail : deux gammes compatibles Nespresso®. Quatre intensités 100 % bio, du plus corsé au plus aromatique, et quatre capsules aromatisées pour les gourmands — toutes dosées au dixième de gramme.",
     "about.story.p3":
-      "Nous livrons dans les 58 wilayas, et le paiement se fait à la livraison. Vous ne payez qu'une fois la boîte entre vos mains.",
+      "Nous livrons dans les 69 wilayas, et le paiement se fait à la livraison. Vous ne payez qu'une fois la boîte entre vos mains.",
     "about.values.kicker": "Nos engagements",
     "about.values.title": "Trois promesses tenues",
     "about.value1.title": "Grains d'origine",
@@ -105,7 +105,7 @@ export const siteTranslations = {
     "about.fleet.title": "Nos camionnettes, nos couleurs",
     "about.fleet.text":
       "Une partie de l'Algérois est livrée par notre propre flotte ; le reste du pays par nos transporteurs partenaires, avec les mêmes consignes d'emballage. Vous ne payez qu'à la réception.",
-    "about.fleet.badge": "58 wilayas — paiement à la livraison",
+    "about.fleet.badge": "69 wilayas — paiement à la livraison",
     "about.fleet.alt": "Camionnette de livraison Moriva",
 
     "about.retail.kicker": "En magasin",
@@ -130,9 +130,9 @@ export const siteTranslations = {
     // written in.
     "home.metaTitle": "Norlyn Coffee — Moriva, capsules espresso premium en Algérie",
     "home.metaDesc":
-      "Moriva par Norlyn Coffee — capsules espresso 100 % bio en aluminium alimentaire pur. 4 intensités, 4 arômes, livraison 58 wilayas, paiement à la livraison.",
+      "Moriva par Norlyn Coffee — capsules espresso 100 % bio en aluminium alimentaire pur. 4 intensités, 4 arômes, livraison 69 wilayas, paiement à la livraison.",
     "shop.metaDesc":
-      "Toutes les capsules espresso Moriva par Norlyn Coffee — livraison 58 wilayas, paiement à la livraison.",
+      "Toutes les capsules espresso Moriva par Norlyn Coffee — livraison 69 wilayas, paiement à la livraison.",
 
     // ---------------------------------------------------------------- blog
     "blog.metaTitle": "Le journal Norlyn — conseils et culture du café",
@@ -183,7 +183,7 @@ export const siteTranslations = {
     "contact.infoHours": "Horaires",
     "contact.infoHoursValue": "Dimanche – Jeudi, 9 h – 18 h",
     "contact.infoArea": "Livraison",
-    "contact.infoAreaValue": "58 wilayas — paiement à la livraison",
+    "contact.infoAreaValue": "69 wilayas — paiement à la livraison",
     "contact.namePlaceholder": "Prénom et nom",
     "contact.subjectHint": "Facultatif",
     "contact.subjectPlaceholder": "Commande, gros volume, partenariat…",
@@ -223,7 +223,7 @@ export const siteTranslations = {
 
     "about.metaTitle": "دار نورلين — قهوتنا وحرفتنا",
     "about.metaDesc":
-      "قصة نورلين كوفي، وطريقة صناعة كبسولات موريفا، والتشكيلة الكاملة — توصيل إلى 58 ولاية مع الدفع عند الاستلام.",
+      "قصة نورلين كوفي، وطريقة صناعة كبسولات موريفا، والتشكيلة الكاملة — توصيل إلى 69 ولاية مع الدفع عند الاستلام.",
     "about.kicker": "دار نورلين",
     "about.title": "قهوة تُصنع",
     "about.titleAccent": "كما يُصنع العطر",
@@ -235,7 +235,7 @@ export const siteTranslations = {
     "about.story.p2":
       "موريفا ثمرة هذا العمل: تشكيلتان متوافقتان مع نسبريسو®. أربع درجات قوة 100٪ بيو، من الأقوى إلى الأكثر عطراً، وأربع كبسولات بنكهات للذوّاقة — وكلها بجرعة معايرة إلى عُشر الغرام.",
     "about.story.p3":
-      "نوصل إلى 58 ولاية، والدفع عند الاستلام. لا تدفع إلا والعلبة بين يديك.",
+      "نوصل إلى 69 ولاية، والدفع عند الاستلام. لا تدفع إلا والعلبة بين يديك.",
     "about.values.kicker": "التزاماتنا",
     "about.values.title": "ثلاثة وعود محفوظة",
     "about.value1.title": "حبوب ذات أصل",
@@ -283,7 +283,7 @@ export const siteTranslations = {
     "about.fleet.title": "شاحناتنا بألواننا",
     "about.fleet.text":
       "جزء من الجزائر العاصمة يُوصَّل بأسطولنا الخاص، وبقية الوطن عبر ناقلين شركاء بالتعليمات نفسها في التغليف. ولا تدفع إلا عند الاستلام.",
-    "about.fleet.badge": "58 ولاية — الدفع عند الاستلام",
+    "about.fleet.badge": "69 ولاية — الدفع عند الاستلام",
     "about.fleet.alt": "شاحنة توصيل موريفا",
 
     "about.retail.kicker": "في المتاجر",
@@ -304,9 +304,9 @@ export const siteTranslations = {
 
     "home.metaTitle": "نورلين كوفي — موريفا، كبسولات إسبريسو فاخرة في الجزائر",
     "home.metaDesc":
-      "موريفا من نورلين كوفي — كبسولات إسبريسو 100٪ بيو بألمنيوم غذائي خالص. أربع درجات قوة وأربع نكهات، توصيل إلى 58 ولاية والدفع عند الاستلام.",
+      "موريفا من نورلين كوفي — كبسولات إسبريسو 100٪ بيو بألمنيوم غذائي خالص. أربع درجات قوة وأربع نكهات، توصيل إلى 69 ولاية والدفع عند الاستلام.",
     "shop.metaDesc":
-      "كل كبسولات إسبريسو موريفا من نورلين كوفي — توصيل إلى 58 ولاية والدفع عند الاستلام.",
+      "كل كبسولات إسبريسو موريفا من نورلين كوفي — توصيل إلى 69 ولاية والدفع عند الاستلام.",
 
     "blog.metaTitle": "مجلة نورلين — نصائح وثقافة القهوة",
     "blog.metaDesc":
@@ -354,7 +354,7 @@ export const siteTranslations = {
     "contact.infoHours": "أوقات العمل",
     "contact.infoHoursValue": "الأحد – الخميس، 9:00 – 18:00",
     "contact.infoArea": "التوصيل",
-    "contact.infoAreaValue": "58 ولاية — الدفع عند الاستلام",
+    "contact.infoAreaValue": "69 ولاية — الدفع عند الاستلام",
     "contact.namePlaceholder": "الاسم واللقب",
     "contact.subjectHint": "اختياري",
     "contact.subjectPlaceholder": "طلب، كمية بالجملة، شراكة…",
@@ -401,7 +401,7 @@ export const siteTranslations = {
     // ---------------------------------------------------------------- about
     "about.metaTitle": "The Norlyn house — our coffee and our craft",
     "about.metaDesc":
-      "The story of Norlyn Coffee, how Moriva capsules are made, and the full range — delivered to all 58 wilayas, cash on delivery.",
+      "The story of Norlyn Coffee, how Moriva capsules are made, and the full range — delivered to all 69 wilayas, cash on delivery.",
     "about.kicker": "The Norlyn house",
     "about.title": "Coffee composed",
     "about.titleAccent": "like a perfume",
@@ -413,7 +413,7 @@ export const siteTranslations = {
     "about.story.p2":
       "Moriva is the result of that work: two Nespresso®-compatible ranges. Four 100 % organic intensities, from the boldest to the most aromatic, and four flavoured capsules for the sweeter tooth — every one of them dosed to a tenth of a gram.",
     "about.story.p3":
-      "We deliver to all 58 wilayas, and payment is made on delivery. You only pay once the box is in your hands.",
+      "We deliver to all 69 wilayas, and payment is made on delivery. You only pay once the box is in your hands.",
     "about.values.kicker": "Our commitments",
     "about.values.title": "Three promises kept",
     "about.value1.title": "Beans with an origin",
@@ -467,7 +467,7 @@ export const siteTranslations = {
     "about.fleet.title": "Our vans, our colours",
     "about.fleet.text":
       "Part of greater Algiers is delivered by our own fleet; the rest of the country by our partner carriers, under the same packing rules. You only pay on arrival.",
-    "about.fleet.badge": "58 wilayas — cash on delivery",
+    "about.fleet.badge": "69 wilayas — cash on delivery",
     "about.fleet.alt": "A Moriva delivery van",
 
     "about.retail.kicker": "In store",
@@ -489,9 +489,9 @@ export const siteTranslations = {
     // ------------------------------------------------------ page metadata
     "home.metaTitle": "Norlyn Coffee — Moriva, premium espresso capsules in Algeria",
     "home.metaDesc":
-      "Moriva by Norlyn Coffee — 100 % organic espresso capsules in pure food-grade aluminium. 4 intensities, 4 aromas, delivery to all 58 wilayas, cash on delivery.",
+      "Moriva by Norlyn Coffee — 100 % organic espresso capsules in pure food-grade aluminium. 4 intensities, 4 aromas, delivery to all 69 wilayas, cash on delivery.",
     "shop.metaDesc":
-      "Every Moriva espresso capsule by Norlyn Coffee — delivery to all 58 wilayas, cash on delivery.",
+      "Every Moriva espresso capsule by Norlyn Coffee — delivery to all 69 wilayas, cash on delivery.",
 
     // ---------------------------------------------------------------- blog
     "blog.metaTitle": "The Norlyn journal — coffee tips and culture",
@@ -542,7 +542,7 @@ export const siteTranslations = {
     "contact.infoHours": "Hours",
     "contact.infoHoursValue": "Sunday – Thursday, 9 am – 6 pm",
     "contact.infoArea": "Delivery",
-    "contact.infoAreaValue": "58 wilayas — cash on delivery",
+    "contact.infoAreaValue": "69 wilayas — cash on delivery",
     "contact.namePlaceholder": "First and last name",
     "contact.subjectHint": "Optional",
     "contact.subjectPlaceholder": "Order, wholesale, partnership…",

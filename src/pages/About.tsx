@@ -13,7 +13,7 @@ import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { ScrollProgressBar } from "@/components/effects/ScrollProgressBar";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSeo } from "@/hooks/useSeo";
-import { useParallaxItems, useRevealOnScroll } from "@/hooks/useScrollFX";
+import { useFadeUp, useParallaxItems, useRevealOnScroll } from "@/hooks/useScrollFX";
 import { ABOUT_PALETTE } from "@/lib/mascot";
 import { MEDIA } from "@/lib/media";
 import type { TranslationKey } from "@/i18n/translations";
@@ -58,6 +58,7 @@ export function About() {
   // is settled on first paint and the scroll triggers need no re-measure.
   useRevealOnScroll(rootRef);
   useParallaxItems(rootRef);
+  useFadeUp(rootRef);
 
   useSeo({
     title: `${t("about.metaTitle")} — Norlyn Coffee`,
@@ -124,7 +125,7 @@ export function About() {
               />
             </div>
             <div className="p-8 text-start sm:p-10">
-              <p className="text-xs uppercase tracking-[0.35em] text-brand">
+              <p data-fade="16" className="text-xs uppercase tracking-[0.35em] text-brand">
                 {t("about.promise.kicker")}
               </p>
               <h2 className="mt-3 font-display text-3xl font-semibold sm:text-4xl">
@@ -166,13 +167,30 @@ export function About() {
             <p>{t("about.story.p3")}</p>
           </div>
         </div>
-        {/* two shots, offset — a collage reads as a workshop, a single photo
-            beside body copy reads as stock */}
+        {/*
+          Three shots, offset — a collage reads as a workshop, a single photo
+          beside body copy reads as stock.
+
+          The offset is the whole effect and it only works next to the copy: a
+          short column and a tall one, dropped against each other, read as a
+          pinned-up arrangement. Standing alone on a phone the same two columns
+          just have wildly different heights, so one ends in a hole and the
+          arrangement reads as a layout that failed rather than a collage.
+
+          So the phone gets a MOSAIC of the same three pictures instead: the
+          first spans the full width, the other two share the row underneath.
+          The second wrapper carries both layouts — a two-up grid of its own on
+          a phone, a stacked and offset column beside the copy from `lg` — so
+          it always has a box of its own to be moved by.
+        */}
         <div className="grid grid-cols-2 gap-4">
-          <div data-parallax="26">
-            <ImageSlot slot="about.story.1" sizes="(min-width: 1024px) 22vw, 45vw" />
+          <div className="col-span-2 lg:col-span-1" data-parallax="26">
+            <ImageSlot slot="about.story.1" sizes="(min-width: 1024px) 22vw, 92vw" />
           </div>
-          <div className="mt-10 space-y-4" data-parallax="-22">
+          <div
+            className="col-span-2 grid grid-cols-2 gap-4 lg:col-span-1 lg:mt-10 lg:block lg:space-y-4"
+            data-parallax="-22"
+          >
             <ImageSlot slot="about.story.2" sizes="(min-width: 1024px) 22vw, 45vw" />
             <ImageSlot slot="about.story.3" sizes="(min-width: 1024px) 22vw, 45vw" />
           </div>
@@ -182,7 +200,7 @@ export function About() {
       {/* -------------------------------------------------------- values */}
       <section className="mx-auto mt-24 max-w-7xl px-6">
         <header className="text-center">
-          <p className="text-xs uppercase tracking-[0.35em] text-brand">
+          <p data-fade="16" className="text-xs uppercase tracking-[0.35em] text-brand">
             {t("about.values.kicker")}
           </p>
           <h2 className="mt-3 font-display text-3xl font-semibold sm:text-4xl">
@@ -206,7 +224,7 @@ export function About() {
       {/* ------------------------------------------------------- process */}
       <section className="mx-auto mt-24 max-w-7xl px-6" data-mascot="surprised">
         <header className="text-center">
-          <p className="text-xs uppercase tracking-[0.35em] text-brand">
+          <p data-fade="16" className="text-xs uppercase tracking-[0.35em] text-brand">
             {t("about.process.kicker")}
           </p>
           <h2 className="mt-3 font-display text-3xl font-semibold sm:text-4xl">
@@ -236,7 +254,7 @@ export function About() {
       {/* --------------------------------------------------- the two lines */}
       <section className="mx-auto mt-24 max-w-7xl px-6" data-mascot="love">
         <header className="text-center">
-          <p className="text-xs uppercase tracking-[0.35em] text-brand">{t("about.range.kicker")}</p>
+          <p data-fade="16" className="text-xs uppercase tracking-[0.35em] text-brand">{t("about.range.kicker")}</p>
           <h2 className="mt-3 font-display text-3xl font-semibold sm:text-4xl">
             {t("about.range.title")}
           </h2>
@@ -268,7 +286,7 @@ export function About() {
       <section className="mx-auto mt-24 max-w-7xl px-6" data-mascot="playful">
         <div className="grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
           <div className="text-start" data-reveal>
-            <p className="text-xs uppercase tracking-[0.35em] text-brand">
+            <p data-fade="16" className="text-xs uppercase tracking-[0.35em] text-brand">
               {t("about.fleet.kicker")}
             </p>
             <h2 className="mt-3 font-display text-3xl font-semibold sm:text-4xl">
@@ -297,7 +315,7 @@ export function About() {
         <Panel className="overflow-hidden p-0" data-reveal>
           <ImageSlot slot="about.retail" flat sizes="(min-width: 1024px) 45vw, 92vw" />
           <div className="p-7 text-start">
-            <p className="text-xs uppercase tracking-[0.35em] text-brand">
+            <p data-fade="16" className="text-xs uppercase tracking-[0.35em] text-brand">
               {t("about.retail.kicker")}
             </p>
             <h3 className="mt-2 font-display text-2xl">{t("about.retail.title")}</h3>
@@ -313,7 +331,7 @@ export function About() {
             </span>
           </div>
           <div className="p-7 text-start">
-            <p className="text-xs uppercase tracking-[0.35em] text-brand">
+            <p data-fade="16" className="text-xs uppercase tracking-[0.35em] text-brand">
               {t("about.machines.kicker")}
             </p>
             <h3 className="mt-2 font-display text-2xl">{t("about.machines.title")}</h3>

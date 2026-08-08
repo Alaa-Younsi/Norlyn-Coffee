@@ -1,4 +1,5 @@
 import { Camera } from "lucide-react";
+import { MediaFrame } from "@/components/ui/MediaFrame";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSiteImages } from "@/hooks/useSiteContent";
 import { imageSlot } from "@/lib/imageSlots";
@@ -66,6 +67,45 @@ export function ImageSlot({
       ? mediaSrcSet(definition.fallback)
       : undefined;
 
+  const picture = src ? (
+    <img
+      src={src}
+      srcSet={srcSet}
+      sizes={sizes}
+      alt={alt}
+      loading={priority ? "eager" : "lazy"}
+      fetchPriority={priority ? "high" : undefined}
+      decoding="async"
+      className={cn("h-full w-full object-cover", imgClassName)}
+    />
+  ) : (
+    <div
+      className={cn(
+        "fx-slot-empty flex h-full w-full flex-col items-center justify-center gap-2.5 border border-dashed border-brand/35",
+        rounded,
+      )}
+    >
+      <span className="flex h-11 w-11 items-center justify-center rounded-full border border-brand/45 bg-panel/70 text-brand">
+        <Camera size={18} strokeWidth={1.6} />
+      </span>
+      <span className="text-[11px] uppercase tracking-[0.25em] text-brand/75">
+        {t("media.placeholder")}
+      </span>
+    </div>
+  );
+
+  /*
+    An EMPTY slot keeps its old plain box. The frame is a mount for a
+    photograph, and mounting a "photo coming" plate in one dresses up the
+    absence — the dashed camera plate is supposed to read as a gap the client
+    still has to fill, which is the whole point of `fx-slot-empty`.
+
+    `fill` likewise stays unframed: it has no box of its own, it takes the
+    shape of a positioned parent that is already a frame (see the promise band
+    on the About page), so a mat there would be a second border inside a first.
+  */
+  const framed = Boolean(src) && !fill;
+
   return (
     <div
       className={cn(
@@ -74,45 +114,25 @@ export function ImageSlot({
         // both are the same specificity, so whichever Tailwind emits later in
         // the stylesheet wins, which is `relative`. The box then has no height
         // and the picture disappears behind the scrim.
-        fill ? "absolute inset-0 h-full w-full overflow-hidden" : "relative overflow-hidden",
-        !flat && "border border-line/70 bg-panel-2/60",
-        !flat && rounded,
+        fill ? "absolute inset-0 h-full w-full overflow-hidden" : "relative",
+        !framed && "overflow-hidden",
+        !framed && !flat && "border border-line/70 bg-panel-2/60",
+        !framed && !flat && rounded,
         className,
       )}
       style={fill ? undefined : { aspectRatio: aspect }}
     >
-      {src ? (
-        <img
-          src={src}
-          srcSet={srcSet}
-          sizes={sizes}
-          alt={alt}
-          loading={priority ? "eager" : "lazy"}
-          fetchPriority={priority ? "high" : undefined}
-          decoding="async"
-          className={cn("h-full w-full object-cover", imgClassName)}
-        />
-      ) : (
-        <div
-          className={cn(
-            "fx-slot-empty flex h-full w-full flex-col items-center justify-center gap-2.5 border border-dashed border-brand/35",
-            rounded,
-          )}
+      {framed ? (
+        <MediaFrame
+          rounded={rounded}
+          flat={flat}
+          className="h-full w-full"
+          innerClassName="h-full w-full"
         >
-          <span className="flex h-11 w-11 items-center justify-center rounded-full border border-brand/45 bg-panel/70 text-brand">
-            <Camera size={18} strokeWidth={1.6} />
-          </span>
-          <span className="text-[11px] uppercase tracking-[0.25em] text-brand/75">
-            {t("media.placeholder")}
-          </span>
-        </div>
-      )}
-      {/* gold hairline frame, the site-wide picture motif */}
-      {src && !flat && (
-        <span
-          className={cn("pointer-events-none absolute inset-0 border border-brand/20", rounded)}
-          aria-hidden
-        />
+          {picture}
+        </MediaFrame>
+      ) : (
+        picture
       )}
     </div>
   );

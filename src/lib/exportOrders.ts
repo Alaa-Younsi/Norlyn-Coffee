@@ -1,4 +1,3 @@
-import * as XLSX from "xlsx";
 import type { Order } from "@/types/db";
 
 /**
@@ -25,8 +24,21 @@ const STATUS_FR: Record<string, string> = {
   cancelled: "Annulée",
 };
 
-/** Clients run their dispatch off this file — it's a launch feature. */
-export function exportOrders(orders: Order[]): void {
+/**
+ * Clients run their dispatch off this file — it's a launch feature.
+ *
+ * SheetJS is imported at CALL time, not at module load, and that is worth a
+ * comment because the difference was ~100 kB gzipped on every shopper's first
+ * page. Static-importing it here put the whole spreadsheet library in the main
+ * entry chunk: `AdminApp` is lazy, but this module is small and reachable, so
+ * the bundler hoisted it into the shared chunk and every visitor in Algeria
+ * downloaded an xlsx writer over mobile data to look at coffee. Behind a
+ * dynamic import it lands only when a dispatcher actually clicks Export.
+ *
+ * Async as a consequence, which is why the callers `void` it.
+ */
+export async function exportOrders(orders: Order[]): Promise<void> {
+  const XLSX = await import("xlsx");
   const rows = orders.map((order) => ({
     "N° commande": excelSafe(order.order_number),
     Client: excelSafe(order.customer_name),

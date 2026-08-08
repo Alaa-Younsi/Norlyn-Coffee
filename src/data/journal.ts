@@ -287,8 +287,8 @@ Buvez-vous votre espresso pour vous réveiller, ou pour le goûter ? Réveil : N
   },
   {
     slug: "de-l-atelier-a-votre-porte",
-    title_fr: "De l'atelier à votre porte : les 58 wilayas",
-    title_ar: "من الورشة إلى بابك: 58 ولاية",
+    title_fr: "De l'atelier à votre porte : les 69 wilayas",
+    title_ar: "من الورشة إلى بابك: 69 ولاية",
     excerpt_fr:
       "Nos camionnettes, nos délais, et pourquoi vous ne payez qu'une fois la boîte entre vos mains.",
     excerpt_ar: "شاحناتنا، ومواعيدنا، ولماذا لا تدفع إلا والعلبة بين يديك.",
@@ -301,7 +301,7 @@ Buvez-vous votre espresso pour vous réveiller, ou pour le goûter ? Réveil : N
 
 Notre propre flotte
 
-Nous livrons une partie de l'Algérois avec nos propres camionnettes, aux couleurs de Moriva. Ce n'est pas seulement une question d'image : quand c'est notre chauffeur qui livre, c'est notre équipe qui répond, qui reprend une boîte abîmée sur place et qui nous rapporte ce que le client a dit. Pour les 58 wilayas, nous travaillons avec des transporteurs partenaires, avec les mêmes consignes d'emballage.
+Nous livrons une partie de l'Algérois avec nos propres camionnettes, aux couleurs de Moriva. Ce n'est pas seulement une question d'image : quand c'est notre chauffeur qui livre, c'est notre équipe qui répond, qui reprend une boîte abîmée sur place et qui nous rapporte ce que le client a dit. Pour les 69 wilayas, nous travaillons avec des transporteurs partenaires, avec les mêmes consignes d'emballage.
 
 Le paiement à la livraison
 
@@ -322,7 +322,7 @@ Appelez-nous. Une boîte abîmée est remplacée. Nous préférons de loin refai
 
 أسطولنا الخاص
 
-نوصّل جزءاً من الجزائر العاصمة بشاحناتنا الخاصة، بألوان موريفا. وليست المسألة مسألة صورة فقط: حين يكون السائق سائقنا، يكون الردّ ردّ فريقنا، ويُستبدل الصندوق التالف في المكان، وتصلنا ملاحظة الزبون كما قالها. أما بقية الولايات الـ58 فنعمل فيها مع ناقلين شركاء، بالتعليمات نفسها في التغليف.
+نوصّل جزءاً من الجزائر العاصمة بشاحناتنا الخاصة، بألوان موريفا. وليست المسألة مسألة صورة فقط: حين يكون السائق سائقنا، يكون الردّ ردّ فريقنا، ويُستبدل الصندوق التالف في المكان، وتصلنا ملاحظة الزبون كما قالها. أما بقية الولايات الـ69 فنعمل فيها مع ناقلين شركاء، بالتعليمات نفسها في التغليف.
 
 الدفع عند الاستلام
 
@@ -474,7 +474,7 @@ How to choose in one question
 Do you drink your espresso to wake up, or to taste it? To wake up: Noir or Brun. To taste: Vert or Or. And if you are still hesitating, start with the Vert — it is the reference point from which you will know which way to go.`,
   },
   "de-l-atelier-a-votre-porte": {
-    title_en: "From the workshop to your door: all 58 wilayas",
+    title_en: "From the workshop to your door: all 69 wilayas",
     tag_en: "Behind the scenes",
     excerpt_en:
       "Our vans, our lead times, and why you only pay once the box is in your hands.",
@@ -482,7 +482,7 @@ Do you drink your espresso to wake up, or to taste it? To wake up: Noir or Brun.
 
 Our own fleet
 
-We deliver part of Algiers with our own vans, in Moriva's colours. It is not only a matter of image: when our driver delivers, our team is the one who answers, who takes back a damaged box on the spot, and who brings us back what the customer said. For all 58 wilayas we work with partner carriers, under the same packing instructions.
+We deliver part of Algiers with our own vans, in Moriva's colours. It is not only a matter of image: when our driver delivers, our team is the one who answers, who takes back a damaged box on the spot, and who brings us back what the customer said. For all 69 wilayas we work with partner carriers, under the same packing instructions.
 
 Cash on delivery
 

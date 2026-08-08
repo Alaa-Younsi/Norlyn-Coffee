@@ -62,7 +62,7 @@ export function AdminOrders() {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => exportOrders(rows)}
+            onClick={() => void exportOrders(rows)}
             disabled={rows.length === 0}
           >
             <Download size={15} />
@@ -84,7 +84,7 @@ export function AdminOrders() {
         <DeleteAllOrdersModal
           count={rows.length}
           deleting={deleteAll.isPending}
-          onExport={() => exportOrders(rows)}
+          onExport={() => void exportOrders(rows)}
           onConfirm={() => deleteAll.mutate()}
           onClose={() => setConfirmDelete(false)}
         />

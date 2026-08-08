@@ -44,7 +44,7 @@ export function Drawer({ open, onClose, children, title }: DrawerProps) {
         <div className="fixed inset-0 z-50" role="dialog" aria-modal="true">
           <motion.button
             aria-label={t("common.close")}
-            className="absolute inset-0 h-full w-full cursor-default bg-ink/40 backdrop-blur-[2px]"
+            className="absolute inset-0 h-full w-full cursor-default bg-shade/40 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

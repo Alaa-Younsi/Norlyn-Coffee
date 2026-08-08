@@ -50,7 +50,7 @@ export function CartDrawer() {
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">
-                    {pickLang(lang, item.nameFr, item.nameAr)}
+                    {pickLang(lang, item.nameFr, item.nameAr, item.nameEn)}
                   </p>
                   <p className="mt-0.5 text-sm text-brand font-medium">{formatPrice(item.price)}</p>
                   <div className="mt-2 flex items-center gap-2">

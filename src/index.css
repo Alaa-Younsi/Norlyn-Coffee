@@ -22,6 +22,9 @@ html[data-theme="light"] {
   --c-brand: 169 124 55;
   --c-gold-hi: 214 178 112;
   --c-cream: 248 242 233;
+  /* see the dark block — deliberately IDENTICAL in both themes */
+  --c-shade: 16 11 7;
+  --c-on-shade: 250 246 239;
   --viz-revenue: #a97c37;
   --viz-profit: #2d6a4f;
   --viz-expense: #a13d2d;
@@ -38,6 +41,18 @@ html[data-theme="dark"] {
   --c-brand: 201 162 75;
   --c-gold-hi: 232 197 128;
   --c-cream: 30 22 16;
+  /*
+    Theme-INVARIANT, and the same two values as the light block on purpose.
+
+    Every other token here flips with the theme, which is right for the page's
+    own surfaces and wrong for anything laid over a photograph: a scrim over a
+    picture darkens it so a caption can be read on top, and `--c-ink` inverting
+    to near-cream turned all of those into a white fog across the client's
+    product shots in dark mode. A photo is the same photo in both themes, so
+    the ink laid on it and the text laid on that are too.
+  */
+  --c-shade: 16 11 7;
+  --c-on-shade: 250 246 239;
   --viz-revenue: #e8c580;
   --viz-profit: #6fcf9b;
   --viz-expense: #e78a78;
@@ -53,6 +68,9 @@ html[data-theme="dark"] {
   --color-brand: rgb(var(--c-brand));
   --color-gold-hi: rgb(var(--c-gold-hi));
   --color-cream: rgb(var(--c-cream));
+  /* the pair for anything drawn ON a photograph or a film — never theme-flipped */
+  --color-shade: rgb(var(--c-shade));
+  --color-on-shade: rgb(var(--c-on-shade));
 
   /* ONE family for the whole site — "Gourmand" first, so dropping the licensed
      woff2 files into /public/fonts and uncommenting the @font-face block below

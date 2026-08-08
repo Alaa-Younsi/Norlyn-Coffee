@@ -12,7 +12,7 @@ import type { Product } from "@/types/db";
  */
 export function ProductCard({ product }: { product: Product }) {
   const { t, lang } = useLanguage();
-  const name = pickLang(lang, product.name_fr, product.name_ar);
+  const name = pickLang(lang, product.name_fr, product.name_ar, product.name_en);
   const image = [...(product.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0];
   const out = product.stock <= 0;
 
@@ -41,7 +41,7 @@ export function ProductCard({ product }: { product: Product }) {
           />
         )}
         {out && (
-          <span className="absolute top-2 start-2 rounded-full bg-ink/80 px-3 py-1 text-xs font-semibold text-cream">
+          <span className="absolute top-2 start-2 rounded-full bg-shade/80 px-3 py-1 text-xs font-semibold text-on-shade">
             {t("shop.outOfStock")}
           </span>
         )}

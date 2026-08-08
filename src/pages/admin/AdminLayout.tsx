@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { LogOut, Menu, Moon, ShieldAlert, Store, Sun, X } from "lucide-react";
+import { LogOut, Menu, ShieldAlert, Store, X } from "lucide-react";
+import { MoonIcon, SunIcon } from "@/components/ui/icons";
 import { AdminToasts } from "@/components/admin/AdminToast";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminProfile } from "@/hooks/useAdminProfile";
@@ -162,7 +163,7 @@ export function AdminLayout() {
         {mobileOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <motion.button
-              className="absolute inset-0 h-full w-full bg-ink/40"
+              className="absolute inset-0 h-full w-full bg-shade/40"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -214,7 +215,7 @@ function QuickToggles() {
         className="rounded-full border border-line p-1.5 cursor-pointer"
         aria-label="theme"
       >
-        {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+        {theme === "dark" ? <SunIcon size={15} /> : <MoonIcon size={15} />}
       </button>
     </div>
   );

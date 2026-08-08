@@ -92,13 +92,13 @@ export function GallerySection() {
                       src={photo.url}
                       srcSet={dbSrcSet(photo.url)}
                       sizes="(min-width: 640px) 33vw, 90vw"
-                      alt={pickLang(lang, photo.alt_fr, photo.alt_ar) ?? ""}
+                      alt={pickLang(lang, photo.alt_fr, photo.alt_ar, photo.alt_en) ?? ""}
                       loading="lazy"
                       decoding="async"
                       className="absolute inset-0 h-full w-full object-cover"
                     />
                     <span
-                      className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent"
+                      className="absolute inset-0 bg-gradient-to-t from-shade/80 via-shade/20 to-transparent"
                       aria-hidden
                     />
                   </>
@@ -113,7 +113,7 @@ export function GallerySection() {
                 <p
                   className={cn(
                     "relative mt-auto text-balance text-center font-display text-xl sm:text-2xl",
-                    photo ? "text-cream" : "text-ink/90",
+                    photo ? "text-on-shade" : "text-ink/90",
                   )}
                 >
                   {tile.caption}

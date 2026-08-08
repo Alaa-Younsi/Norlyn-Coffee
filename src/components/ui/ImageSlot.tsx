@@ -54,8 +54,8 @@ export function ImageSlot({
   // an uploaded row brings its own alt; the shipped photo brings the one its
   // definition describes it with
   const alt = row
-    ? (pickLang(lang, row.alt_fr, row.alt_ar) ?? "")
-    : (pickLang(lang, definition?.alt_fr, definition?.alt_ar) ?? "");
+    ? (pickLang(lang, row.alt_fr, row.alt_ar, row.alt_en) ?? "")
+    : (pickLang(lang, definition?.alt_fr, definition?.alt_ar, definition?.alt_en) ?? "");
 
   const src = row?.url ?? (definition ? mediaSrc(definition.fallback) : null);
   // a Storage upload is a single file with no renditions; the shipped photo has

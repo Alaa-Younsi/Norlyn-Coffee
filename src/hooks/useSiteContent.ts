@@ -3,12 +3,14 @@ import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { FALLBACK_ARTICLES } from "@/data/journal";
 import { FALLBACK_HERO_SLIDES } from "@/data/slides";
 import { FALLBACK_SITE_IMAGES } from "@/data/siteImages";
+import { videoSlot, videoSlotFallback } from "@/lib/videoSlots";
 import type {
   Article,
   ContactMessage,
   MediaSlide,
   MessageStatus,
   SiteImage,
+  SiteVideo,
   SlidePlacement,
 } from "@/types/db";
 
@@ -99,7 +101,13 @@ export function useSiteImages() {
 export function useSaveSiteImage() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (row: { slot: string; url: string; alt_fr?: string; alt_ar?: string }) => {
+    mutationFn: async (row: {
+      slot: string;
+      url: string;
+      alt_fr?: string;
+      alt_ar?: string;
+      alt_en?: string;
+    }) => {
       const { error } = await supabase.from("site_images").upsert(row, { onConflict: "slot" });
       if (error) throw error;
     },
@@ -115,6 +123,74 @@ export function useClearSiteImage() {
       if (error) throw error;
     },
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["site-images"] }),
+  });
+}
+
+/* ------------------------------------------------------------- site videos */
+
+export function useSiteVideos() {
+  return useQuery({
+    queryKey: ["site-videos"],
+    retry: 0,
+    staleTime: 1000 * 60 * 10,
+    queryFn: async (): Promise<Record<string, SiteVideo>> => {
+      // no project wired up = no uploads exist, and every slot falls through
+      // to the committed drop-in film. An empty map says exactly that.
+      if (!isSupabaseConfigured) return {};
+      const { data, error } = await supabase.from("site_videos").select("*");
+      if (error) throw error;
+      return Object.fromEntries(((data ?? []) as SiteVideo[]).map((row) => [row.slot, row]));
+    },
+  });
+}
+
+/**
+ * What actually plays in a slot, resolved once for every caller.
+ *
+ * The order is the contract described in lib/videoSlots.ts: the client's
+ * upload wins, then the committed drop-in file, and the poster is whatever
+ * still goes with whichever of those two won. `custom` tells a caller whether
+ * it is looking at an admin-managed film — HeroVideo uses it to decide whether
+ * a hero slide's poster may stand in.
+ */
+export function useVideoSlot(slot: string): {
+  src: string;
+  poster: string;
+  custom: boolean;
+} {
+  const { data: videos } = useSiteVideos();
+  const definition = videoSlot(slot);
+  const row = videos?.[slot];
+  const fallback = definition
+    ? videoSlotFallback(definition)
+    : { src: "", poster: "" };
+
+  return {
+    src: row?.url ?? fallback.src,
+    poster: row?.poster_url ?? fallback.poster,
+    custom: Boolean(row),
+  };
+}
+
+export function useSaveSiteVideo() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (row: { slot: string; url: string; poster_url?: string | null }) => {
+      const { error } = await supabase.from("site_videos").upsert(row, { onConflict: "slot" });
+      if (error) throw error;
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["site-videos"] }),
+  });
+}
+
+export function useClearSiteVideo() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (slot: string) => {
+      const { error } = await supabase.from("site_videos").delete().eq("slot", slot);
+      if (error) throw error;
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["site-videos"] }),
   });
 }
 

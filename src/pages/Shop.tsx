@@ -29,11 +29,7 @@ export function Shop() {
     categoryId: categoryId || undefined,
   });
 
-  useSeo({
-    title: `${t("shop.title")} — Norlyn Coffee`,
-    description:
-      "Toutes les capsules espresso Moriva par Norlyn Coffee — livraison 58 wilayas, paiement à la livraison.",
-  });
+  useSeo({ title: `${t("shop.title")} — Norlyn Coffee`, description: t("shop.metaDesc") });
 
   return (
     <main className="fx-hero-vignette relative mx-auto min-h-screen overflow-x-clip px-6 pb-24 pt-28">
@@ -88,7 +84,7 @@ export function Shop() {
                 active={categoryId === category.id}
                 onClick={() => setCategoryId(category.id)}
               >
-                {pickLang(lang, category.name_fr, category.name_ar)}
+                {pickLang(lang, category.name_fr, category.name_ar, category.name_en)}
               </CategoryChip>
             ))}
           </div>

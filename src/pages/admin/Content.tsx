@@ -8,12 +8,16 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import {
   useAllSlidesAdmin,
   useClearSiteImage,
+  useClearSiteVideo,
   useDeleteSlide,
   useSaveSiteImage,
+  useSaveSiteVideo,
   useSaveSlide,
   useSiteImages,
+  useSiteVideos,
 } from "@/hooks/useSiteContent";
 import { IMAGE_SLOTS, IMAGE_SLOT_GROUPS } from "@/lib/imageSlots";
+import { VIDEO_SLOTS, videoSlotFallback } from "@/lib/videoSlots";
 import { mediaSrc } from "@/lib/media";
 import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
@@ -26,8 +30,10 @@ interface SlideDraft {
   poster_url: string;
   title_fr: string;
   title_ar: string;
+  title_en: string;
   subtitle_fr: string;
   subtitle_ar: string;
+  subtitle_en: string;
   link_url: string;
   placement: SlidePlacement;
   sort_order: number;
@@ -41,8 +47,10 @@ function emptySlide(): SlideDraft {
     poster_url: "",
     title_fr: "",
     title_ar: "",
+    title_en: "",
     subtitle_fr: "",
     subtitle_ar: "",
+    subtitle_en: "",
     link_url: "",
     placement: "hero",
     sort_order: 0,
@@ -58,8 +66,10 @@ function toDraft(slide: MediaSlide): SlideDraft {
     poster_url: slide.poster_url ?? "",
     title_fr: slide.title_fr ?? "",
     title_ar: slide.title_ar ?? "",
+    title_en: slide.title_en ?? "",
     subtitle_fr: slide.subtitle_fr ?? "",
     subtitle_ar: slide.subtitle_ar ?? "",
+    subtitle_en: slide.subtitle_en ?? "",
     link_url: slide.link_url ?? "",
     placement: slide.placement,
     sort_order: slide.sort_order,
@@ -74,8 +84,150 @@ export function AdminContent() {
     <div className="max-w-5xl">
       <h1 className="font-display text-3xl">{t("admin.content.title")}</h1>
       <SlidesSection />
+      <VideoSlotsSection />
       <SlotsSection />
     </div>
+  );
+}
+
+/* ------------------------------------------------------- named film slots */
+
+/**
+ * The two fixed films — the hero screen and the loop that plays on every
+ * product page. Same shape as the picture slots below: the design names the
+ * frame, the client fills it, and clearing it falls back to whatever ships.
+ */
+function VideoSlotsSection() {
+  const { t, lang } = useLanguage();
+  const { data: videos } = useSiteVideos();
+  const saveVideo = useSaveSiteVideo();
+  const clearVideo = useClearSiteVideo();
+
+  return (
+    <section className="mt-12">
+      <h2 className="font-display text-2xl">{t("admin.content.videos")}</h2>
+      <p className="mt-1 max-w-xl text-sm text-muted">{t("admin.content.videosHint")}</p>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        {VIDEO_SLOTS.map((slot) => {
+          const row = videos?.[slot.slot];
+          const shipped = videoSlotFallback(slot);
+          const src = row?.url ?? shipped.src;
+          const poster = row?.poster_url ?? shipped.poster;
+
+          return (
+            <Panel key={slot.slot} className="p-4">
+              {/* `key` on the player: React keeps the same <video> element
+                  across a src change and goes on showing the old frame, so a
+                  freshly uploaded film looks like a failed upload until the
+                  page is reloaded. Re-keying mounts a new one. */}
+              <div
+                className="mb-3 overflow-hidden rounded-2xl bg-panel-2"
+                style={{ aspectRatio: slot.ratio }}
+              >
+                <video
+                  key={src}
+                  src={src}
+                  poster={poster}
+                  controls
+                  muted
+                  playsInline
+                  preload="none"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+
+              <p className="text-sm font-medium">
+                {pickLang(lang, slot.label_fr, slot.label_ar, slot.label_en)}
+              </p>
+              <p className="mt-0.5 text-xs leading-snug text-muted">
+                {pickLang(lang, slot.hint_fr, slot.hint_ar, slot.hint_en)}
+              </p>
+              <p className="mt-1 text-xs text-brand">
+                {row ? t("admin.content.slotFilled") : t("admin.content.videoShipped")}
+              </p>
+
+              <div className="mt-3 space-y-3">
+                <FieldWrapper label={t("admin.content.videoFile")}>
+                  <Input
+                    dir="ltr"
+                    key={`${slot.slot}-url-${row?.url ?? ""}`}
+                    placeholder={shipped.src}
+                    defaultValue={row?.url ?? ""}
+                    onBlur={(e) => {
+                      const url = e.target.value.trim();
+                      // an emptied box means "go back to the shipped film",
+                      // which is the delete, not an upsert of an empty url
+                      if (!url) {
+                        if (row) clearVideo.mutate(slot.slot);
+                        return;
+                      }
+                      if (url === row?.url) return;
+                      saveVideo.mutate({
+                        slot: slot.slot,
+                        url,
+                        poster_url: row?.poster_url ?? null,
+                      });
+                    }}
+                  />
+                  <UploadButton
+                    className="mt-2"
+                    kind="video"
+                    label={t("admin.content.videoUpload")}
+                    onUploaded={(url) =>
+                      saveVideo.mutate({
+                        slot: slot.slot,
+                        url,
+                        poster_url: row?.poster_url ?? null,
+                      })
+                    }
+                  />
+                </FieldWrapper>
+
+                <FieldWrapper label={t("admin.content.poster")}>
+                  <Input
+                    dir="ltr"
+                    key={`${slot.slot}-poster-${row?.poster_url ?? ""}`}
+                    placeholder={shipped.poster}
+                    defaultValue={row?.poster_url ?? ""}
+                    // a poster with no film of its own would be a row that
+                    // overrides the shipped video with nothing — disabled
+                    // until there is something to put a still in front of
+                    disabled={!row}
+                    onBlur={(e) => {
+                      if (!row) return;
+                      const value = e.target.value.trim() || null;
+                      if (value === (row.poster_url ?? null)) return;
+                      saveVideo.mutate({ slot: slot.slot, url: row.url, poster_url: value });
+                    }}
+                  />
+                  {row && (
+                    <UploadButton
+                      className="mt-2"
+                      prefix="site"
+                      onUploaded={(url) =>
+                        saveVideo.mutate({ slot: slot.slot, url: row.url, poster_url: url })
+                      }
+                    />
+                  )}
+                </FieldWrapper>
+              </div>
+
+              {row && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="mt-3"
+                  onClick={() => clearVideo.mutate(slot.slot)}
+                >
+                  {t("admin.content.videoRestore")}
+                </Button>
+              )}
+            </Panel>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -99,8 +251,10 @@ function SlidesSection() {
         poster_url: draft.poster_url.trim() || null,
         title_fr: draft.title_fr.trim() || null,
         title_ar: draft.title_ar.trim() || null,
+        title_en: draft.title_en.trim() || null,
         subtitle_fr: draft.subtitle_fr.trim() || null,
         subtitle_ar: draft.subtitle_ar.trim() || null,
+        subtitle_en: draft.subtitle_en.trim() || null,
         link_url: draft.link_url.trim() || null,
         placement: draft.placement,
         sort_order: Number(draft.sort_order) || 0,
@@ -202,6 +356,13 @@ function SlidesSection() {
                   onChange={(e) => setDraft({ ...draft, title_ar: e.target.value })}
                 />
               </FieldWrapper>
+              <FieldWrapper label={t("admin.content.titleEn")}>
+                <Input
+                  dir="ltr"
+                  value={draft.title_en}
+                  onChange={(e) => setDraft({ ...draft, title_en: e.target.value })}
+                />
+              </FieldWrapper>
               <FieldWrapper label={t("admin.content.subtitleFr")}>
                 <Input
                   value={draft.subtitle_fr}
@@ -213,6 +374,13 @@ function SlidesSection() {
                   dir="rtl"
                   value={draft.subtitle_ar}
                   onChange={(e) => setDraft({ ...draft, subtitle_ar: e.target.value })}
+                />
+              </FieldWrapper>
+              <FieldWrapper label={t("admin.content.subtitleEn")}>
+                <Input
+                  dir="ltr"
+                  value={draft.subtitle_en}
+                  onChange={(e) => setDraft({ ...draft, subtitle_en: e.target.value })}
                 />
               </FieldWrapper>
             </div>
@@ -276,7 +444,7 @@ function SlidesSection() {
             </div>
             <div className="p-4">
               <p className="truncate text-sm font-medium">
-                {pickLang(lang, slide.title_fr, slide.title_ar) || slide.url.split("/").pop()}
+                {pickLang(lang, slide.title_fr, slide.title_ar, slide.title_en) || slide.url.split("/").pop()}
               </p>
               <p className="text-xs text-muted">
                 {slide.placement === "hero"
@@ -325,7 +493,7 @@ function SlotsSection() {
       {IMAGE_SLOT_GROUPS.map((group) => (
         <div key={group.key} className="mt-6">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted">
-            {pickLang(lang, group.label_fr, group.label_ar)}
+            {pickLang(lang, group.label_fr, group.label_ar, group.label_en)}
           </h3>
           <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {IMAGE_SLOTS.filter((slot) => slot.group === group.key).map((slot) => {
@@ -335,6 +503,15 @@ function SlotsSection() {
               // photo is the only honest answer to "what is on my site?" — the
               // old empty-icon state described a page that no longer exists.
               const preview = row?.url ?? mediaSrc(slot.fallback);
+              // The three alt texts as they stand right now — the row's if the
+              // client has typed one, otherwise the wording that describes the
+              // shipped photograph. Every write below sends all three, so
+              // editing one language never blanks the other two.
+              const alts = {
+                alt_fr: row?.alt_fr ?? slot.alt_fr,
+                alt_ar: row?.alt_ar ?? slot.alt_ar,
+                alt_en: row?.alt_en ?? slot.alt_en,
+              };
               return (
                 <Panel key={slot.slot} className="p-4">
                   <div
@@ -351,7 +528,7 @@ function SlotsSection() {
                   </div>
 
                   <p className="text-sm font-medium">
-                    {pickLang(lang, slot.label_fr, slot.label_ar)}
+                    {pickLang(lang, slot.label_fr, slot.label_ar, slot.label_en)}
                   </p>
                   <p className="text-xs text-muted">
                     {row ? t("admin.content.slotFilled") : t("admin.content.slotEmpty")} · {slot.ratio}
@@ -360,14 +537,7 @@ function SlotsSection() {
                   <div className="mt-3 flex flex-wrap gap-2">
                     <UploadButton
                       prefix="site"
-                      onUploaded={(url) =>
-                        saveImage.mutate({
-                          slot: slot.slot,
-                          url,
-                          alt_fr: row?.alt_fr ?? undefined,
-                          alt_ar: row?.alt_ar ?? undefined,
-                        })
-                      }
+                      onUploaded={(url) => saveImage.mutate({ slot: slot.slot, url, ...alts })}
                     />
                     {row && (
                       <Button
@@ -389,29 +559,43 @@ function SlotsSection() {
                       "keep this picture, change its description" should do. */}
                   <div className="mt-3 space-y-2">
                     <Input
-                      key={`${slot.slot}-fr-${row?.alt_fr ?? slot.alt_fr}`}
+                      key={`${slot.slot}-fr-${alts.alt_fr}`}
                       placeholder={t("admin.content.altFr")}
-                      defaultValue={row?.alt_fr ?? slot.alt_fr}
+                      defaultValue={alts.alt_fr}
                       onBlur={(e) =>
                         saveImage.mutate({
                           slot: slot.slot,
                           url: preview,
+                          ...alts,
                           alt_fr: e.target.value,
-                          alt_ar: row?.alt_ar ?? slot.alt_ar,
                         })
                       }
                     />
                     <Input
                       dir="rtl"
-                      key={`${slot.slot}-ar-${row?.alt_ar ?? slot.alt_ar}`}
+                      key={`${slot.slot}-ar-${alts.alt_ar}`}
                       placeholder={t("admin.content.altAr")}
-                      defaultValue={row?.alt_ar ?? slot.alt_ar}
+                      defaultValue={alts.alt_ar}
                       onBlur={(e) =>
                         saveImage.mutate({
                           slot: slot.slot,
                           url: preview,
-                          alt_fr: row?.alt_fr ?? slot.alt_fr,
+                          ...alts,
                           alt_ar: e.target.value,
+                        })
+                      }
+                    />
+                    <Input
+                      dir="ltr"
+                      key={`${slot.slot}-en-${alts.alt_en}`}
+                      placeholder={t("admin.content.altEn")}
+                      defaultValue={alts.alt_en}
+                      onBlur={(e) =>
+                        saveImage.mutate({
+                          slot: slot.slot,
+                          url: preview,
+                          ...alts,
+                          alt_en: e.target.value,
                         })
                       }
                     />

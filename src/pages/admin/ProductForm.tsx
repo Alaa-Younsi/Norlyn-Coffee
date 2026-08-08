@@ -19,10 +19,13 @@ import type { Product, ProductImage } from "@/types/db";
 interface FormState {
   name_fr: string;
   name_ar: string;
+  name_en: string;
   description_fr: string;
   description_ar: string;
+  description_en: string;
   details_fr: string;
   details_ar: string;
+  details_en: string;
   price: string;
   compare_at_price: string;
   category_id: string;
@@ -38,10 +41,13 @@ interface FormState {
 const EMPTY: FormState = {
   name_fr: "",
   name_ar: "",
+  name_en: "",
   description_fr: "",
   description_ar: "",
+  description_en: "",
   details_fr: "",
   details_ar: "",
+  details_en: "",
   price: "",
   compare_at_price: "",
   category_id: "",
@@ -58,10 +64,15 @@ function toFormState(product: Product): FormState {
   return {
     name_fr: product.name_fr,
     name_ar: product.name_ar,
+    name_en: product.name_en ?? "",
     description_fr: product.description_fr ?? "",
     description_ar: product.description_ar ?? "",
+    description_en: product.description_en ?? "",
     details_fr: product.details_fr.join("\n"),
     details_ar: product.details_ar.join("\n"),
+    // `?? []` and not a bare `.join`: a row written before migration 0012
+    // comes back with the column absent, not empty
+    details_en: (product.details_en ?? []).join("\n"),
     price: String(product.price),
     compare_at_price: product.compare_at_price !== null ? String(product.compare_at_price) : "",
     category_id: product.category_id ?? "",
@@ -219,10 +230,13 @@ function ProductFormInner({
       const payload = {
         name_fr: form.name_fr.trim(),
         name_ar: form.name_ar.trim(),
+        name_en: form.name_en.trim() || null,
         description_fr: form.description_fr.trim() || null,
         description_ar: form.description_ar.trim() || null,
+        description_en: form.description_en.trim() || null,
         details_fr: form.details_fr.split("\n").map((s) => s.trim()).filter(Boolean),
         details_ar: form.details_ar.split("\n").map((s) => s.trim()).filter(Boolean),
+        details_en: form.details_en.split("\n").map((s) => s.trim()).filter(Boolean),
         price: Number(form.price),
         compare_at_price: form.compare_at_price ? Number(form.compare_at_price) : null,
         category_id: form.category_id || null,
@@ -290,17 +304,29 @@ function ProductFormInner({
           <FieldWrapper label={t("admin.form.nameAr")}>
             <Input value={form.name_ar} onChange={(e) => set("name_ar", e.target.value)} dir="rtl" />
           </FieldWrapper>
+          {/* Every English box may be left empty. pickLang falls back to the
+              French one, so a half-translated product reads as French rather
+              than as a blank card — see lib/localized.ts. */}
+          <FieldWrapper label={t("admin.form.nameEn")}>
+            <Input value={form.name_en} onChange={(e) => set("name_en", e.target.value)} dir="ltr" />
+          </FieldWrapper>
           <FieldWrapper label={t("admin.form.descFr")}>
             <Textarea value={form.description_fr} onChange={(e) => set("description_fr", e.target.value)} />
           </FieldWrapper>
           <FieldWrapper label={t("admin.form.descAr")}>
             <Textarea value={form.description_ar} onChange={(e) => set("description_ar", e.target.value)} dir="rtl" />
           </FieldWrapper>
+          <FieldWrapper label={t("admin.form.descEn")}>
+            <Textarea value={form.description_en} onChange={(e) => set("description_en", e.target.value)} dir="ltr" />
+          </FieldWrapper>
           <FieldWrapper label={t("admin.form.detailsFr")}>
             <Textarea value={form.details_fr} onChange={(e) => set("details_fr", e.target.value)} />
           </FieldWrapper>
           <FieldWrapper label={t("admin.form.detailsAr")}>
             <Textarea value={form.details_ar} onChange={(e) => set("details_ar", e.target.value)} dir="rtl" />
+          </FieldWrapper>
+          <FieldWrapper label={t("admin.form.detailsEn")}>
+            <Textarea value={form.details_en} onChange={(e) => set("details_en", e.target.value)} dir="ltr" />
           </FieldWrapper>
         </Panel>
 

@@ -24,7 +24,7 @@ export function DeleteAllOrdersModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <button
-        className="absolute inset-0 h-full w-full bg-ink/50"
+        className="absolute inset-0 h-full w-full bg-shade/50"
         // dismissal is disabled while the delete is in flight
         onClick={deleting ? undefined : onClose}
         aria-label={t("common.close")}

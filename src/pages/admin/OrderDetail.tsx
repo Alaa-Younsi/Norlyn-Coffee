@@ -113,7 +113,7 @@ export function AdminOrderDetail() {
                 />
               )}
               <span className="min-w-0 flex-1 truncate">
-                {pickLang(lang, item.name_fr, item.name_ar)} × {item.quantity}
+                {pickLang(lang, item.name_fr, item.name_ar, item.name_en)} × {item.quantity}
               </span>
               <span className="font-medium">{formatPrice(Number(item.price) * item.quantity)}</span>
             </li>

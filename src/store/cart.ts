@@ -6,6 +6,13 @@ export interface CartItem {
   slug: string;
   nameFr: string;
   nameAr: string;
+  /**
+   * Optional, and it has to stay that way: this store is `persist`ed to
+   * localStorage, so a shopper who filled their basket before English shipped
+   * comes back with lines that have no `nameEn` at all. `pickLang` falls back
+   * to French for those, which is what the cart used to show them anyway.
+   */
+  nameEn?: string | null;
   price: number;
   imageUrl: string | null;
   quantity: number;

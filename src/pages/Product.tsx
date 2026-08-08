@@ -40,11 +40,11 @@ export function Product() {
     () => [...(product?.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order),
     [product],
   );
-  const name = product ? pickLang(lang, product.name_fr, product.name_ar) : "";
+  const name = product ? pickLang(lang, product.name_fr, product.name_ar, product.name_en) : "";
   const description = product
-    ? pickLang(lang, product.description_fr, product.description_ar)
+    ? pickLang(lang, product.description_fr, product.description_ar, product.description_en)
     : "";
-  const details = product ? pickLang(lang, product.details_fr, product.details_ar) : [];
+  const details = product ? pickLang(lang, product.details_fr, product.details_ar, product.details_en) : [];
 
   // Registering the slug widens the matched pixel set (a `products`-scoped
   // pixel only becomes live once the provider knows which product this is).
@@ -64,16 +64,20 @@ export function Product() {
     });
   }, [product, pixel]);
 
+  // The page's own language, not the source language: this is what a shopper
+  // sees in the tab, and what a share into WhatsApp carries with it. The pixel
+  // payloads above deliberately stay on name_fr — an analytics key that
+  // changes with the visitor's language splits one product into three.
   useSeo({
-    title: product ? `${product.name_fr} — Norlyn Coffee` : "Norlyn Coffee",
-    description: product?.description_fr ?? undefined,
+    title: product ? `${name} — Norlyn Coffee` : "Norlyn Coffee",
+    description: description ?? undefined,
     image: images[0]?.url,
     jsonLd: product
       ? {
           "@context": "https://schema.org",
           "@type": "Product",
-          name: product.name_fr,
-          description: product.description_fr ?? undefined,
+          name,
+          description: description ?? undefined,
           image: images.map((i) => i.url),
           offers: {
             "@type": "Offer",
@@ -115,6 +119,7 @@ export function Product() {
         slug: product.slug,
         nameFr: product.name_fr,
         nameAr: product.name_ar,
+        nameEn: product.name_en,
         price: Number(product.price),
         imageUrl: images[0]?.url ?? null,
       },

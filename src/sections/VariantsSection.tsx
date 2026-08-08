@@ -56,8 +56,8 @@ function Variants3D({ products }: { products: Product[] }) {
 
   const product = products[index];
   if (!product) return null;
-  const name = pickLang(lang, product.name_fr, product.name_ar);
-  const description = pickLang(lang, product.description_fr, product.description_ar);
+  const name = pickLang(lang, product.name_fr, product.name_ar, product.name_en);
+  const description = pickLang(lang, product.description_fr, product.description_ar, product.description_en);
 
   return (
     <div ref={zoneRef} id="variants" style={{ height: `${count * 110}vh` }} className="relative">
@@ -174,7 +174,7 @@ function Variants2D({ products }: { products: Product[] }) {
           const image = [...(product.product_images ?? [])].sort(
             (a, b) => a.sort_order - b.sort_order,
           )[0];
-          const name = pickLang(lang, product.name_fr, product.name_ar);
+          const name = pickLang(lang, product.name_fr, product.name_ar, product.name_en);
           return (
             <div
               key={product.id}
@@ -203,7 +203,7 @@ function Variants2D({ products }: { products: Product[] }) {
                   {name}
                 </h3>
                 <p className="mt-1 text-sm text-muted line-clamp-2">
-                  {pickLang(lang, product.description_fr, product.description_ar)}
+                  {pickLang(lang, product.description_fr, product.description_ar, product.description_en)}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
                   <span className="font-display text-xl text-brand">{formatPrice(product.price)}</span>

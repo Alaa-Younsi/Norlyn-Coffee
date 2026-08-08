@@ -342,18 +342,182 @@ Appelez-nous. Une boîte abîmée est remplacée. Nous préférons de loin refai
   },
 ];
 
+
+/**
+ * The English copy for the same five articles, kept beside the French/Arabic
+ * seeds rather than inside them: the bodies are long enough that a third one
+ * per entry would bury the four fields anyone actually edits. Mirrors the
+ * `update articles set … _en` statements in migration 0012 — change one and
+ * change the other.
+ */
+const EN: Record<string, { title_en: string; tag_en: string; excerpt_en: string; body_en: string }> = {
+  "comment-naissent-nos-capsules": {
+    title_en: "How a Moriva capsule is born",
+    tag_en: "Manufacturing",
+    excerpt_en:
+      "From green bean to sealed lid: the six stages every capsule goes through before it reaches your machine.",
+    body_en: `An espresso capsule looks simple. Six grams of coffee, a little aluminium, a lid. In reality, between the green bean and the capsule you slide into your machine there is a whole chain of work — and it is in that chain that the difference is made between a decent coffee and one you want to make again the next morning.
+
+Here, stage by stage, is what happens in our workshop.
+
+1. Choosing the lot
+
+Everything starts with the green bean. We buy by the lot, never as undifferentiated bulk, and we taste before we buy: a sample is roasted, ground and extracted under exactly the conditions the finished capsule will meet. If the cup does not keep its promises, the lot is refused. This is the only stage where saying no is still cheap — after it, it is too late.
+
+2. Roasting
+
+Each Moriva profile has its own heat curve. The Noir, robusta-led, climbs higher and holds longer to build a thick body and a dark crema. The Or, arabica-led, stops earlier: we are after floral aromas, not power. The curve is recorded and repeated batch after batch. That is why a box bought in March tastes like a box bought in November.
+
+3. Resting
+
+Coffee coming out of the roaster degasses: it releases CO₂ for several days. Encapsulating it straight away traps that gas and distorts the extraction. So we let the coffee rest before grinding. The wait is invisible in the finished product, but you can hear it in the cup.
+
+4. Grinding
+
+Grind fineness is specific to each intensity and is checked continuously. Too fine and the water passes too slowly, turning the extraction bitter; too coarse and it runs straight through, leaving the coffee thin and sour. The setting is verified throughout the run, not only at the start.
+
+5. Dosing
+
+Every capsule is weighed. Not estimated, not filled by volume: weighed. From 5.2 g for the Or to 6.0 g for the Noir, with a tolerance of a tenth of a gram. That consistency is what guarantees the third capsule in the box tastes like the first.
+
+6. Sealing
+
+The capsule is lidded under aluminium immediately after dosing. From that moment neither oxygen nor moisture gets in: the aroma is frozen exactly as it is until the machine pierces the lid. Every run then passes a seal test — a badly sealed capsule is a lost capsule, and we would rather lose it here than at your house.
+
+What we do not do
+
+We add no sugar. No synthetic aromas in the organic range. No preservatives. An espresso needs none of that — it needs a good bean, an honest roast and a clean seal. The rest is marketing.`,
+  },
+  "aluminium-alimentaire-pur": {
+    title_en: "Why our capsules are pure food-grade aluminium",
+    tag_en: "Quality",
+    excerpt_en:
+      "The capsule's material is not a packaging detail: it decides what your coffee is allowed to touch.",
+    body_en: `People talk a great deal about the coffee inside the capsule. Far less about the capsule itself. That is a shame, because for the whole of the extraction your coffee is in direct contact with that material — under pressure, above 90 °C.
+
+Our capsules are made of pure food-grade aluminium. That means three concrete things.
+
+A complete barrier
+
+Aluminium is impermeable to oxygen, moisture and light. Plastic is not, even multi-layered: it lets a little oxygen through, and ground coffee starts losing its aroma from its first breath of it. A sealed aluminium capsule freezes the aroma at the day it was sealed. That is the only reason an encapsulated coffee can compete with a freshly ground one.
+
+No transfer of taste
+
+Heated under pressure, a plastic can release compounds — and even when they are harmless, you can hear them in the cup. Food-grade aluminium is neutral: the only taste leaving the capsule is the coffee's. It is also why the big European houses adopted it.
+
+Zero added chemicals
+
+Our capsules are made with certified experts, in food-grade aluminium, with no added chemical treatment. We do not use that as a slogan: it is a production constraint, it costs more, and it is a choice we make line by line.
+
+And recycling?
+
+Aluminium is infinitely recyclable with no loss of quality — unlike plastic, which degrades with every cycle. Empty the capsule of its grounds and the body joins the metal stream. The grounds themselves make an excellent feed for your plants.
+
+The summary fits in one sentence: the capsule must add nothing to the coffee and let it lose nothing. Pure food-grade aluminium is the only material that keeps both promises at once.`,
+  },
+  "100-pour-cent-bio-zero-sucre": {
+    title_en: "100 % organic, 0 % sugar: what it changes in the cup",
+    tag_en: "Organic",
+    excerpt_en:
+      "We are the only producer in Algeria making a 100 % natural espresso capsule. Here is what that sentence actually commits us to.",
+    body_en: `"Organic", on a bag of coffee, can mean a great deal — or almost nothing. So let us say precisely what it means here.
+
+The bean
+
+The organic Moriva range is made from natural beans, with no added sugar and no synthetic aroma. What you smell when you open the box comes from the coffee and from the roast, not from a bottle.
+
+The capsule
+
+The container is part of the promise. Our capsules are pure food-grade aluminium, with no added chemicals, made with certified experts. A natural coffee inside a container that releases something at 92 °C would not be a natural coffee.
+
+The sugar
+
+Zero. No added sugar, no sweetener. An espresso sweetened at the factory is an espresso whose bitterness can no longer be judged — and bitterness is precisely what roasting is meant to control. If you want it sweet, sweeten it yourself: it is your cup.
+
+What it changes in the taste
+
+Coffee without additives has a narrower, more honest signature. Flaws are not masked, which forces clean work upstream — hence our lot-by-lot selection. In the mouth the attack is sharper, the finish shorter and cleaner, and the aftertaste does not cling to the palate.
+
+The only ones in Algeria
+
+To our knowledge, we are today the only producer in Algeria making a 100 % natural espresso capsule: no sugar, pure food-grade aluminium. It is not a comfortable position — it demands stricter suppliers, more frequent checks and tighter margins. It is also the entire reason Moriva exists.
+
+And the flavoured capsules?
+
+Hazelnut, vanilla, caramel and chocolate form a separate range, made for indulgence. They share the same pure food-grade aluminium capsule and the same manufacturing standard, but the "100 % organic" claim is reserved for the espresso range — that is more honest, and it means you know exactly what you are buying.`,
+  },
+  "quelle-intensite-choisir": {
+    title_en: "Noir, Brun, Vert or Or: which intensity is yours?",
+    tag_en: "Guide",
+    excerpt_en:
+      "Four colours, four balances between robusta and arabica. A short guide to finding yours first time.",
+    body_en: `Intensity is not the amount of caffeine, and it is not quality either. It is the balance between robusta and arabica, the length of the roast and the dose. A high intensity gives a powerful coffee; a low one gives an aromatic coffee. Neither is "better" — they answer different cravings.
+
+The Noir — maximum intensity
+
+Robusta-led, the highest dose in the range, dark crema and a thick body. This is the waking-up coffee, the one you drink short and without thinking at six in the morning. If you find most espressos too light, start here.
+
+The Brun — powerful, but round
+
+One step down. The body is still there, cocoa comes forward, bitterness recedes. It is often the best compromise for someone who likes strong coffee but drinks it all day.
+
+The Vert — the balance
+
+Neither too strong nor too soft: arabica and robusta answer each other. This is the intensity that pleases the most people, the one you serve to a guest whose taste you do not know, and the one that best survives being lengthened with water.
+
+The Or — flavour before strength
+
+Arabica-led, the lowest intensity, the lightest dose. A floral cup, almost naturally sweet, with a fine acidity. It is our finest quality and, paradoxically, the least "strong": what we are after here is the aroma.
+
+How to choose in one question
+
+Do you drink your espresso to wake up, or to taste it? To wake up: Noir or Brun. To taste: Vert or Or. And if you are still hesitating, start with the Vert — it is the reference point from which you will know which way to go.`,
+  },
+  "de-l-atelier-a-votre-porte": {
+    title_en: "From the workshop to your door: all 58 wilayas",
+    tag_en: "Behind the scenes",
+    excerpt_en:
+      "Our vans, our lead times, and why you only pay once the box is in your hands.",
+    body_en: `A well-made capsule that arrives crushed three weeks later is not a good capsule. Delivery is part of the product — we treat it as such.
+
+Our own fleet
+
+We deliver part of Algiers with our own vans, in Moriva's colours. It is not only a matter of image: when our driver delivers, our team is the one who answers, who takes back a damaged box on the spot, and who brings us back what the customer said. For all 58 wilayas we work with partner carriers, under the same packing instructions.
+
+Cash on delivery
+
+You pay nothing online. You pay when the box is in your hands, at home or at a pickup point. It is the norm in Algeria, and above all it is the only honest way to sell to someone who does not know us yet.
+
+How an order works
+
+You choose your capsules and leave your name, your phone number and your wilaya. Our team calls you back to confirm the address and the slot — that is also the moment when you can still change an intensity or add a box. Then the order goes out.
+
+The packing
+
+Boxes travel flat and wedged, in a carton that will not fold under the weight of another parcel. A capsule whose lid was pierced in transit has lost its freshness: the seal test we run in the workshop would mean nothing if the carton betrayed it afterwards.
+
+A problem?
+
+Call us. A damaged box is replaced. We would far rather redo a delivery than lose a customer who did not dare complain.`,
+  },
+};
+
 export const FALLBACK_ARTICLES: Article[] = SEEDS.map((seed): Article => ({
   id: `fb-article-${seed.slug}`,
   slug: seed.slug,
   title_fr: seed.title_fr,
   title_ar: seed.title_ar,
+  title_en: EN[seed.slug]?.title_en ?? null,
   excerpt_fr: seed.excerpt_fr,
   excerpt_ar: seed.excerpt_ar,
+  excerpt_en: EN[seed.slug]?.excerpt_en ?? null,
   body_fr: seed.body_fr,
   body_ar: seed.body_ar,
+  body_en: EN[seed.slug]?.body_en ?? null,
   cover_url: seed.cover_url,
   tag_fr: seed.tag_fr,
   tag_ar: seed.tag_ar,
+  tag_en: EN[seed.slug]?.tag_en ?? null,
   author: "Norlyn Coffee",
   read_minutes: seed.read_minutes,
   featured: seed.featured ?? false,

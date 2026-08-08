@@ -16,9 +16,9 @@ export function Article() {
   const { data: article, isLoading } = useArticle(slug);
   const { data: all } = usePublishedArticles();
 
-  const title = article ? pickLang(lang, article.title_fr, article.title_ar) : "";
-  const excerpt = article ? pickLang(lang, article.excerpt_fr, article.excerpt_ar) : "";
-  const body = article ? pickLang(lang, article.body_fr, article.body_ar) : "";
+  const title = article ? pickLang(lang, article.title_fr, article.title_ar, article.title_en) : "";
+  const excerpt = article ? pickLang(lang, article.excerpt_fr, article.excerpt_ar, article.excerpt_en) : "";
+  const body = article ? pickLang(lang, article.body_fr, article.body_ar, article.body_en) : "";
 
   useSeo({
     title: article ? `${title} — Norlyn Coffee` : t("blog.metaTitle"),
@@ -28,8 +28,8 @@ export function Article() {
       ? {
           "@context": "https://schema.org",
           "@type": "Article",
-          headline: article.title_fr,
-          description: article.excerpt_fr ?? undefined,
+          headline: title,
+          description: excerpt ?? undefined,
           image: article.cover_url ?? undefined,
           datePublished: article.published_at ?? undefined,
           author: { "@type": "Organization", name: article.author ?? "Norlyn Coffee" },
@@ -61,7 +61,7 @@ export function Article() {
           <article className="mt-6 text-start">
             {(article.tag_fr || article.tag_ar) && (
               <p className="text-xs uppercase tracking-[0.3em] text-brand">
-                {pickLang(lang, article.tag_fr, article.tag_ar)}
+                {pickLang(lang, article.tag_fr, article.tag_ar, article.tag_en)}
               </p>
             )}
             <h1 className="mt-3 font-display text-4xl font-semibold leading-tight sm:text-5xl">
@@ -135,7 +135,7 @@ export function Article() {
                       )}
                     </div>
                     <p className="p-5 font-display text-lg leading-snug">
-                      {pickLang(lang, entry.title_fr, entry.title_ar)}
+                      {pickLang(lang, entry.title_fr, entry.title_ar, entry.title_en)}
                     </p>
                   </Panel>
                 </Link>

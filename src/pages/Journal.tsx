@@ -96,10 +96,10 @@ export function Journal() {
                 {t("blog.featured")}
               </span>
               <h2 className="mt-3 font-display text-3xl font-semibold leading-tight sm:text-4xl">
-                {pickLang(lang, lead.title_fr, lead.title_ar)}
+                {pickLang(lang, lead.title_fr, lead.title_ar, lead.title_en)}
               </h2>
               <p className="mt-3 text-base leading-relaxed text-muted">
-                {pickLang(lang, lead.excerpt_fr, lead.excerpt_ar)}
+                {pickLang(lang, lead.excerpt_fr, lead.excerpt_ar, lead.excerpt_en)}
               </p>
               <ArticleMeta article={lead} />
               <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-brand">
@@ -134,14 +134,14 @@ export function Journal() {
                 <div className="p-6 text-start">
                   {(article.tag_fr || article.tag_ar) && (
                     <span className="text-[11px] uppercase tracking-[0.25em] text-brand">
-                      {pickLang(lang, article.tag_fr, article.tag_ar)}
+                      {pickLang(lang, article.tag_fr, article.tag_ar, article.tag_en)}
                     </span>
                   )}
                   <h3 className="mt-2 font-display text-xl leading-snug">
-                    {pickLang(lang, article.title_fr, article.title_ar)}
+                    {pickLang(lang, article.title_fr, article.title_ar, article.title_en)}
                   </h3>
                   <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">
-                    {pickLang(lang, article.excerpt_fr, article.excerpt_ar)}
+                    {pickLang(lang, article.excerpt_fr, article.excerpt_ar, article.excerpt_en)}
                   </p>
                   <ArticleMeta article={article} />
                 </div>

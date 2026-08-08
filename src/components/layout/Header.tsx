@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, Moon, ShoppingBag, Sun, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { CoffeeBagIcon, MoonIcon, SunIcon } from "@/components/ui/icons";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { LANG_LABEL, LANG_NAME, nextLang } from "@/i18n/langs";
 import { useTheme } from "@/theme/ThemeProvider";
@@ -143,14 +144,14 @@ export function Header() {
             className="rounded-full border border-line/70 bg-panel/70 p-2 text-muted backdrop-blur-md transition-colors hover:text-ink cursor-pointer"
             aria-label={t("nav.theme")}
           >
-            {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            {theme === "dark" ? <SunIcon size={17} /> : <MoonIcon size={17} />}
           </button>
           <button
             onClick={openCart}
             className="relative rounded-full border border-brand/50 bg-panel/70 p-2 text-brand backdrop-blur-md transition-colors hover:bg-brand/10 cursor-pointer"
             aria-label={t("nav.cart")}
           >
-            <ShoppingBag size={16} />
+            <CoffeeBagIcon size={17} />
             {count > 0 && (
               <span className="absolute -top-1.5 -end-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-cream">
                 {count}

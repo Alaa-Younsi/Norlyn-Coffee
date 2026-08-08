@@ -26,7 +26,16 @@ export function RangeFilter({
   const { t } = useLanguage();
 
   return (
-    <div>
+    /*
+      `min-w-0` is load-bearing, not defensive. The strip below is a nowrap
+      flex row of shrink-0 chips, so its min-content width is the SUM of the
+      chips (~500px). Where this component is dropped into a flex row — the
+      Finances toolbar — that number becomes the item's automatic minimum
+      size, the item refuses to shrink to the phone's width, and the whole
+      admin <main> (overflow-y-auto, hence overflow-x auto too) gains a
+      sideways scroll that drags the stat tiles half off screen.
+    */
+    <div className="min-w-0 max-w-full">
       {/* scrolls, never wraps: a wrapped row changes height when the labels
           change length between FR and AR and reflows the page mid-tap */}
       <div className="flex gap-2 overflow-x-auto pb-1">
@@ -139,7 +148,9 @@ export function StatTile({
   const good = delta === null ? null : invertDelta ? delta <= 0 : delta >= 0;
 
   return (
-    <Panel className="p-4">
+    // min-w-0: a grid item's automatic minimum size is its min-content width,
+    // so a long single-word label (AR "مشتريات") would widen the whole track
+    <Panel className="min-w-0 p-4">
       <p className="text-xs uppercase tracking-wider text-muted">{label}</p>
       <p
         className={cn(

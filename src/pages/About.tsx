@@ -7,13 +7,11 @@ import { Photo } from "@/components/ui/Photo";
 import { ImageSlot } from "@/components/ui/ImageSlot";
 import { Mascot } from "@/components/mascot/Mascot";
 import { ScrollMascot } from "@/components/mascot/ScrollMascot";
-import { ProductCard } from "@/components/product/ProductCard";
 import { CoffeeDivider } from "@/components/effects/CoffeeDivider";
 import { CoffeeRing } from "@/components/effects/CoffeeRing";
 import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { ScrollProgressBar } from "@/components/effects/ScrollProgressBar";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { useProducts } from "@/hooks/useProducts";
 import { useSeo } from "@/hooks/useSeo";
 import { useParallaxItems, useRevealOnScroll } from "@/hooks/useScrollFX";
 import { ABOUT_PALETTE } from "@/lib/mascot";
@@ -53,13 +51,13 @@ const RANGE: Array<{
 
 export function About() {
   const { t } = useLanguage();
-  const { data: products } = useProducts();
   const rootRef = useRef<HTMLElement>(null);
 
-  // re-run once products land: the grid's height changes and the triggers
-  // measured against the old layout would fire at the wrong scroll positions
-  useRevealOnScroll(rootRef, [products?.length]);
-  useParallaxItems(rootRef, [products?.length]);
+  // Every block on this page is now either static copy or an ImageSlot, and a
+  // slot reserves its ratio before its picture arrives — so the page's height
+  // is settled on first paint and the scroll triggers need no re-measure.
+  useRevealOnScroll(rootRef);
+  useParallaxItems(rootRef);
 
   useSeo({
     title: `${t("about.metaTitle")} — Norlyn Coffee`,
@@ -69,7 +67,7 @@ export function About() {
   return (
     <main ref={rootRef} className="relative min-h-screen overflow-x-clip pb-24 pt-28">
       <ScrollProgressBar />
-      <ScrollMascot palette={ABOUT_PALETTE} refreshKey={products?.length} />
+      <ScrollMascot palette={ABOUT_PALETTE} />
       <FloatingBeans count={8} seed={7} />
       <CoffeeRing className="fx-spin-slow -end-24 top-40 w-72 opacity-10" />
 
@@ -121,7 +119,7 @@ export function About() {
               {/* plain vertical scrim: Tailwind has no logical gradient
                   direction, and a physical one would point the wrong way in RTL */}
               <span
-                className="absolute inset-0 bg-gradient-to-t from-ink/55 via-transparent to-transparent"
+                className="absolute inset-0 bg-gradient-to-t from-shade/55 via-transparent to-transparent"
                 aria-hidden
               />
             </div>
@@ -328,35 +326,6 @@ export function About() {
       <section className="mx-auto mt-24 max-w-5xl px-6" data-reveal>
         <ImageSlot slot="about.team" ratio="16/9" sizes="(min-width: 1024px) 64rem, 92vw" />
         <p className="mt-3 text-center text-sm text-muted">{t("about.team.caption")}</p>
-      </section>
-
-      {/* ------------------------------------------------------ products */}
-      <section className="mx-auto mt-24 max-w-7xl px-6">
-        <header className="text-center">
-          <p className="text-xs uppercase tracking-[0.35em] text-brand">
-            {t("about.products.kicker")}
-          </p>
-          <h2 className="mt-3 font-display text-3xl font-semibold sm:text-4xl">
-            {t("about.products.title")}
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-balance text-muted">
-            {t("about.products.subtitle")}
-          </p>
-        </header>
-
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {(products ?? []).map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-
-        <div className="mt-10 text-center">
-          <Link to="/shop">
-            <Button variant="outline" size="lg">
-              {t("about.products.cta")}
-            </Button>
-          </Link>
-        </div>
       </section>
 
       {/* ----------------------------------------------------------- CTA */}

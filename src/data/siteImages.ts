@@ -21,6 +21,7 @@ export const FALLBACK_SITE_IMAGES: Record<string, SiteImage> = Object.fromEntrie
       url: mediaSrc(definition.fallback),
       alt_fr: definition.alt_fr,
       alt_ar: definition.alt_ar,
+      alt_en: definition.alt_en,
       updated_at: SEEDED_AT,
     },
   ]),

@@ -41,7 +41,14 @@ export function useOrdersLedger() {
 /* ---------------------------------------------------------- product costs */
 
 export interface ProductCostRow extends ProductCost {
-  product?: { id: string; name_fr: string; name_ar: string; price: number; slug: string } | null;
+  product?: {
+    id: string;
+    name_fr: string;
+    name_ar: string;
+    name_en: string | null;
+    price: number;
+    slug: string;
+  } | null;
 }
 
 export function useProductCosts() {
@@ -50,7 +57,7 @@ export function useProductCosts() {
     queryFn: async (): Promise<ProductCostRow[]> => {
       const { data, error } = await supabase
         .from("product_costs")
-        .select("*, product:products(id, name_fr, name_ar, price, slug)");
+        .select("*, product:products(id, name_fr, name_ar, name_en, price, slug)");
       if (error) throw error;
       return (data ?? []) as ProductCostRow[];
     },

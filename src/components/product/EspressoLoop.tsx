@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
-import { PRODUCT_VIDEO } from "@/data/productVideo";
+import { useVideoSlot } from "@/hooks/useSiteContent";
+import { PRODUCT_VIDEO_SLOT } from "@/lib/videoSlots";
 import { dbSrcSet } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
@@ -26,12 +27,18 @@ import { cn } from "@/lib/utils";
  *     as an unskippable ad.
  *
  * Both land on the poster still, which is a real photograph, so the layout is
- * finished either way. That is also where a missing file lands: the film is a
- * drop-in (see `data/productVideo.ts`), so "not shot yet" is an ordinary state
- * and not a black box.
+ * finished either way. That is also where a missing file lands: the film comes
+ * from the `product.loop` video slot (see `lib/videoSlots.ts`) — the client's
+ * upload if there is one, the committed drop-in otherwise — so "not shot yet"
+ * is an ordinary state and not a black box.
+ *
+ * One film for the whole catalogue, by design: this is the house's espresso,
+ * not this product's, and a per-product video would be eight shoots the client
+ * never asked for. Changing it changes every product page at once.
  */
 export function EspressoLoop({ className }: { className?: string }) {
   const { reducedMotion, saveData } = useMediaFlags();
+  const { src, poster } = useVideoSlot(PRODUCT_VIDEO_SLOT);
   const videoRef = useRef<HTMLVideoElement>(null);
   // The drop-in path promises a file that may not be there. We learn that from
   // the element's own error event and remember WHICH url failed, so a later
@@ -40,12 +47,15 @@ export function EspressoLoop({ className }: { className?: string }) {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
   const ambient = !reducedMotion && !saveData;
-  const showFilm = ambient && failedSrc !== PRODUCT_VIDEO.src;
+  const showFilm = ambient && failedSrc !== src;
 
   // Autoplay policies read `muted` off the element, and React sets it as a
   // property rather than an attribute — so a video that mounted before the
   // property landed can be refused. Setting it by hand first keeps the two in
   // step, the same way HeroVideo does.
+  // `src` is in the deps because it genuinely changes: the slot resolves to the
+  // committed drop-in on first paint and swaps to the client's upload when the
+  // site_videos query lands. Without it the new file would sit on its poster.
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !showFilm) return;
@@ -53,7 +63,7 @@ export function EspressoLoop({ className }: { className?: string }) {
     void video.play().catch(() => {
       /* a blocked autoplay just leaves the poster frame showing */
     });
-  }, [showFilm]);
+  }, [showFilm, src]);
 
   const resume = useCallback(() => {
     const video = videoRef.current;
@@ -72,8 +82,8 @@ export function EspressoLoop({ className }: { className?: string }) {
       {showFilm ? (
         <video
           ref={videoRef}
-          src={PRODUCT_VIDEO.src}
-          poster={PRODUCT_VIDEO.poster}
+          src={src}
+          poster={poster}
           className="pointer-events-none h-full w-full object-cover"
           autoPlay
           loop
@@ -86,12 +96,12 @@ export function EspressoLoop({ className }: { className?: string }) {
           controlsList="nodownload noplaybackrate noremoteplayback"
           onContextMenu={(event) => event.preventDefault()}
           onPause={resume}
-          onError={() => setFailedSrc(PRODUCT_VIDEO.src)}
+          onError={() => setFailedSrc(src)}
         />
       ) : (
         <img
-          src={PRODUCT_VIDEO.poster}
-          srcSet={dbSrcSet(PRODUCT_VIDEO.poster)}
+          src={poster}
+          srcSet={dbSrcSet(poster)}
           sizes="(min-width: 1024px) 45vw, 90vw"
           alt=""
           aria-hidden
@@ -103,7 +113,7 @@ export function EspressoLoop({ className }: { className?: string }) {
       {/* the same warm scrim the rest of the site puts over photography, so
           the film sits in the page instead of punching a hole in it */}
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/25 via-transparent to-transparent"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-shade/25 via-transparent to-transparent"
         aria-hidden
       />
     </div>

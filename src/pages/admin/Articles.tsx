@@ -33,13 +33,17 @@ interface Draft {
   slug: string;
   title_fr: string;
   title_ar: string;
+  title_en: string;
   excerpt_fr: string;
   excerpt_ar: string;
+  excerpt_en: string;
   body_fr: string;
   body_ar: string;
+  body_en: string;
   cover_url: string;
   tag_fr: string;
   tag_ar: string;
+  tag_en: string;
   author: string;
   read_minutes: number;
   featured: boolean;
@@ -52,13 +56,17 @@ function emptyDraft(): Draft {
     slug: "",
     title_fr: "",
     title_ar: "",
+    title_en: "",
     excerpt_fr: "",
     excerpt_ar: "",
+    excerpt_en: "",
     body_fr: "",
     body_ar: "",
+    body_en: "",
     cover_url: "",
     tag_fr: "",
     tag_ar: "",
+    tag_en: "",
     author: "Norlyn Coffee",
     read_minutes: 3,
     featured: false,
@@ -73,13 +81,17 @@ function toDraft(article: Article): Draft {
     slug: article.slug,
     title_fr: article.title_fr,
     title_ar: article.title_ar,
+    title_en: article.title_en ?? "",
     excerpt_fr: article.excerpt_fr ?? "",
     excerpt_ar: article.excerpt_ar ?? "",
+    excerpt_en: article.excerpt_en ?? "",
     body_fr: article.body_fr ?? "",
     body_ar: article.body_ar ?? "",
+    body_en: article.body_en ?? "",
     cover_url: article.cover_url ?? "",
     tag_fr: article.tag_fr ?? "",
     tag_ar: article.tag_ar ?? "",
+    tag_en: article.tag_en ?? "",
     author: article.author ?? "",
     read_minutes: article.read_minutes,
     featured: article.featured,
@@ -107,13 +119,19 @@ export function AdminArticles() {
         slug,
         title_fr: draft.title_fr.trim(),
         title_ar: draft.title_ar.trim(),
+        title_en: draft.title_en.trim() || null,
         excerpt_fr: draft.excerpt_fr.trim() || null,
         excerpt_ar: draft.excerpt_ar.trim() || null,
+        excerpt_en: draft.excerpt_en.trim() || null,
         body_fr: draft.body_fr,
         body_ar: draft.body_ar,
+        // not trimmed, like the other two: leading whitespace is the
+        // author's, and the paragraph split only ever looks at blank lines
+        body_en: draft.body_en.trim() ? draft.body_en : null,
         cover_url: draft.cover_url.trim() || null,
         tag_fr: draft.tag_fr.trim() || null,
         tag_ar: draft.tag_ar.trim() || null,
+        tag_en: draft.tag_en.trim() || null,
         author: draft.author.trim() || null,
         read_minutes: Number(draft.read_minutes) || 1,
         featured: draft.featured,
@@ -162,6 +180,16 @@ export function AdminArticles() {
                   required
                 />
               </FieldWrapper>
+              {/* Not `required`, unlike the other two: French and Arabic are
+                  NOT NULL in the schema, English is the optional third and
+                  falls back to French when it is left empty. */}
+              <FieldWrapper label={t("admin.articles.titleEn")}>
+                <Input
+                  dir="ltr"
+                  value={draft.title_en}
+                  onChange={(e) => setDraft({ ...draft, title_en: e.target.value })}
+                />
+              </FieldWrapper>
             </div>
 
             <FieldWrapper label={t("admin.articles.slug")}>
@@ -189,6 +217,14 @@ export function AdminArticles() {
                   onChange={(e) => setDraft({ ...draft, excerpt_ar: e.target.value })}
                 />
               </FieldWrapper>
+              <FieldWrapper label={t("admin.articles.excerptEn")}>
+                <Textarea
+                  dir="ltr"
+                  rows={3}
+                  value={draft.excerpt_en}
+                  onChange={(e) => setDraft({ ...draft, excerpt_en: e.target.value })}
+                />
+              </FieldWrapper>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -205,6 +241,14 @@ export function AdminArticles() {
                   rows={10}
                   value={draft.body_ar}
                   onChange={(e) => setDraft({ ...draft, body_ar: e.target.value })}
+                />
+              </FieldWrapper>
+              <FieldWrapper label={t("admin.articles.bodyEn")}>
+                <Textarea
+                  dir="ltr"
+                  rows={10}
+                  value={draft.body_en}
+                  onChange={(e) => setDraft({ ...draft, body_en: e.target.value })}
                 />
               </FieldWrapper>
             </div>
@@ -235,6 +279,13 @@ export function AdminArticles() {
                   dir="rtl"
                   value={draft.tag_ar}
                   onChange={(e) => setDraft({ ...draft, tag_ar: e.target.value })}
+                />
+              </FieldWrapper>
+              <FieldWrapper label={t("admin.articles.tagEn")}>
+                <Input
+                  dir="ltr"
+                  value={draft.tag_en}
+                  onChange={(e) => setDraft({ ...draft, tag_en: e.target.value })}
                 />
               </FieldWrapper>
               <FieldWrapper label={t("admin.articles.author")}>
@@ -310,7 +361,7 @@ export function AdminArticles() {
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">
-                {pickLang(lang, article.title_fr, article.title_ar)}
+                {pickLang(lang, article.title_fr, article.title_ar, article.title_en)}
               </p>
               <p className="text-xs text-muted">
                 {article.status === "published"

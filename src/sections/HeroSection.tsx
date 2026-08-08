@@ -21,7 +21,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
  * deliberately empty so nothing ever covers it), the brand's video screen at
  * the end edge. On phones the same three blocks stack in that order.
  */
-export function HeroSection({ show3D }: { show3D: boolean }) {
+export function HeroSection({ show3D, showArt }: { show3D: boolean; showArt: boolean }) {
   const { t, lang } = useLanguage();
   const copyRef = useRef<HTMLDivElement>(null);
   // the copy drifts up and away as the cup starts its journey — the content
@@ -114,14 +114,17 @@ export function HeroSection({ show3D }: { show3D: boolean }) {
             className="fx-podium absolute left-1/2 top-[58%] h-36 w-72 -translate-x-1/2 -translate-y-1/2 opacity-60 blur-2xl"
             aria-hidden
           />
+          {/* Neither branch while the catalogue is still in flight: the podium
+              glow above holds the space, and the column's min-height means
+              nothing moves when the winner arrives. See Landing's showHeroArt. */}
           {show3D ? (
             <Steam className="-mt-24" />
-          ) : (
+          ) : showArt ? (
             <div className="relative">
               <HeroFallback />
               <Steam className="absolute -top-16 start-1/2 -translate-x-1/2" />
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* ------------------------- second half of the copy (below the cup) */}

@@ -24,7 +24,10 @@ export function useProducts(filters: ProductFilters = {}) {
         if (search) {
           const term = search.toLowerCase();
           items = items.filter(
-            (p) => p.name_fr.toLowerCase().includes(term) || p.name_ar.includes(term),
+            (p) =>
+              p.name_fr.toLowerCase().includes(term) ||
+              p.name_ar.includes(term) ||
+              (p.name_en ?? "").toLowerCase().includes(term),
           );
         }
         return items;
@@ -38,7 +41,14 @@ export function useProducts(filters: ProductFilters = {}) {
       if (featuredOnly) query = query.eq("featured", true);
       if (search) {
         const term = sanitizeSearchTerm(search);
-        if (term) query = query.or(`name_fr.ilike.%${term}%,name_ar.ilike.%${term}%`);
+        // all three names, not just the one the shopper is reading: someone
+        // browsing in English still types "noisette" if that is the word they
+        // saw on the box
+        if (term) {
+          query = query.or(
+            `name_fr.ilike.%${term}%,name_ar.ilike.%${term}%,name_en.ilike.%${term}%`,
+          );
+        }
       }
       const { data, error } = await query;
       if (error) throw error;

@@ -16,6 +16,7 @@ export function AdminCategories() {
   const { data: categories } = useCategories();
   const [nameFr, setNameFr] = useState("");
   const [nameAr, setNameAr] = useState("");
+  const [nameEn, setNameEn] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const invalidate = () => void queryClient.invalidateQueries({ queryKey: ["categories"] });
@@ -33,6 +34,9 @@ export function AdminCategories() {
         slug,
         name_fr: nameFr.trim(),
         name_ar: nameAr.trim() || nameFr.trim(),
+        // NULL, not a French copy: `pickLang` already falls back to French,
+        // and a real value here would look translated in the admin listing
+        name_en: nameEn.trim() || null,
         sort_order: categories?.length ?? 0,
       });
       if (insError) throw insError;
@@ -40,6 +44,7 @@ export function AdminCategories() {
     onSuccess: () => {
       setNameFr("");
       setNameAr("");
+      setNameEn("");
       setError(null);
       invalidate();
     },
@@ -72,6 +77,9 @@ export function AdminCategories() {
           <FieldWrapper label={t("admin.form.nameAr")} className="min-w-40 flex-1">
             <Input value={nameAr} onChange={(e) => setNameAr(e.target.value)} dir="rtl" />
           </FieldWrapper>
+          <FieldWrapper label={t("admin.form.nameEn")} className="min-w-40 flex-1">
+            <Input value={nameEn} onChange={(e) => setNameEn(e.target.value)} dir="ltr" />
+          </FieldWrapper>
           <Button type="submit" disabled={createMutation.isPending}>
             <Plus size={15} />
             {t("common.add")}
@@ -88,6 +96,11 @@ export function AdminCategories() {
               <p className="text-sm text-muted" dir="rtl">
                 {category.name_ar}
               </p>
+              {category.name_en && (
+                <p className="text-sm text-muted" dir="ltr">
+                  {category.name_en}
+                </p>
+              )}
             </div>
             <button
               onClick={() => {

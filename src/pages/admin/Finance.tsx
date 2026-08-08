@@ -69,7 +69,7 @@ export function AdminFinance() {
         .filter((row) => row.product)
         .map((row) => ({
           id: row.product_id,
-          name: pickLang(lang, row.product?.name_fr, row.product?.name_ar) ?? "",
+          name: pickLang(lang, row.product?.name_fr, row.product?.name_ar, row.product?.name_en) ?? "",
         })),
     [costRows, lang],
   );
@@ -92,7 +92,7 @@ export function AdminFinance() {
         shipping: Number(order.shipping),
         lines: (order.order_items ?? []).map((item) => ({
           itemKey: item.product_id ?? item.name_fr,
-          itemName: pickLang(lang, item.name_fr, item.name_ar),
+          itemName: pickLang(lang, item.name_fr, item.name_ar, item.name_en),
           quantity: item.quantity,
           unitPrice: Number(item.price),
           unitCost: Number(item.unit_cost ?? 0),
@@ -247,7 +247,7 @@ function CostsTab() {
   const [search, setSearch] = useState("");
 
   const filtered = (rows ?? []).filter((row) => {
-    const name = pickLang(lang, row.product?.name_fr, row.product?.name_ar);
+    const name = pickLang(lang, row.product?.name_fr, row.product?.name_ar, row.product?.name_en);
     return (name ?? "").toLowerCase().includes(search.trim().toLowerCase());
   });
 
@@ -270,7 +270,7 @@ function CostsTab() {
             <Panel key={row.product_id} className="flex flex-wrap items-center gap-3 p-4">
               <div className="min-w-0 flex-1">
                 <p className="font-medium">
-                  {pickLang(lang, row.product?.name_fr, row.product?.name_ar)}
+                  {pickLang(lang, row.product?.name_fr, row.product?.name_ar, row.product?.name_en)}
                 </p>
                 <p className="text-xs text-muted">
                   {t("admin.cost.sellPrice")}: <Price value={price} />

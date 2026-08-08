@@ -23,20 +23,27 @@ const Scene = lazy(() =>
 );
 
 export function Landing() {
-  const { dir } = useLanguage();
+  const { dir, t } = useLanguage();
   const flags = useMediaFlags();
-  const { data: products } = useProducts({ featuredOnly: true });
+  const { data: products, isPending: productsPending } = useProducts({ featuredOnly: true });
   const stageRef = useRef<HTMLDivElement>(null);
   useScrollStage(stageRef);
 
-  useSeo({
-    title: "Norlyn Coffee — Moriva, capsules espresso premium en Algérie",
-    description:
-      "Moriva par Norlyn Coffee — capsules espresso 100 % bio en aluminium alimentaire pur. 4 intensités, 4 arômes, livraison 58 wilayas, paiement à la livraison.",
-  });
+  useSeo({ title: t("home.metaTitle"), description: t("home.metaDesc") });
 
   const variants = (products ?? []).slice(0, 4);
   const show3D = flags.allow3D && variants.length > 0;
+
+  /**
+   * The 2D capsule art belongs to visitors who will NEVER get the canvas —
+   * reduced motion, save-data, or a store with nothing to show. It is not a
+   * loading state: `show3D` is also false for the beat between first paint and
+   * the catalogue landing, and painting the capsule there is exactly the
+   * flash-then-swap the client sees on every cold load. So the hero's middle
+   * column stays empty (it already reserves its height) until we know which of
+   * the two heroes this visitor gets.
+   */
+  const showHeroArt = !flags.allow3D || (!productsPending && variants.length === 0);
 
   // products arrive async — the variants zone only gets its 440vh height
   // after they load, so every trigger's start/end must be re-measured or the
@@ -71,7 +78,7 @@ export function Landing() {
       <ScrollMascot palette={LANDING_PALETTE} refreshKey={variants.length} />
 
       <div ref={stageRef} className="relative z-20">
-        <HeroSection show3D={show3D} />
+        <HeroSection show3D={show3D} showArt={showHeroArt} />
         <div data-act="story" data-mascot="calm">
           <StorySection />
         </div>

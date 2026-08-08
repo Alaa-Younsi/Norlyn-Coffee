@@ -48,16 +48,22 @@ bun run build      # regenerates sitemap, typechecks, bundles
   `ALLOWED_SECTIONS` in `supabase/functions/create-worker`.
 - `src/i18n` — `translations.ts` merges the `.admin` and `.site` modules and
   compiler-enforces that AR and EN carry every FR key. `langs.ts` owns the
-  switcher cycle. FR is the source language; **EN covers the interface only** —
-  client-entered content (product names, articles, slide captions) has no
-  `*_en` column, so `lib/localized.ts`'s `pickLang` falls back to FR. Add a
-  column and pass it as the 4th argument to light a field up.
+  switcher cycle. FR is the source language and the only NOT NULL one. Since
+  migration 0012 every localized table also carries `*_en` (products,
+  categories, articles, slides, image slots, order lines), and
+  `lib/localized.ts`'s `pickLang` reads it — falling back to FR for a row the
+  client added without English, so a half-translated catalogue is a partly
+  French page and never a blank one.
 - `src/lib/finance.ts` — the pure aggregation engine shared by both ledgers
   (ranges, totals, per-product/customer breakdowns, chart series). No Supabase.
 - `src/lib/metaPixel.ts` + `src/components/MetaPixelProvider.tsx` — DB-driven
   multi-pixel tracking; every event goes out via `trackSingle`, never `track`.
 - `src/lib/imageSlots.ts` — the named picture slots the design declares and the
   client fills from Admin → Contenu & médias.
+- `src/lib/videoSlots.ts` — the same for the two fixed films (the hero screen
+  and the product-page espresso loop). A slot resolves to the client's upload,
+  then to a file committed at `public/videos/…`, then to a still photograph, so
+  "the video is coming later" is an ordinary state and never a black box.
 - `src/lib/media.ts` + `src/components/ui/Photo.tsx` — the typed index of the
   shipped photography and the one way to render it: capped srcSet, explicit
   width/height, lazy by default. `dbSrcSet`/`dbSize` do the same for URLs that

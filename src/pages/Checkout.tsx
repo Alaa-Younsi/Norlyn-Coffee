@@ -89,7 +89,7 @@ export function Checkout() {
                   />
                 )}
                 <span className="min-w-0 flex-1 truncate">
-                  {pickLang(lang, item.nameFr, item.nameAr)} × {item.quantity}
+                  {pickLang(lang, item.nameFr, item.nameAr, item.nameEn)} × {item.quantity}
                 </span>
                 <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
               </li>

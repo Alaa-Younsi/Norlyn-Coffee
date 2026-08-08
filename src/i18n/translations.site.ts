@@ -77,11 +77,6 @@ export const siteTranslations = {
     "about.step3.text": "De 5,2 g à 6,0 g selon l'intensité — pesé, jamais estimé.",
     "about.step4.title": "Scellage",
     "about.step4.text": "Operculage sous aluminium, puis contrôle qualité sur chaque série.",
-    "about.products.kicker": "Nos produits",
-    "about.products.title": "La gamme Moriva",
-    "about.products.subtitle":
-      "Huit capsules, deux familles, un seul standard de fabrication. Toutes compatibles Nespresso®.",
-    "about.products.cta": "Voir toute la boutique",
     "about.team.caption": "La flotte Norlyn avant la tournée, Alger",
 
     // --- the bio promise -----------------------------------------------
@@ -132,6 +127,16 @@ export const siteTranslations = {
     "about.cta.title": "Envie de goûter ?",
     "about.cta.text": "Commandez en quelques secondes, payez à la livraison.",
     "about.cta.button": "Commander maintenant",
+
+    // ------------------------------------------------------ page metadata
+    // The tab title and the card a share into WhatsApp draws — they belong to
+    // the language the visitor is reading, not to the language the shop was
+    // written in.
+    "home.metaTitle": "Norlyn Coffee — Moriva, capsules espresso premium en Algérie",
+    "home.metaDesc":
+      "Moriva par Norlyn Coffee — capsules espresso 100 % bio en aluminium alimentaire pur. 4 intensités, 4 arômes, livraison 58 wilayas, paiement à la livraison.",
+    "shop.metaDesc":
+      "Toutes les capsules espresso Moriva par Norlyn Coffee — livraison 58 wilayas, paiement à la livraison.",
 
     // ---------------------------------------------------------------- blog
     "blog.metaTitle": "Le journal Norlyn — conseils et culture du café",
@@ -258,11 +263,6 @@ export const siteTranslations = {
     "about.step3.text": "من 5.2 غ إلى 6.0 غ حسب القوة — توزن ولا تُقدَّر.",
     "about.step4.title": "الختم",
     "about.step4.text": "غلق بالألمنيوم ثم مراقبة جودة لكل دفعة.",
-    "about.products.kicker": "منتجاتنا",
-    "about.products.title": "تشكيلة موريفا",
-    "about.products.subtitle":
-      "ثماني كبسولات، تشكيلتان، ومعيار تصنيع واحد. كلها متوافقة مع نسبريسو®.",
-    "about.products.cta": "تصفح المتجر كاملاً",
     "about.team.caption": "أسطول نورلين قبل الجولة، الجزائر العاصمة",
 
     "about.promise.kicker": "التزامنا",
@@ -310,6 +310,12 @@ export const siteTranslations = {
     "about.cta.title": "جاهز للتذوق؟",
     "about.cta.text": "اطلب في ثوانٍ، وادفع عند الاستلام.",
     "about.cta.button": "اطلب الآن",
+
+    "home.metaTitle": "نورلين كوفي — موريفا، كبسولات إسبريسو فاخرة في الجزائر",
+    "home.metaDesc":
+      "موريفا من نورلين كوفي — كبسولات إسبريسو 100٪ بيو بألمنيوم غذائي خالص. أربع درجات قوة وأربع نكهات، توصيل إلى 58 ولاية والدفع عند الاستلام.",
+    "shop.metaDesc":
+      "كل كبسولات إسبريسو موريفا من نورلين كوفي — توصيل إلى 58 ولاية والدفع عند الاستلام.",
 
     "blog.metaTitle": "مجلة نورلين — نصائح وثقافة القهوة",
     "blog.metaDesc":
@@ -442,11 +448,6 @@ export const siteTranslations = {
     "about.step3.text": "From 5.2 g to 6.0 g depending on intensity — weighed, never estimated.",
     "about.step4.title": "Sealing",
     "about.step4.text": "Sealed under aluminium, then a quality check on every batch.",
-    "about.products.kicker": "Our products",
-    "about.products.title": "The Moriva range",
-    "about.products.subtitle":
-      "Eight capsules, two families, one manufacturing standard. All Nespresso®-compatible.",
-    "about.products.cta": "Browse the full shop",
     "about.team.caption": "The Norlyn fleet before the round, Algiers",
 
     // --- the bio promise -----------------------------------------------
@@ -497,6 +498,13 @@ export const siteTranslations = {
     "about.cta.title": "Care to taste?",
     "about.cta.text": "Order in seconds, pay on delivery.",
     "about.cta.button": "Order now",
+
+    // ------------------------------------------------------ page metadata
+    "home.metaTitle": "Norlyn Coffee — Moriva, premium espresso capsules in Algeria",
+    "home.metaDesc":
+      "Moriva by Norlyn Coffee — 100 % organic espresso capsules in pure food-grade aluminium. 4 intensities, 4 aromas, delivery to all 58 wilayas, cash on delivery.",
+    "shop.metaDesc":
+      "Every Moriva espresso capsule by Norlyn Coffee — delivery to all 58 wilayas, cash on delivery.",
 
     // ---------------------------------------------------------------- blog
     "blog.metaTitle": "The Norlyn journal — coffee tips and culture",

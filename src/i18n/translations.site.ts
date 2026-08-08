@@ -7,14 +7,10 @@ export const siteTranslations = {
     "nav.blog": "Le journal",
     "nav.contact": "Contact",
 
-    // hero video screen
-    "hero.videoLabel": "Norlyn Coffee en vidéo",
+    // hero video screen — the film itself is decoration and carries no controls
+    // and no label; only the "no film yet" plate speaks
     "hero.videoSoon": "La vidéo arrive",
     "hero.videoSoonHint": "Bientôt : nos capsules, de la torréfaction à votre tasse.",
-    "hero.videoPlay": "Lire la vidéo",
-    "hero.videoPause": "Mettre en pause",
-    "hero.videoMute": "Couper le son",
-    "hero.videoUnmute": "Activer le son",
 
     // ------------------------------------------------------------ newsletter
     "newsletter.kicker": "La lettre Norlyn",
@@ -202,13 +198,8 @@ export const siteTranslations = {
     "nav.blog": "المجلة",
     "nav.contact": "اتصل بنا",
 
-    "hero.videoLabel": "نورلين كوفي بالفيديو",
     "hero.videoSoon": "الفيديو قريباً",
     "hero.videoSoonHint": "قريباً: كبسولاتنا، من التحميص إلى فنجانكم.",
-    "hero.videoPlay": "تشغيل الفيديو",
-    "hero.videoPause": "إيقاف مؤقت",
-    "hero.videoMute": "كتم الصوت",
-    "hero.videoUnmute": "تشغيل الصوت",
 
     "newsletter.kicker": "رسالة نورلين",
     "newsletter.title": "اكتشفوا جديدنا",
@@ -378,14 +369,10 @@ export const siteTranslations = {
     "nav.blog": "Journal",
     "nav.contact": "Contact",
 
-    // hero video screen
-    "hero.videoLabel": "Norlyn Coffee on film",
+    // hero video screen — the film itself is decoration and carries no controls
+    // and no label; only the "no film yet" plate speaks
     "hero.videoSoon": "The film is coming",
     "hero.videoSoonHint": "Coming soon: our capsules, from roasting to your cup.",
-    "hero.videoPlay": "Play the video",
-    "hero.videoPause": "Pause",
-    "hero.videoMute": "Mute",
-    "hero.videoUnmute": "Unmute",
 
     // ------------------------------------------------------------ newsletter
     "newsletter.kicker": "The Norlyn letter",

@@ -341,6 +341,16 @@ html[data-theme="dark"] .fx-gold-text-deep {
   );
 }
 
+/* Seats the hero's film screen on the cream instead of letting it sit there
+   like a dark rectangle pasted on top: a warm bloom leaking out from behind the
+   frame, the same trick .fx-podium plays under the cup. */
+.fx-screen-glow {
+  background:
+    radial-gradient(55% 45% at 50% 50%, rgb(var(--c-brand) / 0.22), transparent 72%),
+    radial-gradient(80% 60% at 50% 100%, rgb(var(--c-gold-hi) / 0.14), transparent 65%);
+  filter: blur(28px);
+}
+
 /* An empty picture slot must read as an intentional frame the client is meant
    to fill, not as a washed-out gap: fine gold hatching + a dashed edge. */
 .fx-slot-empty {

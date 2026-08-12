@@ -20,6 +20,29 @@ interface SceneProps {
   dirSign: 1 | -1;
   /** phone layout: object parks at the top of the viewport, lighter effects */
   compact: boolean;
+  /** fired once the canvas has genuinely drawn — see <FirstFrame> */
+  onFirstFrame?: () => void;
+}
+
+/**
+ * Says "the cup is on screen", and means it.
+ *
+ * The chunk resolving does not mean the object is visible, and neither does
+ * <Canvas> mounting: the renderer still has to compile the physical material's
+ * shaders and upload the geometry, and on a mid-range phone that is a
+ * noticeable beat during which the hero has a hole in it. So the signal is
+ * taken from inside the frame loop, and on the SECOND frame rather than the
+ * first — r3f runs its useFrame subscribers before it renders, so frame one
+ * fires while the canvas is still blank.
+ */
+function FirstFrame({ onReady }: { onReady: () => void }) {
+  const frames = useRef(0);
+  useFrame(() => {
+    if (frames.current > 1) return;
+    frames.current += 1;
+    if (frames.current > 1) onReady();
+  });
+  return null;
 }
 
 /**
@@ -239,7 +262,7 @@ const COMPACT_DPR = [1.25, 1.6, 2] as const;
 /** where a phone starts before the monitor has an opinion — one rung down from native */
 const COMPACT_START = 1;
 
-export function Scene({ colors, dirSign, compact }: SceneProps) {
+export function Scene({ colors, dirSign, compact, onFirstFrame }: SceneProps) {
   // never render ABOVE the screen's own pixel density — that is pure
   // supersampling the visitor pays for and cannot see
   const ladder = useMemo(() => {
@@ -294,6 +317,8 @@ export function Scene({ colors, dirSign, compact }: SceneProps) {
       <directionalLight position={[3, 4, 5]} intensity={2.1} color="#fff2dd" />
       <directionalLight position={[-4, 2, -3]} intensity={0.8} color="#dfe6ff" />
       <pointLight position={[0, -2, 3]} intensity={0.7} color="#e8c580" />
+
+      {onFirstFrame && <FirstFrame onReady={onFirstFrame} />}
 
       <Rig colors={colors} dirSign={dirSign} compact={compact} />
       <Beans count={compact ? 8 : 14} />

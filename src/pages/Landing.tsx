@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { ScrollProgressBar } from "@/components/effects/ScrollProgressBar";
 import { ScrollMascot } from "@/components/mascot/ScrollMascot";
 import { HeroSection } from "@/sections/HeroSection";
@@ -16,6 +16,7 @@ import { useScrollStage } from "@/hooks/useScrollStage";
 import { useSeo } from "@/hooks/useSeo";
 import { ScrollTrigger } from "@/lib/gsap";
 import { LANDING_PALETTE } from "@/lib/mascot";
+import { useSplashHold } from "@/store/splash";
 
 // three.js only downloads for visitors who actually get the 3D hero
 const Scene = lazy(() =>
@@ -45,6 +46,38 @@ export function Landing() {
    */
   const showHeroArt = !flags.allow3D || (!productsPending && variants.length === 0);
 
+  /*
+    What the splash is waiting for on this page, and nothing more.
+
+    The catalogue, because the variants zone's height — and therefore every act
+    boundary measured below it — is a function of how many products came back.
+    The canvas, because a hero whose centre column is still empty is not a
+    finished page. Both are "settled", not "succeeded": a store with no products
+    and a browser with no WebGL are ordinary outcomes that resolve the wait
+    exactly like the happy path does, or the curtain would sit there until the
+    cap for visitors whose site is working perfectly.
+  */
+  const [sceneDrawn, setSceneDrawn] = useState(false);
+  const onFirstFrame = useCallback(() => setSceneDrawn(true), []);
+
+  /*
+    And a bound on the canvas specifically. `allow3D` says the visitor has not
+    asked us not to animate — it does not say their browser will hand out a
+    WebGL context, and when it refuses, nothing ever draws a first frame and
+    this hold would sit there until the splash's own hard cap. Four seconds is
+    long enough for the three.js chunk to arrive on a slow connection and short
+    enough that a machine which simply cannot render it is not made to stare at
+    a curtain. The scene is decoration either way: lifting without it costs a
+    cup that fades in a moment later, not a broken page.
+  */
+  const [sceneWaitOver, setSceneWaitOver] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setSceneWaitOver(true), 4000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useSplashHold("landing", productsPending || (show3D && !sceneDrawn && !sceneWaitOver));
+
   // products arrive async — the variants zone only gets its 440vh height
   // after they load, so every trigger's start/end must be re-measured or the
   // master progress overshoots and the capsule choreography runs early.
@@ -63,7 +96,12 @@ export function Landing() {
       {show3D && (
         <div className="pointer-events-none fixed inset-0 z-10" aria-hidden>
           <Suspense fallback={null}>
-            <Scene colors={colors} dirSign={dir === "rtl" ? -1 : 1} compact={flags.isMobile} />
+            <Scene
+              colors={colors}
+              dirSign={dir === "rtl" ? -1 : 1}
+              compact={flags.isMobile}
+              onFirstFrame={onFirstFrame}
+            />
           </Suspense>
         </div>
       )}

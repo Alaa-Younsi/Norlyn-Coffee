@@ -36,6 +36,9 @@ export const siteTranslations = {
     // the brand cup
     "mascot.poke": "Dites bonjour à notre tasse",
 
+    // the opening curtain
+    "splash.loading": "Chargement de Norlyn Coffee",
+
     // ---------------------------------------------------------------- about
     "about.metaTitle": "La maison Norlyn — nos cafés et notre savoir-faire",
     "about.metaDesc":
@@ -221,6 +224,8 @@ export const siteTranslations = {
 
     "mascot.poke": "قل مرحباً لفنجاننا",
 
+    "splash.loading": "جارٍ تحميل نورلين كوفي",
+
     "about.metaTitle": "دار نورلين — قهوتنا وحرفتنا",
     "about.metaDesc":
       "قصة نورلين كوفي، وطريقة صناعة كبسولات موريفا، والتشكيلة الكاملة — توصيل إلى 69 ولاية مع الدفع عند الاستلام.",
@@ -397,6 +402,9 @@ export const siteTranslations = {
 
     // the brand cup
     "mascot.poke": "Say hello to our cup",
+
+    // the opening curtain
+    "splash.loading": "Loading Norlyn Coffee",
 
     // ---------------------------------------------------------------- about
     "about.metaTitle": "The Norlyn house — our coffee and our craft",

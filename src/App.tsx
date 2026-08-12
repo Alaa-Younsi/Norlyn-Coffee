@@ -3,7 +3,10 @@ import { BrowserRouter, Outlet, Route, Routes, useLocation } from "react-router-
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
+import { SplashScreen } from "@/components/layout/SplashScreen";
 import { MetaPixelProvider } from "@/components/MetaPixelProvider";
+// PHONE PREVIEW — temporary recording rig, delete with the folder it points at
+import { PhonePreview } from "@/devtools/phone-preview/PhonePreview";
 /*
   What ships in the FIRST download, and what waits to be asked for.
 
@@ -47,6 +50,10 @@ function ScrollToTop() {
 function StoreLayout() {
   return (
     <>
+      {/* Inside the store layout, not the router root: /admin is a tool its
+          operator opens dozens of times a day, and a brand curtain in front of
+          a spreadsheet is a delay, not a welcome. */}
+      <SplashScreen />
       <Header />
       <CartDrawer />
       {/* The fallback is a full-height blank, not a spinner. These chunks are
@@ -64,34 +71,38 @@ function StoreLayout() {
 
 export function App() {
   return (
-    <BrowserRouter>
-      <ScrollToTop />
-      {/* inside the router (it reads the route), outside the pages (it owns
-          PageView for all of them) */}
-      <MetaPixelProvider>
-        <Routes>
-          <Route element={<StoreLayout />}>
-            <Route path="/" element={<Landing />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/product/:slug" element={<Product />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/journal" element={<Journal />} />
-            <Route path="/journal/:slug" element={<Article />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/order/:orderNumber" element={<OrderConfirmation />} />
-            <Route path="*" element={<NotFound />} />
-          </Route>
-          <Route
-            path="/admin/*"
-            element={
-              <Suspense fallback={null}>
-                <AdminApp />
-              </Suspense>
-            }
-          />
-        </Routes>
-      </MetaPixelProvider>
-    </BrowserRouter>
+    // PHONE PREVIEW — temporary recording rig. Delete this wrapper, its import,
+    // and src/devtools/phone-preview/ to remove. See that folder's README.
+    <PhonePreview>
+      <BrowserRouter>
+        <ScrollToTop />
+        {/* inside the router (it reads the route), outside the pages (it owns
+            PageView for all of them) */}
+        <MetaPixelProvider>
+          <Routes>
+            <Route element={<StoreLayout />}>
+              <Route path="/" element={<Landing />} />
+              <Route path="/shop" element={<Shop />} />
+              <Route path="/product/:slug" element={<Product />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/journal" element={<Journal />} />
+              <Route path="/journal/:slug" element={<Article />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/order/:orderNumber" element={<OrderConfirmation />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+            <Route
+              path="/admin/*"
+              element={
+                <Suspense fallback={null}>
+                  <AdminApp />
+                </Suspense>
+              }
+            />
+          </Routes>
+        </MetaPixelProvider>
+      </BrowserRouter>
+    </PhonePreview>
   );
 }

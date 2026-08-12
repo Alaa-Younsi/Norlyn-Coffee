@@ -20,7 +20,9 @@ $glow.SurroundColors = @([System.Drawing.Color]::FromArgb(0, 201, 162, 75))
 $g.FillEllipse($glow, 150, -200, 900, 900)
 
 # logo (inverted to cream so the black text reads on dark)
-$logo = [System.Drawing.Image]::FromFile("$PSScriptRoot\..\public\NORLYN-COFFEE-logo.png")
+# Read from assets-src, not public: this is a build INPUT, and a copy kept in
+# public/ is 145 kB shipped to every visitor of a file only this script opens.
+$logo = [System.Drawing.Image]::FromFile("$PSScriptRoot\..\assets-src\raw\NORLYN-COFFEE-logo.png")
 $logoW = 560; $logoH = [int]($logo.Height * ($logoW / $logo.Width))
 $logoBmp = New-Object System.Drawing.Bitmap($logo, $logoW, $logoH)
 # invert dark pixels -> cream, keep alpha

@@ -101,6 +101,45 @@ bun run build      # regenerates sitemap, typechecks, bundles
 - `scripts/` — sitemap generation (wired into build), image optimization
   (`node scripts/optimize-images.mjs`, idempotent, re-run after adding raw
   photography), OG image generation (one-off).
+- `src/components/layout/SplashScreen.tsx` + `src/store/splash.ts` — the
+  opening curtain. It is not a timed animation: it holds until the webfont has
+  swapped, the catalogue has landed and the WebGL canvas has drawn a real
+  frame, because all three change the geometry the scroll choreography is
+  measured against. One `ScrollTrigger.refresh()` fires as it lifts, so every
+  trigger is measured against the layout the visitor actually scrolls. A floor
+  stops it flashing, a 6 s cap means it can never trap anyone, and the
+  pre-React shell in `index.html` is drawn to match it pixel for pixel so the
+  handoff has no seam — change one, change the other.
+- `src/devtools/phone-preview/` — **temporary**: a screen-recording rig that
+  runs the site in a phone frame at a real device viewport. Delete the folder
+  and the two `PHONE PREVIEW` insertion points before handover; see the
+  README inside it.
+
+## Headers
+
+`vercel.json` carries the security headers and the cache policy, and two
+entries there are load-bearing:
+
+- **Content-Security-Policy** enumerates every origin the site may touch:
+  Google Fonts (stylesheet + woff2), Supabase (REST, realtime over `wss`, and
+  Storage for photography and video), and Meta's pixel — which
+  `src/lib/metaPixel.ts` installs at runtime, so no pixel ID is ever inlined.
+  `style-src` keeps `'unsafe-inline'` because framer-motion and GSAP write to
+  the style attribute on every animated frame; `script-src` deliberately does
+  not, so the only inline script that can run is the pre-paint theme read in
+  `index.html`, allowed by an explicit `sha256-`. **Edit that script and the
+  hash must be recomputed** — otherwise it is blocked and the dark-mode flash
+  comes back. Get the new value from the built file:
+
+  ```bash
+  bun run build
+  node -e "const h=require('crypto').createHash('sha256');const m=require('fs').readFileSync('dist/index.html','utf8').match(/<script>([\s\S]*?)<\/script>/);h.update(m[1]);console.log('sha256-'+h.digest('base64'))"
+  ```
+
+- **`/videos/` caching.** The films autoplay and `hero.mp4` is ~1.9 MB. With
+  no rule they fall through to Vercel's revalidate-every-request default,
+  which is the whole file downloaded again on every visit by a shopper on
+  mobile data.
 
 **Env vars must be absent or complete, never empty.** `lib/supabase.ts` and
 the sitemap script both coerce `""` to "missing" for exactly this reason — an
@@ -126,12 +165,13 @@ empty `VITE_SUPABASE_URL` used to crash the app at import, and an empty
 5. Migration 0009 already ships the catalogue, the product photos, the hero
    slides, every named image slot and the launch articles, all pointing at the
    WebP in `/public/images` — nothing has to be uploaded to go live. What DOES
-   need a human: **the eight prices are placeholders** (Admin → Produits) and
-   so are the contact phone number in `src/pages/Contact.tsx` /
-   `src/components/layout/Footer.tsx`. Set real delivery prices per wilaya, and
-   add real reviews (the three fallback ones only show without Supabase).
-   Anything the client later uploads in **Contenu & médias** overrides the
-   seed — 0009 never overwrites an existing row.
+   need a human: **the eight prices are placeholders** (Admin → Produits), and
+   so is the **contact phone number** — it and the email both live in
+   `src/lib/contact.ts`, which is the only place either one appears. Set real
+   delivery prices per wilaya, and add real reviews (the three fallback ones
+   only show without Supabase). Anything the client later uploads in
+   **Contenu & médias** overrides the seed — 0009 never overwrites an
+   existing row.
 6. Free shipping is OFF by default (`free_ship_threshold` NULL). Set it in
    Admin → Paramètres only if the promotion is wanted.
 7. Set `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` in the **Vercel project

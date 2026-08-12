@@ -14,6 +14,12 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useHoneypot } from "@/hooks/useHoneypot";
 import { useSeo } from "@/hooks/useSeo";
 import { useSubmitContactMessage } from "@/hooks/useSiteContent";
+import {
+  CONTACT_EMAIL,
+  CONTACT_EMAIL_HREF,
+  CONTACT_PHONE,
+  CONTACT_PHONE_HREF,
+} from "@/lib/contact";
 import { isSupabaseConfigured } from "@/lib/supabase";
 
 const schema = z
@@ -122,10 +128,11 @@ export function Contact() {
               {/* honeypot — real users never see or fill this */}
               <input
                 {...register("website")}
+                type="text"
                 tabIndex={-1}
                 autoComplete="off"
-                aria-hidden
-                className="absolute h-0 w-0 opacity-0"
+                aria-hidden="true"
+                className="absolute -left-[9999px] h-0 w-0 opacity-0"
               />
 
               <div className="grid gap-5 sm:grid-cols-2">
@@ -204,8 +211,22 @@ export function Contact() {
           <Panel className="p-6 text-start">
             <h2 className="font-display text-xl">{t("contact.infoTitle")}</h2>
             <ul className="mt-4 space-y-4 text-sm">
-              <InfoRow icon={Phone} label={t("contact.infoPhone")} value="0770 00 00 00" ltr />
-              <InfoRow icon={Mail} label={t("contact.infoEmail")} value="contact@norlyn.dz" ltr />
+              {/* both are links: on the device most of this store's traffic
+                  arrives on, a phone number you cannot press is decoration */}
+              <InfoRow
+                icon={Phone}
+                label={t("contact.infoPhone")}
+                value={CONTACT_PHONE}
+                href={CONTACT_PHONE_HREF}
+                ltr
+              />
+              <InfoRow
+                icon={Mail}
+                label={t("contact.infoEmail")}
+                value={CONTACT_EMAIL}
+                href={CONTACT_EMAIL_HREF}
+                ltr
+              />
               <InfoRow
                 icon={Clock}
                 label={t("contact.infoHours")}
@@ -228,11 +249,14 @@ function InfoRow({
   icon: Icon,
   label,
   value,
+  href,
   ltr,
 }: {
   icon: typeof Phone;
   label: string;
   value: string;
+  /** makes the value a tel:/mailto: link — omitted for the rows that are prose */
+  href?: string;
   ltr?: boolean;
 }) {
   return (
@@ -242,9 +266,15 @@ function InfoRow({
       </span>
       <span>
         <span className="block text-xs uppercase tracking-wider text-muted">{label}</span>
-        <span className="block" dir={ltr ? "ltr" : undefined}>
-          {value}
-        </span>
+        {href ? (
+          <a href={href} className="block hover:text-brand transition-colors" dir={ltr ? "ltr" : undefined}>
+            {value}
+          </a>
+        ) : (
+          <span className="block" dir={ltr ? "ltr" : undefined}>
+            {value}
+          </span>
+        )}
       </span>
     </li>
   );

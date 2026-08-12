@@ -58,6 +58,47 @@
       }
     </script>
 
+    <!--
+      The two things that must happen before the browser's first paint. Both
+      were tried from inside the bundle and both were too late by then — a
+      module script does not execute until it and its whole import graph have
+      downloaded, and the browser has drawn a frame long before that.
+
+      1. THEME. <ThemeProvider> reads the same key, but can only write
+         `data-theme` from an effect — one full paint after the document was
+         drawn in whatever theme the attribute above says. For a visitor who
+         chose dark that paint is a full-screen flash of cream, landing on the
+         splash screen, the very first thing they see.
+
+      2. SCROLL RESTORATION. Reload a page you had scrolled and the browser
+         puts you back where you were. That is right for a document and wrong
+         for this landing, whose every act is keyed to an absolute offset
+         measured after the page settles: restoring to 3200 px means the
+         choreography starts mid-act, at a position measured against the
+         PREVIOUS layout. Measured from the bundle it was ~440 ms late — long
+         enough for the page to be drawn scrolled, and only undone when the
+         splash's overflow lock happened to collapse the page a frame later.
+         Here it lands before there is anything to restore.
+
+      Kept in sync with theme/ThemeProvider.tsx and lib/lenis.ts. NOTE: this
+      script is allowed by a sha256 in the CSP (vercel.json) — editing it means
+      recomputing that hash, or it stops running. See the README.
+    -->
+    <script>
+      try {
+        var t = localStorage.getItem("norlyn-theme");
+        if (t === "dark" || t === "light") document.documentElement.dataset.theme = t;
+      } catch (e) {
+        /* private mode — the light default in the attribute above stands */
+      }
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    </script>
+
+    <!-- the mark that covers the loading must never itself be a thing that is
+         loading: it is the boot screen's only image and both the pre-React
+         shell and <SplashScreen> draw it -->
+    <link rel="preload" as="image" href="/images/norlyn-logo.webp" fetchpriority="high" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!--
@@ -70,6 +111,98 @@
       href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Cairo:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
+
+    <!--
+      The boot screen's own styles, inline and self-contained.
+
+      They cannot come from the bundle's stylesheet: in dev that sheet is
+      injected by JavaScript, which is precisely what has not run yet, so the
+      shell below would paint unstyled — a giant raw wordmark on white — every
+      single time the developer loads the page. Inline is also one fewer thing
+      that has to arrive before the first meaningful paint in production.
+
+      The values are the light and dark `--c-bg` / `--c-line` / `--c-brand`
+      from src/index.css, written out because that file is not here yet.
+    -->
+    <style>
+      .boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.75rem;
+        padding: 1.5rem;
+        background: rgb(243 236 226);
+      }
+      .boot-halo {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 70vmin;
+        height: 70vmin;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        opacity: 0.7;
+        filter: blur(64px);
+        background: radial-gradient(
+          circle,
+          rgba(214, 178, 112, 0.3),
+          rgba(169, 124, 55, 0.1) 45%,
+          transparent 70%
+        );
+      }
+      .boot-mark {
+        position: relative;
+        width: 190px;
+        max-width: 62vw;
+        height: auto;
+      }
+      .boot-rail {
+        position: relative;
+        width: 10rem;
+        max-width: 52vw;
+        height: 1px;
+        overflow: hidden;
+        border-radius: 9999px;
+        background: rgb(215 202 182);
+      }
+      .boot-fill {
+        display: block;
+        height: 100%;
+        width: 8%;
+        background: rgb(169 124 55);
+        /* Creeps to the same 82% <SplashScreen>'s rail parks at, so the two
+           rails line up at the handoff instead of the bar jumping backwards. */
+        animation: boot-fill 1.6s cubic-bezier(0, 0, 0.2, 1) forwards;
+      }
+      @keyframes boot-fill {
+        to {
+          width: 82%;
+        }
+      }
+      html[data-theme="dark"] .boot {
+        background: rgb(19 14 10);
+      }
+      html[data-theme="dark"] .boot-rail {
+        background: rgb(62 48 37);
+      }
+      html[data-theme="dark"] .boot-fill {
+        background: rgb(201 162 75);
+      }
+      /* the wordmark is dark ink on transparent — the same inversion
+         .norlyn-logo gets in src/index.css */
+      html[data-theme="dark"] .boot-mark {
+        filter: invert(0.92) hue-rotate(180deg) saturate(1.15);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-fill {
+          animation: none;
+          width: 82%;
+        }
+      }
+    </style>
 
     <!--
       Meta Pixel — go-live step: replace YOUR_PIXEL_ID in BOTH places below
@@ -96,41 +229,23 @@
       until the bundle downloads, parses and mounts; on a phone on mobile data
       inside an in-app browser (Instagram, Facebook) that is seconds, and if
       the bundle never arrives at all it is forever. A white screen tells the
-      visitor the site is broken and they leave — a mark and a line of copy
-      tell them it is coming.
+      visitor the site is broken and they leave — a mark tells them it is
+      coming.
+
+      It is drawn to match <SplashScreen> pixel for pixel — same mark, same
+      size, same rail, same background — because React's createRoot() clears
+      this container the instant it mounts and paints the component over it.
+      Any difference between the two would show up as a flicker at exactly the
+      moment the site is trying to look composed. Change one, change the other.
 
       React's createRoot() clears the container on mount, so none of this needs
       removing by hand and none of it can survive into the running app.
     -->
     <div id="root">
-      <div
-        style="
-          position: fixed;
-          inset: 0;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 1.25rem;
-          background: rgb(252 248 242);
-          color: rgb(43 29 22);
-          font-family: Georgia, 'Times New Roman', serif;
-          text-align: center;
-          padding: 1.5rem;
-        "
-      >
-        <!-- the wordmark ships on an opaque white square; multiply drops that
-             square into the cream without needing a cut-out -->
-        <img
-          src="/images/logo/moriva-dark-lg.webp"
-          alt="Moriva"
-          width="132"
-          height="132"
-          style="width: 132px; height: auto; mix-blend-mode: multiply"
-        />
-        <p style="margin: 0; font-size: 0.9rem; letter-spacing: 0.08em; color: rgb(169 124 55)">
-          Chargement…
-        </p>
+      <div class="boot">
+        <div class="boot-halo"></div>
+        <img class="boot-mark" src="/images/norlyn-logo.webp" alt="Norlyn Coffee" width="640" height="237" />
+        <div class="boot-rail"><span class="boot-fill"></span></div>
       </div>
     </div>
 

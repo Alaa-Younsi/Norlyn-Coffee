@@ -32,13 +32,14 @@ const CONTENT_FILL = 0.96;
 
 /**
  * iOS ignores alpha on a home-screen icon and composites whatever is behind
- * it, which for a bookmarked page is black — and the N is near-black, so a
- * faithfully transparent apple-touch-icon renders as a gold bean floating on a
- * void with the brand letter invisible. It gets an opaque tile instead, in the
- * same cream the site's own background uses (index.html, --bg). Apple also
- * rounds the corners itself, so the mark is inset to keep it clear of the mask.
+ * it, so a faithfully transparent apple-touch-icon loses whichever half of the
+ * mark matches the backdrop. It gets an opaque tile instead — and WHICH colour
+ * follows the artwork: the tile is dark because the current mark draws its N
+ * in white. (The previous mark drew it near-black and this was cream; if the
+ * logo is ever swapped back, swap this with it or the letter disappears.)
+ * Apple rounds the corners itself, so the mark is inset to clear the mask.
  */
-const APPLE = { size: 180, fill: 0.78, background: { r: 252, g: 248, b: 242, alpha: 1 } };
+const APPLE = { size: 180, fill: 0.78, background: { r: 19, g: 14, b: 10, alpha: 1 } };
 
 const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 };
 

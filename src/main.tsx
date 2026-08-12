@@ -33,6 +33,10 @@ const queryClient = new QueryClient({
   },
 });
 
+// `history.scrollRestoration` is set in index.html, not here: by the time this
+// module has downloaded its import graph the browser has already restored the
+// old position and drawn a frame at it. See the comment above that script.
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>

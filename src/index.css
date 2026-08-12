@@ -115,6 +115,19 @@ html {
      which un-clips the body box — decorative elements hanging past the edge
      then widen the mobile layout viewport and break fixed headers. */
   overflow-x: clip;
+  /*
+    Keep the scrollbar's lane reserved whether or not a scrollbar is in it.
+
+    Two things on this site hide overflow to hold the page still — the splash
+    screen while the curtain is up, and the drawer while the cart is open — and
+    on a desktop scrollbar that is 15 px of width appearing and disappearing.
+    Everything centred on the page slides sideways and back each time: once on
+    every page load, twice on every look at the cart. Reserving the lane costs
+    a hairline of width on pages too short to scroll and removes the shift
+    entirely. (Ignored by browsers that don't know it, which just leaves them
+    where they were.)
+  */
+  scrollbar-gutter: stable;
 }
 
 body {

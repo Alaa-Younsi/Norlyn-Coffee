@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { CONTACT_EMAIL, CONTACT_EMAIL_HREF, CONTACT_LOCATION } from "@/lib/contact";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -53,8 +54,14 @@ export function Footer() {
         <div>
           <h3 className="font-display text-xl">{t("footer.contact")}</h3>
           <ul className="mt-4 space-y-2 text-sm text-muted">
-            <li>Norlyn Coffee — Alger, Algérie</li>
-            <li dir="ltr">contact@norlyn.dz</li>
+            <li>{CONTACT_LOCATION}</li>
+            {/* a printed address is a dead end on a phone — the one place a
+                shopper is most likely to be standing when they read it */}
+            <li dir="ltr">
+              <a href={CONTACT_EMAIL_HREF} className="hover:text-brand transition-colors">
+                {CONTACT_EMAIL}
+              </a>
+            </li>
           </ul>
         </div>
       </div>

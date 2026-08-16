@@ -13,8 +13,13 @@ thing that makes a finished site look unfinished.
 Click the phone icon in the header (right-hand chip group, next to the menu
 button). Then:
 
-- **Device buttons** — iPhone 15 Pro (393×852), iPhone SE (375×667),
-  Pixel 8 Pro (412×915).
+- **Device buttons** — iPhone 15 Pro (393×852), iPhone 13 Pro (390×844),
+  iPhone 13 mini (375×812), iPhone SE (375×667), Pixel 8 Pro (412×915),
+  Galaxy A54 / Redmi Note (360×800). Each reserves the status bar its own OS
+  reserves, so the site is filmed with the viewport height it really gets:
+  54 px under an island, 47 under a notch, 40 under a punch-hole, 22 on the SE.
+  The A54 is the narrowest frame and the one most real orders come from; the
+  13 mini is the short modern iPhone.
 - **Rotate** — landscape.
 - **Fullscreen** — the phone is sized to fill whatever box it is given, so
   this is simply the biggest and sharpest it gets: worth ~15 % on a 1080p

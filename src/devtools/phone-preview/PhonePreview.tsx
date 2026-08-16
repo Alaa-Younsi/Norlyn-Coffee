@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Maximize2, RotateCw, X } from "lucide-react";
 import { DEVICES, FRAME_NAME, IN_PHONE_FRAME, usePhonePreview } from "./state";
@@ -25,10 +25,50 @@ import type { DeviceKey } from "./state";
 export function PhonePreview({ children }: { children: ReactNode }) {
   const on = usePhonePreview((s) => s.on);
 
+  useHiddenScrollbarsInFrame();
+
   // inside the glass we are simply the site — never nest a second rig
   if (IN_PHONE_FRAME) return <>{children}</>;
   if (!on) return <>{children}</>;
   return <PhoneStage />;
+}
+
+/**
+ * Takes the desktop scrollbar out of the shot — inside the frame only.
+ *
+ * The site reserves a 10 px lane for it (`scrollbar-gutter: stable`,
+ * src/index.css) and paints the track transparent so it picks up whatever
+ * panel it sits on. An iframe composites its transparent pixels over what is
+ * BEHIND it, and behind this one is the screen's black — so the lane came out
+ * as a black bar with a brown thumb down the right edge of the glass, in every
+ * frame of every recording. No phone has that: iOS and Android draw overlay
+ * scrollbars that exist only while a finger is moving.
+ *
+ * Hidden here rather than fixed in index.css because the lane is *right* on a
+ * real desktop — it is what stops the whole page sliding sideways when the
+ * cart drawer takes the scrollbar away. `scrollbar-width` inherits, so the one
+ * declaration also covers the drawers and any inner scroller. Both mechanisms
+ * are declared for the reason index.css spells out: Chromium ignores the
+ * `::-webkit` rules once `scrollbar-width` is set, and the browsers that do not
+ * understand `scrollbar-width` drop it and fall through to them.
+ *
+ * The lane is handed back to the layout, so the page also lays out at the
+ * device's true width instead of 10 px short of it.
+ */
+function useHiddenScrollbarsInFrame() {
+  // layout, not passive: this must land before the first paint of the frame,
+  // or a reload — which is most of what recording an intro consists of —
+  // flashes the bar for a frame
+  useLayoutEffect(() => {
+    if (!IN_PHONE_FRAME) return;
+    const style = document.createElement("style");
+    style.dataset.phonePreview = "scrollbars";
+    style.textContent =
+      "html{scrollbar-width:none!important;scrollbar-gutter:auto!important}" +
+      "::-webkit-scrollbar{width:0!important;height:0!important}";
+    document.head.appendChild(style);
+    return () => style.remove();
+  }, []);
 }
 
 function PhoneStage() {
@@ -111,7 +151,15 @@ function PhoneStage() {
     How much of the screen the OS keeps for itself. Landscape gives it all
     back except the home indicator, which is what a phone actually does.
   */
-  const statusBar = landscape ? 0 : spec.notch === "island" ? 54 : spec.notch === "punch" ? 40 : 22;
+  const statusBar = landscape
+    ? 0
+    : spec.notch === "island"
+      ? 54
+      : spec.notch === "notch"
+        ? 47
+        : spec.notch === "punch"
+          ? 40
+          : 22;
   const homeBar = spec.notch === "none" ? 0 : landscape ? 16 : 24;
 
   /*
@@ -288,6 +336,24 @@ function PhoneStage() {
               <span
                 aria-hidden
                 className="pointer-events-none absolute start-1/2 top-[11px] z-20 h-[26px] w-[92px] -translate-x-1/2 rounded-full bg-black"
+              />
+            )}
+            {!landscape && spec.notch === "notch" && (
+              /*
+                Hangs off the top edge — that is the whole difference between a
+                notch and an island, and drawing it as a floating pill is what
+                makes a 13 Pro look like a 15 Pro with the wrong status bar.
+                Only the bottom corners are rounded, for the same reason.
+
+                Width is a fraction of the screen, not a constant: Apple's notch
+                is the same 40 % of the glass on both sizes, and a fixed 156 px
+                that reads right on the 390-wide Pro reads as a slab on the
+                375-wide mini.
+              */
+              <span
+                aria-hidden
+                className="pointer-events-none absolute start-1/2 top-0 z-20 h-[30px] -translate-x-1/2 rounded-b-[19px] bg-black"
+                style={{ width: Math.round(width * 0.4) }}
               />
             )}
             {!landscape && spec.notch === "punch" && (

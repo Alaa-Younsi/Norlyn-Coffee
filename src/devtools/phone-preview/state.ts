@@ -27,6 +27,12 @@ export { FRAME_NAME };
 /**
  * CSS viewport sizes, as the real devices report them. `short` is what the
  * side rail shows — the full name is the button's tooltip.
+ *
+ * `notch` says what the OS keeps for itself at the top, and each one reserves
+ * a different depth (see PhoneStage): `island` a Dynamic Island, `notch` the
+ * older iPhone cut-out — drawn hanging off the top edge rather than floating
+ * below it, and a shallower strip than the island's — `punch` an Android
+ * camera hole, `none` a phone with a real bezel and no cut-out at all.
  */
 export const DEVICES = {
   "iphone-15-pro": {
@@ -37,6 +43,33 @@ export const DEVICES = {
     radius: 55,
     notch: "island",
   },
+  /*
+    The last of the notched iPhones, and still the most common phone in the
+    hands the ads are aimed at — a shot framed only on a 15 Pro is framed for
+    54 px of reserved status bar that most viewers do not have.
+  */
+  "iphone-13-pro": {
+    label: "iPhone 13 Pro",
+    short: "13 Pro",
+    width: 390,
+    height: 844,
+    radius: 47,
+    notch: "notch",
+  },
+  /*
+    The short modern iPhone. Worth having next to the 13 Pro because 32 px of
+    lost height is exactly the margin that decides whether a hero fits above
+    the fold — and the SE, the only shorter frame here, is too old a shape to
+    stand in for it.
+  */
+  "iphone-13-mini": {
+    label: "iPhone 13 mini",
+    short: "13 mini",
+    width: 375,
+    height: 812,
+    radius: 44,
+    notch: "notch",
+  },
   "iphone-se": { label: "iPhone SE", short: "SE", width: 375, height: 667, radius: 42, notch: "none" },
   "pixel-8-pro": {
     label: "Pixel 8 Pro",
@@ -44,6 +77,20 @@ export const DEVICES = {
     width: 412,
     height: 915,
     radius: 46,
+    notch: "punch",
+  },
+  /*
+    The narrowest and one of the shortest viewports the site actually has to
+    survive — and the one most orders will come from. 360×800 is the mid-range
+    Android size (Galaxy A, Redmi Note), not a flagship, so it is the frame to
+    check a price row or a wilaya select against before filming anything.
+  */
+  "galaxy-a54": {
+    label: "Galaxy A54 / Redmi Note",
+    short: "A54",
+    width: 360,
+    height: 800,
+    radius: 40,
     notch: "punch",
   },
 } as const;

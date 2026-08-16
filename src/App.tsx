@@ -5,8 +5,6 @@ import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { SplashScreen } from "@/components/layout/SplashScreen";
 import { MetaPixelProvider } from "@/components/MetaPixelProvider";
-// PHONE PREVIEW — temporary recording rig, delete with the folder it points at
-import { PhonePreview } from "@/devtools/phone-preview/PhonePreview";
 /*
   What ships in the FIRST download, and what waits to be asked for.
 
@@ -71,38 +69,34 @@ function StoreLayout() {
 
 export function App() {
   return (
-    // PHONE PREVIEW — temporary recording rig. Delete this wrapper, its import,
-    // and src/devtools/phone-preview/ to remove. See that folder's README.
-    <PhonePreview>
-      <BrowserRouter>
-        <ScrollToTop />
-        {/* inside the router (it reads the route), outside the pages (it owns
-            PageView for all of them) */}
-        <MetaPixelProvider>
-          <Routes>
-            <Route element={<StoreLayout />}>
-              <Route path="/" element={<Landing />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/product/:slug" element={<Product />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/journal" element={<Journal />} />
-              <Route path="/journal/:slug" element={<Article />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/order/:orderNumber" element={<OrderConfirmation />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-            <Route
-              path="/admin/*"
-              element={
-                <Suspense fallback={null}>
-                  <AdminApp />
-                </Suspense>
-              }
-            />
-          </Routes>
-        </MetaPixelProvider>
-      </BrowserRouter>
-    </PhonePreview>
+    <BrowserRouter>
+      <ScrollToTop />
+      {/* inside the router (it reads the route), outside the pages (it owns
+          PageView for all of them) */}
+      <MetaPixelProvider>
+        <Routes>
+          <Route element={<StoreLayout />}>
+            <Route path="/" element={<Landing />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/product/:slug" element={<Product />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/journal" element={<Journal />} />
+            <Route path="/journal/:slug" element={<Article />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/order/:orderNumber" element={<OrderConfirmation />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+          <Route
+            path="/admin/*"
+            element={
+              <Suspense fallback={null}>
+                <AdminApp />
+              </Suspense>
+            }
+          />
+        </Routes>
+      </MetaPixelProvider>
+    </BrowserRouter>
   );
 }

@@ -3,8 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { CoffeeBagIcon, MoonIcon, SunIcon } from "@/components/ui/icons";
-// PHONE PREVIEW — temporary recording rig, delete with the folder it points at
-import { PhonePreviewButton } from "@/devtools/phone-preview/PhonePreviewButton";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { LANG_LABEL, LANG_NAME, nextLang } from "@/i18n/langs";
 import { useTheme } from "@/theme/ThemeProvider";
@@ -186,9 +184,6 @@ export function Header() {
               </span>
             )}
           </button>
-          {/* PHONE PREVIEW — temporary recording rig. Delete this line, its
-              import, and src/devtools/phone-preview/ to remove. */}
-          <PhonePreviewButton />
           <button
             onClick={() => setMenuOpen((v) => !v)}
             className="rounded-full border border-line/70 bg-panel/85 p-2 text-muted lg:hidden cursor-pointer"

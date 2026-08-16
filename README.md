@@ -110,10 +110,6 @@ bun run build      # regenerates sitemap, typechecks, bundles
   stops it flashing, a 6 s cap means it can never trap anyone, and the
   pre-React shell in `index.html` is drawn to match it pixel for pixel so the
   handoff has no seam — change one, change the other.
-- `src/devtools/phone-preview/` — **temporary**: a screen-recording rig that
-  runs the site in a phone frame at a real device viewport. Delete the folder
-  and the two `PHONE PREVIEW` insertion points before handover; see the
-  README inside it.
 
 ## Headers
 

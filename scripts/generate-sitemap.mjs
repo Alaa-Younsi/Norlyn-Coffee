@@ -82,7 +82,11 @@ writeFileSync(
   `User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /admin/
 Disallow: /checkout
+Disallow: /checkout/
+Disallow: /order
+Disallow: /order/
 
 Sitemap: ${SITE_URL}/sitemap.xml
 `,

@@ -1,8 +1,18 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { MutationCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// Self-hosted fonts — no render-blocking Google Fonts <link>, no third-party
+// origin in the CSP. The `opsz` files carry the optical-size axis the hero and
+// the 12px body text both rely on (index.css: font-optical-sizing: auto); each
+// is unicode-range-split, so a French page fetches only the `latin` slice and
+// Arabic UI text pulls Cairo's `arabic` slice on demand. Imported before
+// index.css so the @font-face rules land first.
+import "@fontsource-variable/fraunces/opsz.css";
+import "@fontsource-variable/fraunces/opsz-italic.css";
+import "@fontsource-variable/cairo/wght.css";
 import "./index.css";
 import { App } from "./App";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { adminToast } from "@/lib/adminToast";
 import { LanguageProvider } from "@/i18n/LanguageProvider";
 import { ThemeProvider } from "@/theme/ThemeProvider";
@@ -39,12 +49,14 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <LanguageProvider>
-          <App />
-        </LanguageProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <LanguageProvider>
+            <App />
+          </LanguageProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   </StrictMode>,
 );

@@ -74,13 +74,14 @@ html[data-theme="dark"] {
 
   /* ONE family for the whole site — "Gourmand" first, so dropping the licensed
      woff2 files into /public/fonts and uncommenting the @font-face block below
-     swaps the entire site over with no other change. Fraunces is the stand-in:
-     same warm high-contrast old-style skeleton, a real italic, and an
-     optical-size axis so it reads as display in the hero and as text at 12px.
-     `font-display` = titles, `font-sans` = everything else; the italic accent
-     is just `italic` on top (see .fx-accent). */
-  --font-display: "Gourmand", "Fraunces", "Cairo", Georgia, serif;
-  --font-sans: "Gourmand", "Fraunces", "Cairo", Georgia, serif;
+     swaps the entire site over with no other change. "Fraunces Variable" is the
+     stand-in (self-hosted via @fontsource, imported in main.tsx): same warm
+     high-contrast old-style skeleton, a real italic, and an optical-size axis
+     so it reads as display in the hero and as text at 12px. "Cairo Variable"
+     carries Arabic. `font-display` = titles, `font-sans` = everything else; the
+     italic accent is just `italic` on top (see .fx-accent). */
+  --font-display: "Gourmand", "Fraunces Variable", "Cairo Variable", Georgia, serif;
+  --font-sans: "Gourmand", "Fraunces Variable", "Cairo Variable", Georgia, serif;
 
   /* chart series — never hardcoded hexes in a component */
   --color-viz-revenue: var(--viz-revenue);

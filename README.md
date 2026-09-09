@@ -117,15 +117,17 @@ bun run build      # regenerates sitemap, typechecks, bundles
 entries there are load-bearing:
 
 - **Content-Security-Policy** enumerates every origin the site may touch:
-  Google Fonts (stylesheet + woff2), Supabase (REST, realtime over `wss`, and
-  Storage for photography and video), and Meta's pixel — which
-  `src/lib/metaPixel.ts` installs at runtime, so no pixel ID is ever inlined.
-  `style-src` keeps `'unsafe-inline'` because framer-motion and GSAP write to
-  the style attribute on every animated frame; `script-src` deliberately does
-  not, so the only inline script that can run is the pre-paint theme read in
-  `index.html`, allowed by an explicit `sha256-`. **Edit that script and the
-  hash must be recomputed** — otherwise it is blocked and the dark-mode flash
-  comes back. Get the new value from the built file:
+  Supabase (REST, realtime over `wss`, and Storage for photography and video)
+  and Meta's pixel — which `src/lib/metaPixel.ts` installs at runtime, so no
+  pixel ID is ever inlined. Fonts are self-hosted (`@fontsource`, imported in
+  `src/main.tsx`), so there is no `fonts.googleapis.com` / `fonts.gstatic.com`
+  entry and `font-src` is just `'self'`. `style-src` keeps `'unsafe-inline'`
+  because framer-motion and GSAP write to the style attribute on every animated
+  frame; `script-src` deliberately does not, so the only inline script that can
+  run is the pre-paint theme/language read in `index.html`, allowed by an
+  explicit `sha256-`. **Edit that script and the hash must be recomputed** —
+  otherwise it is blocked and the dark-mode / RTL flash comes back. Get the new
+  value from the built file:
 
   ```bash
   bun run build

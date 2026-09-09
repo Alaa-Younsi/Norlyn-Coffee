@@ -11,6 +11,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource-variable/cairo": "^5.3.0",
+    "@fontsource-variable/fraunces": "^5.3.0",
     "@hookform/resolvers": "^5.4.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
@@ -24,9 +26,9 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.81.0",
-    "react-router-dom": "^7.18.1",
+    "react-router-dom": "^7.18.3",
     "three": "^0.184.0",
-    "xlsx": "^0.18.5",
+    "write-excel-file": "^2",
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
   },
@@ -42,7 +44,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
-    "sharp": "^0.35.3",
+    "sharp": "^0.35.4",
     "tailwindcss": "^4.3.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",

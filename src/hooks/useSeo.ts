@@ -22,6 +22,13 @@ interface SeoOptions {
   description?: string;
   image?: string;
   jsonLd?: Record<string, unknown>;
+  /**
+   * Keep this route out of the index — the order confirmation and checkout
+   * pages carry a customer's name/address and must never be crawled. robots.txt
+   * already disallows the paths; this is the belt-and-braces for a crawler that
+   * ignores it or reaches the URL from a link.
+   */
+  noindex?: boolean;
 }
 
 function upsertMeta(attr: "name" | "property", key: string, content: string): void {
@@ -50,7 +57,7 @@ function upsertCanonical(href: string): void {
  * lingers on the next route). Helps Googlebot (executes JS) and browser
  * tabs; social crawlers are covered by middleware.ts instead.
  */
-export function useSeo({ title, description, image, jsonLd }: SeoOptions): void {
+export function useSeo({ title, description, image, jsonLd, noindex }: SeoOptions): void {
   const { pathname } = useLocation();
   // Callers build jsonLd inline every render — depend on its serialization.
   const jsonLdString = jsonLd ? JSON.stringify(jsonLd) : null;
@@ -58,6 +65,12 @@ export function useSeo({ title, description, image, jsonLd }: SeoOptions): void 
   useEffect(() => {
     const prevTitle = document.title;
     document.title = title;
+
+    // index.html ships `<meta name="robots" content="index, follow">`; flip it
+    // for this route and restore it on the way out.
+    const robotsEl = document.head.querySelector<HTMLMetaElement>('meta[name="robots"]');
+    const prevRobots = robotsEl?.getAttribute("content") ?? null;
+    if (noindex && robotsEl) robotsEl.setAttribute("content", "noindex, nofollow");
 
     const url = `${siteUrl()}${pathname}`;
     upsertCanonical(url);
@@ -85,6 +98,7 @@ export function useSeo({ title, description, image, jsonLd }: SeoOptions): void 
     return () => {
       document.title = prevTitle;
       script?.remove();
+      if (noindex && robotsEl && prevRobots !== null) robotsEl.setAttribute("content", prevRobots);
     };
-  }, [title, description, image, jsonLdString, pathname]);
+  }, [title, description, image, jsonLdString, pathname, noindex]);
 }

@@ -1,5 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
+import type { ReactNode } from "react";
 import { BrowserRouter, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
@@ -45,6 +47,19 @@ function ScrollToTop() {
   return null;
 }
 
+/**
+ * Page-content boundary, keyed on the path so it resets on navigation: a crash
+ * (or a stale-chunk rejection `<Suspense>` lets through) on one route shows the
+ * recovery screen without wedging the whole SPA, and moving to another route
+ * clears it. It wraps only `<Outlet />` — the Header/CartDrawer/SplashScreen
+ * around it stay mounted, so the splash never replays on a route change. The
+ * outer boundary in main.tsx is the backstop for anything above the router.
+ */
+function RoutedBoundary({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation();
+  return <ErrorBoundary key={pathname}>{children}</ErrorBoundary>;
+}
+
 function StoreLayout() {
   return (
     <>
@@ -60,7 +75,9 @@ function StoreLayout() {
           be reserved either way, or the footer jumps up under the header and
           then back down as the page lands. */}
       <Suspense fallback={<div className="min-h-screen" />}>
-        <Outlet />
+        <RoutedBoundary>
+          <Outlet />
+        </RoutedBoundary>
       </Suspense>
       <Footer />
     </>
@@ -90,9 +107,11 @@ export function App() {
           <Route
             path="/admin/*"
             element={
-              <Suspense fallback={null}>
-                <AdminApp />
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense fallback={null}>
+                  <AdminApp />
+                </Suspense>
+              </ErrorBoundary>
             }
           />
         </Routes>

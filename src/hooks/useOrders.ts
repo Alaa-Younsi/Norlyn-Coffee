@@ -4,6 +4,14 @@ import type { Order, OrderStatus } from "@/types/db";
 
 /** Admin-only hooks — require an authenticated session (RLS enforced). */
 
+/**
+ * Hard ceiling on the orders list. Past this the screen shows the most recent
+ * N with a banner rather than silently hiding older rows — a store that has
+ * taken 201 orders must not have order #1..#N−200 vanish with no signal. The
+ * dispatch export and the P&L run off their own wider-limited queries.
+ */
+export const ORDERS_LIMIT = 200;
+
 export function useOrders(statusFilter?: OrderStatus) {
   return useQuery({
     queryKey: ["orders", statusFilter ?? "all"],
@@ -12,7 +20,7 @@ export function useOrders(statusFilter?: OrderStatus) {
         .from("orders")
         .select("*")
         .order("created_at", { ascending: false })
-        .limit(200);
+        .limit(ORDERS_LIMIT);
       if (statusFilter) query = query.eq("status", statusFilter);
       const { data, error } = await query;
       if (error) throw error;

@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
 import { AdminLogin } from "./AdminLogin";
 import { AdminLayout } from "./AdminLayout";
 import { Dashboard } from "./Dashboard";
@@ -23,29 +24,31 @@ import { AdminStoreLedger } from "./StoreLedger";
 /** Lazy-loaded as one chunk — admin code never ships to shoppers. */
 export function AdminApp() {
   return (
-    <Routes>
-      <Route path="login" element={<AdminLogin />} />
-      <Route element={<AdminLayout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="products" element={<AdminProducts />} />
-        <Route path="products/new" element={<ProductForm />} />
-        <Route path="products/:id" element={<ProductForm />} />
-        <Route path="categories" element={<AdminCategories />} />
-        <Route path="orders" element={<AdminOrders />} />
-        <Route path="orders/:id" element={<AdminOrderDetail />} />
-        <Route path="delivery" element={<AdminDeliveryPrices />} />
-        <Route path="reviews" element={<AdminReviews />} />
-        <Route path="content" element={<AdminContent />} />
-        <Route path="articles" element={<AdminArticles />} />
-        <Route path="messages" element={<AdminMessages />} />
-        <Route path="newsletter" element={<AdminNewsletter />} />
-        <Route path="finance" element={<AdminFinance />} />
-        <Route path="store" element={<AdminStoreLedger />} />
-        <Route path="pixels" element={<AdminPixels />} />
-        <Route path="team" element={<AdminTeam />} />
-        <Route path="settings" element={<AdminSettings />} />
-        <Route path="account" element={<AdminAccount />} />
-      </Route>
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        <Route path="login" element={<AdminLogin />} />
+        <Route element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="products" element={<AdminProducts />} />
+          <Route path="products/new" element={<ProductForm />} />
+          <Route path="products/:id" element={<ProductForm />} />
+          <Route path="categories" element={<AdminCategories />} />
+          <Route path="orders" element={<AdminOrders />} />
+          <Route path="orders/:id" element={<AdminOrderDetail />} />
+          <Route path="delivery" element={<AdminDeliveryPrices />} />
+          <Route path="reviews" element={<AdminReviews />} />
+          <Route path="content" element={<AdminContent />} />
+          <Route path="articles" element={<AdminArticles />} />
+          <Route path="messages" element={<AdminMessages />} />
+          <Route path="newsletter" element={<AdminNewsletter />} />
+          <Route path="finance" element={<AdminFinance />} />
+          <Route path="store" element={<AdminStoreLedger />} />
+          <Route path="pixels" element={<AdminPixels />} />
+          <Route path="team" element={<AdminTeam />} />
+          <Route path="settings" element={<AdminSettings />} />
+          <Route path="account" element={<AdminAccount />} />
+        </Route>
+      </Routes>
+    </AuthProvider>
   );
 }

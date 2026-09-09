@@ -18,7 +18,7 @@ export function Checkout() {
   const pixel = usePixel();
   const intentFired = useRef(false);
 
-  useSeo({ title: `${t("checkout.title")} — Norlyn Coffee` });
+  useSeo({ title: `${t("checkout.title")} — Norlyn Coffee`, noindex: true });
 
   // dedicated route: navigating here from the cart IS checkout intent
   useEffect(() => {

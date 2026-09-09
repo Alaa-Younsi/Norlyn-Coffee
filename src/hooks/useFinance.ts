@@ -178,33 +178,19 @@ export function useApplyPurchaseToStock() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (purchase: StockPurchase) => {
-      if (purchase.scope === "online" && purchase.product_id) {
-        const { data, error } = await supabase
-          .from("products")
-          .select("stock")
-          .eq("id", purchase.product_id)
-          .single();
-        if (error) throw error;
-        const { error: updateError } = await supabase
-          .from("products")
-          .update({ stock: Number(data.stock) + purchase.quantity })
-          .eq("id", purchase.product_id);
-        if (updateError) throw updateError;
-        return;
-      }
-      if (purchase.scope === "store" && purchase.store_product_id) {
-        const { data, error } = await supabase
-          .from("store_products")
-          .select("stock")
-          .eq("id", purchase.store_product_id)
-          .single();
-        if (error) throw error;
-        const { error: updateError } = await supabase
-          .from("store_products")
-          .update({ stock: Number(data.stock) + purchase.quantity })
-          .eq("id", purchase.store_product_id);
-        if (updateError) throw updateError;
-      }
+      // ONE atomic `stock = stock + delta` in the DB (apply_stock_delta RPC),
+      // not a SELECT-then-UPDATE from the browser: the old two round-trips lost
+      // the increment whenever an order decrement, a cancel-restock or another
+      // purchase landed in between.
+      const targetId =
+        purchase.scope === "online" ? purchase.product_id : purchase.store_product_id;
+      if (!targetId) return;
+      const { error } = await supabase.rpc("apply_stock_delta", {
+        p_scope: purchase.scope,
+        p_id: targetId,
+        p_delta: purchase.quantity,
+      });
+      if (error) throw error;
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["store-products"] });

@@ -8,7 +8,7 @@ import { Price } from "@/components/ui/Price";
 import { Select } from "@/components/ui/Field";
 import { DeleteAllOrdersModal } from "@/components/admin/DeleteAllOrdersModal";
 import { StatusBadge } from "./components/StatusBadge";
-import { useOrders } from "@/hooks/useOrders";
+import { useOrders, ORDERS_LIMIT } from "@/hooks/useOrders";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { exportOrders } from "@/lib/exportOrders";
 import { supabase } from "@/lib/supabase";
@@ -88,6 +88,12 @@ export function AdminOrders() {
           onConfirm={() => deleteAll.mutate()}
           onClose={() => setConfirmDelete(false)}
         />
+      )}
+
+      {rows.length >= ORDERS_LIMIT && (
+        <p className="mt-4 rounded-xl border border-line bg-panel-2/60 px-4 py-2.5 text-xs text-muted">
+          <span dir="ltr">{ORDERS_LIMIT}</span> {t("admin.orders.truncated")}
+        </p>
       )}
 
       <Panel className="mt-6 overflow-x-auto">

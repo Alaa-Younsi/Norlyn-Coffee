@@ -17,7 +17,7 @@ export function OrderConfirmation() {
   const { orderNumber } = useParams();
   const { t, lang } = useLanguage();
 
-  useSeo({ title: `${t("confirm.title")} — Norlyn Coffee` });
+  useSeo({ title: `${t("confirm.title")} — Norlyn Coffee`, noindex: true });
 
   // orders has no anon SELECT policy (RLS) — the recap must come through the
   // guest-safe RPC, never a direct .from("orders") select.

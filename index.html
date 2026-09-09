@@ -70,6 +70,11 @@
          chose dark that paint is a full-screen flash of cream, landing on the
          splash screen, the very first thing they see.
 
+      1b. LANGUAGE / DIRECTION. Same story for a returning Arabic visitor:
+         <html lang="fr"> is hardcoded and <LanguageProvider> only fixes
+         `lang`/`dir` from an effect, so the first paint is LTR and then snaps
+         to RTL. Read the same `norlyn-lang` key here.
+
       2. SCROLL RESTORATION. Reload a page you had scrolled and the browser
          puts you back where you were. That is right for a document and wrong
          for this landing, whose every act is keyed to an absolute offset
@@ -86,10 +91,16 @@
     -->
     <script>
       try {
+        var d = document.documentElement;
         var t = localStorage.getItem("norlyn-theme");
-        if (t === "dark" || t === "light") document.documentElement.dataset.theme = t;
+        if (t === "dark" || t === "light") d.dataset.theme = t;
+        var l = localStorage.getItem("norlyn-lang");
+        if (l === "fr" || l === "ar" || l === "en") {
+          d.lang = l;
+          d.dir = l === "ar" ? "rtl" : "ltr";
+        }
       } catch (e) {
-        /* private mode — the light default in the attribute above stands */
+        /* private mode — the light/fr defaults in the markup above stand */
       }
       if ("scrollRestoration" in history) history.scrollRestoration = "manual";
     </script>
@@ -99,18 +110,16 @@
          shell and <SplashScreen> draw it -->
     <link rel="preload" as="image" href="/images/norlyn-logo.webp" fetchpriority="high" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!--
       Site face: Fraunces — a warm, high-contrast old-style serif with a true
       italic and an optical-size axis, so the SAME family reads as a display
       face in the hero and as a text face at 12px. Stand-in for Gourmand until
       the licensed files land in /public/fonts (see index.css).
+
+      Self-hosted via @fontsource and imported from src/main.tsx — no Google
+      Fonts <link> (render-blocking, third-party) and nothing to allow-list in
+      the CSP. The woff2 files ship from /assets on our own origin.
     -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Cairo:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
 
     <!--
       The boot screen's own styles, inline and self-contained.

@@ -79,6 +79,12 @@ export const adminTranslations = {
     "admin.team.errGeneric": "Création impossible. Réessayez.",
     "admin.team.deactivateHint":
       "Préférez désactiver plutôt que supprimer : l'accès est coupé immédiatement et l'historique reste lisible.",
+    "admin.team.resetPassword": "Changer le mot de passe",
+    "admin.team.newPassword": "Nouveau mot de passe",
+    "admin.team.resetSubmit": "Mettre à jour",
+    "admin.team.resetting": "Mise à jour…",
+    "admin.team.resetSuccess": "Mot de passe mis à jour.",
+    "admin.team.resetErrNotFound": "Ce compte est introuvable.",
 
     // pixels
     "admin.pixels.title": "Pixels Meta",
@@ -419,6 +425,12 @@ export const adminTranslations = {
     "admin.team.errGeneric": "تعذّر الإنشاء. حاول مجدداً.",
     "admin.team.deactivateHint":
       "التعطيل أفضل من الحذف: يُقطع الدخول فوراً مع بقاء السجل قابلاً للمراجعة.",
+    "admin.team.resetPassword": "تغيير كلمة المرور",
+    "admin.team.newPassword": "كلمة المرور الجديدة",
+    "admin.team.resetSubmit": "تحديث",
+    "admin.team.resetting": "جارٍ التحديث…",
+    "admin.team.resetSuccess": "تم تحديث كلمة المرور.",
+    "admin.team.resetErrNotFound": "هذا الحساب غير موجود.",
 
     "admin.pixels.title": "بيكسل ميتا",
     "admin.pixels.subtitle": "يمكن تشغيل عدة بيكسلات معاً — كل حدث يُرسل إلى البيكسل المعني فقط.",
@@ -748,6 +760,12 @@ export const adminTranslations = {
     "admin.team.errGeneric": "Could not create the account. Please try again.",
     "admin.team.deactivateHint":
       "Prefer deactivating over deleting: access is cut immediately and the history stays readable.",
+    "admin.team.resetPassword": "Change password",
+    "admin.team.newPassword": "New password",
+    "admin.team.resetSubmit": "Update",
+    "admin.team.resetting": "Updating…",
+    "admin.team.resetSuccess": "Password updated.",
+    "admin.team.resetErrNotFound": "This account could not be found.",
 
     // pixels
     "admin.pixels.title": "Meta pixels",

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ShieldCheck, UserPlus } from "lucide-react";
+import { KeyRound, ShieldCheck, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FieldWrapper, Input } from "@/components/ui/Field";
 import { Panel } from "@/components/ui/Panel";
@@ -210,6 +210,12 @@ function WorkerPanel({ worker }: { worker: AdminProfile }) {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<string[]>(worker.sections);
 
+  const [resetOpen, setResetOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [resetStatus, setResetStatus] = useState<{ tone: "ok" | "error"; text: string } | null>(
+    null,
+  );
+
   const dirty =
     draft.length !== worker.sections.length ||
     draft.some((key) => !worker.sections.includes(key));
@@ -223,6 +229,28 @@ function WorkerPanel({ worker }: { worker: AdminProfile }) {
       if (error) throw error;
     },
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["admin-profiles"] }),
+  });
+
+  const resetPassword = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.functions.invoke("update-worker-password", {
+        body: { user_id: worker.user_id, password: newPassword },
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setResetStatus({ tone: "ok", text: t("admin.team.resetSuccess") });
+      setNewPassword("");
+    },
+    onError: async (error) => {
+      const code = await readFunctionErrorCode(error);
+      const map: Record<string, string> = {
+        weak_password: t("admin.team.errWeak"),
+        forbidden: t("admin.team.errForbidden"),
+        not_found: t("admin.team.resetErrNotFound"),
+      };
+      setResetStatus({ tone: "error", text: map[code] ?? t("admin.team.errGeneric") });
+    },
   });
 
   return (
@@ -239,15 +267,63 @@ function WorkerPanel({ worker }: { worker: AdminProfile }) {
             </span>
           )}
         </div>
-        <Button
-          size="sm"
-          variant={worker.active ? "ghost" : "outline"}
-          onClick={() => save.mutate({ active: !worker.active })}
-          disabled={save.isPending}
-        >
-          {worker.active ? t("admin.team.deactivate") : t("admin.team.activate")}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setResetStatus(null);
+              setResetOpen((open) => !open);
+            }}
+          >
+            <KeyRound size={14} className="me-1.5" />
+            {t("admin.team.resetPassword")}
+          </Button>
+          <Button
+            size="sm"
+            variant={worker.active ? "ghost" : "outline"}
+            onClick={() => save.mutate({ active: !worker.active })}
+            disabled={save.isPending}
+          >
+            {worker.active ? t("admin.team.deactivate") : t("admin.team.activate")}
+          </Button>
+        </div>
       </div>
+
+      {resetOpen && (
+        <form
+          className="mt-4 flex flex-wrap items-end gap-3 rounded-xl border border-line p-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setResetStatus(null);
+            resetPassword.mutate();
+          }}
+        >
+          <FieldWrapper label={t("admin.team.newPassword")} className="flex-1 min-w-[12rem]">
+            <Input
+              type="password"
+              autoComplete="new-password"
+              minLength={MIN_PASSWORD}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+            />
+          </FieldWrapper>
+          <Button type="submit" size="sm" disabled={resetPassword.isPending}>
+            {resetPassword.isPending ? t("admin.team.resetting") : t("admin.team.resetSubmit")}
+          </Button>
+          {resetStatus && (
+            <p
+              className={cn(
+                "w-full text-sm",
+                resetStatus.tone === "ok" ? "text-brand" : "text-red-700 dark:text-red-400",
+              )}
+            >
+              {resetStatus.text}
+            </p>
+          )}
+        </form>
+      )}
 
       <div className="mt-4">
         <SectionGrid

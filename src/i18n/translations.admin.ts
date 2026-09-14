@@ -355,9 +355,9 @@ export const adminTranslations = {
     "admin.messages.deleteConfirm": "Supprimer ce message ?",
 
     // order notifications (Mon compte)
-    "admin.account.notifTitle": "Notifications de commande",
+    "admin.account.notifTitle": "Notifications",
     "admin.account.notifSubtitle":
-      "Soyez averti·e dès qu'une nouvelle commande arrive, par e-mail et/ou WhatsApp.",
+      "Soyez averti·e dès qu'une nouvelle commande ou un nouveau message de contact arrive, par e-mail et/ou WhatsApp.",
     "admin.account.notifEmailToggle": "Recevoir par e-mail",
     "admin.account.notifEmailLabel": "Adresse e-mail de notification",
     "admin.account.notifWhatsappToggle": "Recevoir par WhatsApp",
@@ -725,9 +725,9 @@ export const adminTranslations = {
     "admin.messages.deleteConfirm": "حذف هذه الرسالة؟",
 
     // order notifications (Mon compte)
-    "admin.account.notifTitle": "إشعارات الطلبات",
+    "admin.account.notifTitle": "الإشعارات",
     "admin.account.notifSubtitle":
-      "احصل على إشعار فور وصول طلب جديد، عبر البريد الإلكتروني و/أو واتساب.",
+      "احصل على إشعار فور وصول طلب جديد أو رسالة تواصل جديدة، عبر البريد الإلكتروني و/أو واتساب.",
     "admin.account.notifEmailToggle": "الاستلام عبر البريد الإلكتروني",
     "admin.account.notifEmailLabel": "عنوان البريد الإلكتروني للإشعارات",
     "admin.account.notifWhatsappToggle": "الاستلام عبر واتساب",
@@ -1117,9 +1117,9 @@ export const adminTranslations = {
     "admin.messages.deleteConfirm": "Delete this message?",
 
     // order notifications (My account)
-    "admin.account.notifTitle": "Order notifications",
+    "admin.account.notifTitle": "Notifications",
     "admin.account.notifSubtitle":
-      "Get notified the moment a new order comes in, by email and/or WhatsApp.",
+      "Get notified the moment a new order or a new contact message comes in, by email and/or WhatsApp.",
     "admin.account.notifEmailToggle": "Receive by email",
     "admin.account.notifEmailLabel": "Notification email address",
     "admin.account.notifWhatsappToggle": "Receive by WhatsApp",

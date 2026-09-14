@@ -20,7 +20,7 @@ import {
   CONTACT_PHONE,
   CONTACT_PHONE_HREF,
 } from "@/lib/contact";
-import { isSupabaseConfigured } from "@/lib/supabase";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 const schema = z
   .object({
@@ -71,13 +71,16 @@ export function Contact() {
     }
     setServerError(null);
     try {
-      await submitMessage.mutateAsync({
+      const messageId = await submitMessage.mutateAsync({
         name: values.name,
         email: values.email || undefined,
         phone: values.phone || undefined,
         subject: values.subject || undefined,
         message: values.message,
       });
+      // Best-effort staff ping (email/WhatsApp per Mon compte prefs) — never
+      // awaited, never allowed to affect the confirmation shown below.
+      void supabase.functions.invoke("notify", { body: { kind: "message", message_id: messageId } });
       setSent(true);
       reset();
     } catch (error) {

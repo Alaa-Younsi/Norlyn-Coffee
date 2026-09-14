@@ -320,7 +320,11 @@ export function useDeleteMessage() {
   });
 }
 
-/** Storefront submit — goes through the SECURITY DEFINER RPC, never a direct insert. */
+/**
+ * Storefront submit — goes through the SECURITY DEFINER RPC, never a direct
+ * insert. Returns the new row's id so the caller can fire the best-effort
+ * staff notification (see Contact.tsx) with something to claim.
+ */
 export function useSubmitContactMessage() {
   return useMutation({
     mutationFn: async (payload: {
@@ -329,9 +333,10 @@ export function useSubmitContactMessage() {
       phone?: string;
       subject?: string;
       message: string;
-    }) => {
-      const { error } = await supabase.rpc("submit_contact_message", { payload });
+    }): Promise<string> => {
+      const { data, error } = await supabase.rpc("submit_contact_message", { payload });
       if (error) throw error;
+      return data as string;
     },
   });
 }

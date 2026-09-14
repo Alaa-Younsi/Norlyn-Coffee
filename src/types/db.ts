@@ -78,7 +78,7 @@ export interface Order {
   language: Lang;
   delivery_type: DeliveryType;
   created_at: string;
-  /** set once, by claim_order_notification() — see notify-order edge function */
+  /** set once, by claim_order_notification() — see the notify edge function */
   notified_at?: string | null;
   order_items?: OrderItem[];
 }
@@ -136,7 +136,7 @@ export interface AdminProfile {
   created_at: string;
 }
 
-/** Self-managed per-account order notification settings (0016). */
+/** Self-managed per-account order/message notification settings (0016, 0017). */
 export interface AdminNotificationPrefs {
   user_id: string;
   email_enabled: boolean;
@@ -360,6 +360,8 @@ export interface ContactMessage {
   message: string;
   status: MessageStatus;
   created_at: string;
+  /** set once, by claim_message_notification() — see the notify edge function */
+  notified_at?: string | null;
 }
 
 export type SubscriberStatus = "subscribed" | "unsubscribed";

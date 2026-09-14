@@ -4,9 +4,13 @@
 -- edge function (renamed from notify-order — see that function's own header
 -- for why one dispatcher serves both event kinds).
 --
--- Mirrors 0016's shape exactly: an anon-safe atomic claim (idempotent, and
--- reveals nothing to a caller replaying/guessing an id) plus a `notified_at`
--- column so a message can trigger a send at most once.
+-- Mirrors 0016's shape exactly: an atomic claim (idempotent, and reveals
+-- nothing to a caller replaying/guessing an id) plus a `notified_at` column
+-- so a message can trigger a send at most once. Also mirrors 0016's original
+-- mistake, corrected in the same place: this function is called only by the
+-- notify edge function's SERVICE ROLE client, which needs no function grant
+-- at all, so it is intentionally left un-granted to anon/authenticated here
+-- (see 0019 and 0016's header note).
 
 -- ---------------------------------------------------- claim + guard column
 alter table contact_messages add column if not exists notified_at timestamptz;
@@ -36,8 +40,6 @@ end;
 $$;
 
 revoke execute on function claim_message_notification(uuid) from public;
-grant  execute on function claim_message_notification(uuid) to anon;
-grant  execute on function claim_message_notification(uuid) to authenticated;
 
 -- ------------------------------------------------- submit_contact_message()
 -- Needs its new id back so the browser can hand it to the notify function —

@@ -1,5 +1,5 @@
 import type { Schema } from "write-excel-file";
-import type { Order } from "@/types/db";
+import type { Order, OrderStatus } from "@/types/db";
 
 /**
  * CONFIRMED RISK — spreadsheet formula injection. customer_name, city,
@@ -24,6 +24,17 @@ const STATUS_FR: Record<string, string> = {
   shipped: "Expédiée",
   delivered: "Livrée",
   cancelled: "Annulée",
+};
+
+// Filename-safe (no accents/spaces) counterpart of STATUS_FR, for a
+// per-status export's suffix — a dispatcher opening several of these files at
+// once needs the name to say which status it is without opening it first.
+const STATUS_FILE_SLUG: Record<OrderStatus, string> = {
+  pending: "en-attente",
+  confirmed: "confirmee",
+  shipped: "expediee",
+  delivered: "livree",
+  cancelled: "annulee",
 };
 
 const SCHEMA: Schema<Order> = [
@@ -66,7 +77,7 @@ const SCHEMA: Schema<Order> = [
  * Behind a dynamic import it lands only when a dispatcher clicks Export.
  * Async as a consequence, which is why the callers `void` it.
  */
-export async function exportOrders(orders: Order[], labelSuffix?: string): Promise<void> {
+export async function exportOrders(orders: Order[], statusFilter?: OrderStatus): Promise<void> {
   const { default: writeXlsxFile } = await import("write-excel-file");
 
   const today = new Date();
@@ -74,9 +85,6 @@ export async function exportOrders(orders: Order[], labelSuffix?: string): Promi
     today.getDate(),
   ).padStart(2, "0")}`;
 
-  // labelSuffix lets a per-status export (e.g. "en-attente") name its file
-  // distinctly — a dispatcher opening several of these at once needs the
-  // filename to say which status it is without opening it first.
-  const suffix = labelSuffix ? `-${labelSuffix}` : "";
+  const suffix = statusFilter ? `-${STATUS_FILE_SLUG[statusFilter]}` : "";
   await writeXlsxFile(orders, { schema: SCHEMA, fileName: `commandes${suffix}-${stamp}.xlsx` });
 }

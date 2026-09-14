@@ -7,13 +7,19 @@
 --     receive its own apikey; see admin.account.notif* strings for the copy
 --     that walks them through it).
 --
--- The edge function that actually sends (supabase/functions/notify-order) is
--- called by the ANONYMOUS shopper's browser right after place_order succeeds
--- (see CheckoutForm.tsx) — deliberately best-effort and decoupled, so a
--- notification failure can never affect checkout. Two consequences follow:
+-- The edge function that actually sends (supabase/functions/notify — renamed
+-- from notify-order once contact-message notifications were added in 0017)
+-- is called by the ANONYMOUS shopper's browser right after place_order
+-- succeeds (see CheckoutForm.tsx) — deliberately best-effort and decoupled,
+-- so a notification failure can never affect checkout. Two consequences
+-- follow:
 --
---   1. It runs with no admin session, so `claim_order_notification` below is
---      grantable to anon and is the ONLY thing it may call.
+--   1. The function itself runs with the SERVICE ROLE key, which bypasses
+--      every function-level grant — so `claim_order_notification` does NOT
+--      need to be (and, per 0019, no longer is) granted to anon/authenticated.
+--      It was granted here originally by mistake, copying place_order's
+--      pattern; 0019 revokes it. Read that migration before granting a
+--      similar claim function to anon in a future one.
 --   2. Anyone who learns the function's URL could otherwise replay it for the
 --      same order (spamming staff) or probe made-up order numbers. The claim
 --      function closes both: it is an atomic UPDATE ... WHERE notified_at IS
@@ -79,6 +85,7 @@ begin
 end;
 $$;
 
+-- anon/authenticated grants revoked in 0019 — see that migration and the
+-- header note above. Left un-granted to any role here on purpose: the
+-- notify edge function's service-role client does not need them.
 revoke execute on function claim_order_notification(text) from public;
-grant  execute on function claim_order_notification(text) to anon;
-grant  execute on function claim_order_notification(text) to authenticated;

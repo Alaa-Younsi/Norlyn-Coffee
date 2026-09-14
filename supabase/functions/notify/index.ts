@@ -2,9 +2,10 @@
 // Contact-page message. Both are called by the SHOPPER's own browser right
 // after the write succeeds (CheckoutForm.tsx / Contact.tsx) — there is no
 // admin session at that point, which is why every check here is server-side:
-// claim_order_notification / claim_message_notification are the anon-safe
-// RPCs (migrations 0016, 0017), and the recipient list is read with the
-// service-role key, never RLS.
+// claim_order_notification / claim_message_notification (migrations 0016,
+// 0017) are atomic and replay-proof, called here with the SERVICE ROLE key —
+// they are NOT granted to anon/authenticated (see 0019), so this function is
+// the only caller either one has.
 //
 // One dispatcher for both kinds, not two functions: the recipient lookup,
 // the send helpers and the best-effort/idempotent shape are identical either

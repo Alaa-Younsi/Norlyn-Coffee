@@ -353,6 +353,47 @@ export const adminTranslations = {
     "admin.messages.subject": "Objet",
     "admin.messages.received": "Reçu le",
     "admin.messages.deleteConfirm": "Supprimer ce message ?",
+
+    // order notifications (Mon compte)
+    "admin.account.notifTitle": "Notifications de commande",
+    "admin.account.notifSubtitle":
+      "Soyez averti·e dès qu'une nouvelle commande arrive, par e-mail et/ou WhatsApp.",
+    "admin.account.notifEmailToggle": "Recevoir par e-mail",
+    "admin.account.notifEmailLabel": "Adresse e-mail de notification",
+    "admin.account.notifWhatsappToggle": "Recevoir par WhatsApp",
+    "admin.account.notifWhatsappNumberLabel": "Numéro WhatsApp",
+    "admin.account.notifWhatsappNumberHint": "Format international, sans le +. Ex. : 213555000000",
+    "admin.account.notifApikeyLabel": "Clé API CallMeBot",
+    "admin.account.notifApikeyHint":
+      "Envoyez « I allow callmebot to send me messages » au numéro CallMeBot depuis ce WhatsApp, puis collez ici la clé reçue en réponse.",
+    "admin.account.notifActivateLink": "Ouvrir WhatsApp pour activer →",
+    "admin.account.notifSave": "Enregistrer les préférences",
+    "admin.account.notifSaving": "Enregistrement…",
+    "admin.account.notifSaved": "Préférences de notification enregistrées.",
+    "admin.account.notifEmailInvalid": "Entrez une adresse e-mail valide.",
+    "admin.account.notifWhatsappIncomplete":
+      "Entrez le numéro WhatsApp et la clé API CallMeBot.",
+
+    // product form
+    "admin.form.section.identity": "Identité du produit",
+    "admin.form.section.pricing": "Tarification & stock",
+    "admin.form.section.attributes": "Attributs",
+    "admin.form.langComplete": "renseigné",
+    "admin.form.langMissing": "à compléter",
+    "admin.form.imagesPendingHint": "Ces images seront envoyées à l'enregistrement du produit.",
+    "admin.form.discount": "réduction",
+
+    // categories
+    "admin.categories.edit": "Modifier",
+    "admin.categories.image": "Image de catégorie",
+    "admin.categories.noImage": "Aucune image",
+
+    // orders — status sections
+    "admin.orders.search": "Rechercher un client, un téléphone, un numéro…",
+    "admin.orders.exportSection": "Exporter cette section",
+    "admin.orders.noneStatus": "Aucune commande dans cette section.",
+    "admin.orders.noResults": "Aucun résultat pour cette recherche.",
+    "admin.orders.toggleSection": "Réduire / développer cette section",
   },
 
   ar: {
@@ -682,6 +723,46 @@ export const adminTranslations = {
     "admin.messages.subject": "الموضوع",
     "admin.messages.received": "وردت في",
     "admin.messages.deleteConfirm": "حذف هذه الرسالة؟",
+
+    // order notifications (Mon compte)
+    "admin.account.notifTitle": "إشعارات الطلبات",
+    "admin.account.notifSubtitle":
+      "احصل على إشعار فور وصول طلب جديد، عبر البريد الإلكتروني و/أو واتساب.",
+    "admin.account.notifEmailToggle": "الاستلام عبر البريد الإلكتروني",
+    "admin.account.notifEmailLabel": "عنوان البريد الإلكتروني للإشعارات",
+    "admin.account.notifWhatsappToggle": "الاستلام عبر واتساب",
+    "admin.account.notifWhatsappNumberLabel": "رقم واتساب",
+    "admin.account.notifWhatsappNumberHint": "بالصيغة الدولية، بدون +. مثال: 213555000000",
+    "admin.account.notifApikeyLabel": "مفتاح CallMeBot",
+    "admin.account.notifApikeyHint":
+      "أرسل «I allow callmebot to send me messages» إلى رقم CallMeBot من هذا الواتساب، ثم الصق هنا المفتاح الذي يصلك في الرد.",
+    "admin.account.notifActivateLink": "فتح واتساب للتفعيل ←",
+    "admin.account.notifSave": "حفظ التفضيلات",
+    "admin.account.notifSaving": "جارٍ الحفظ…",
+    "admin.account.notifSaved": "تم حفظ تفضيلات الإشعارات.",
+    "admin.account.notifEmailInvalid": "أدخل عنوان بريد إلكتروني صالح.",
+    "admin.account.notifWhatsappIncomplete": "أدخل رقم واتساب ومفتاح CallMeBot.",
+
+    // product form
+    "admin.form.section.identity": "هوية المنتج",
+    "admin.form.section.pricing": "السعر والمخزون",
+    "admin.form.section.attributes": "الخصائص",
+    "admin.form.langComplete": "مكتمل",
+    "admin.form.langMissing": "غير مكتمل",
+    "admin.form.imagesPendingHint": "سيتم رفع هذه الصور عند حفظ المنتج.",
+    "admin.form.discount": "تخفيض",
+
+    // categories
+    "admin.categories.edit": "تعديل",
+    "admin.categories.image": "صورة الفئة",
+    "admin.categories.noImage": "لا توجد صورة",
+
+    // orders — status sections
+    "admin.orders.search": "ابحث عن عميل، هاتف، أو رقم طلب…",
+    "admin.orders.exportSection": "تصدير هذا القسم",
+    "admin.orders.noneStatus": "لا توجد طلبات في هذا القسم.",
+    "admin.orders.noResults": "لا توجد نتائج لهذا البحث.",
+    "admin.orders.toggleSection": "طي / فتح هذا القسم",
   },
 
   en: {
@@ -1034,5 +1115,45 @@ export const adminTranslations = {
     "admin.messages.subject": "Subject",
     "admin.messages.received": "Received on",
     "admin.messages.deleteConfirm": "Delete this message?",
+
+    // order notifications (My account)
+    "admin.account.notifTitle": "Order notifications",
+    "admin.account.notifSubtitle":
+      "Get notified the moment a new order comes in, by email and/or WhatsApp.",
+    "admin.account.notifEmailToggle": "Receive by email",
+    "admin.account.notifEmailLabel": "Notification email address",
+    "admin.account.notifWhatsappToggle": "Receive by WhatsApp",
+    "admin.account.notifWhatsappNumberLabel": "WhatsApp number",
+    "admin.account.notifWhatsappNumberHint": "International format, no +. E.g. 213555000000",
+    "admin.account.notifApikeyLabel": "CallMeBot API key",
+    "admin.account.notifApikeyHint":
+      "Send \"I allow callmebot to send me messages\" to the CallMeBot number from this WhatsApp, then paste the key it replies with here.",
+    "admin.account.notifActivateLink": "Open WhatsApp to activate →",
+    "admin.account.notifSave": "Save preferences",
+    "admin.account.notifSaving": "Saving…",
+    "admin.account.notifSaved": "Notification preferences saved.",
+    "admin.account.notifEmailInvalid": "Enter a valid email address.",
+    "admin.account.notifWhatsappIncomplete": "Enter the WhatsApp number and the CallMeBot API key.",
+
+    // product form
+    "admin.form.section.identity": "Product identity",
+    "admin.form.section.pricing": "Pricing & stock",
+    "admin.form.section.attributes": "Attributes",
+    "admin.form.langComplete": "filled in",
+    "admin.form.langMissing": "needs content",
+    "admin.form.imagesPendingHint": "These images will upload when the product is saved.",
+    "admin.form.discount": "discount",
+
+    // categories
+    "admin.categories.edit": "Edit",
+    "admin.categories.image": "Category image",
+    "admin.categories.noImage": "No image",
+
+    // orders — status sections
+    "admin.orders.search": "Search a customer, phone, order number…",
+    "admin.orders.exportSection": "Export this section",
+    "admin.orders.noneStatus": "No orders in this section.",
+    "admin.orders.noResults": "No results for this search.",
+    "admin.orders.toggleSection": "Collapse / expand this section",
   },
 } as const;

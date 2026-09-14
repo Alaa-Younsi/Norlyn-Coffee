@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -6,6 +6,7 @@ import { ChevronLeft, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FieldWrapper, Input, Select, Textarea } from "@/components/ui/Field";
 import { Panel } from "@/components/ui/Panel";
+import { Switch } from "@/components/ui/Switch";
 import { adminToast } from "@/lib/adminToast";
 import { useCategories } from "@/hooks/useCategories";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -13,8 +14,8 @@ import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/image";
 import { deleteUploadedImage } from "@/lib/upload";
 import { invalidateProduct } from "@/lib/queryCache";
-import { slugify } from "@/lib/utils";
-import type { Product, ProductImage } from "@/types/db";
+import { cn, slugify } from "@/lib/utils";
+import type { Lang, Product, ProductImage, ProductStatus } from "@/types/db";
 
 interface FormState {
   name_fr: string;
@@ -35,7 +36,7 @@ interface FormState {
   accent_color: string;
   video_url: string;
   featured: boolean;
-  status: "active" | "draft";
+  status: ProductStatus;
 }
 
 const EMPTY: FormState = {
@@ -59,6 +60,12 @@ const EMPTY: FormState = {
   featured: false,
   status: "draft",
 };
+
+const LANGS: { key: Lang; dir: "ltr" | "rtl" }[] = [
+  { key: "fr", dir: "ltr" },
+  { key: "ar", dir: "rtl" },
+  { key: "en", dir: "ltr" },
+];
 
 function toFormState(product: Product): FormState {
   return {
@@ -101,6 +108,31 @@ async function uniqueSlug(nameFr: string, excludeId?: string): Promise<string> {
   return `${base}-${crypto.randomUUID().slice(0, 6)}`;
 }
 
+/** Compress + upload one file to the product's folder and insert its row. */
+async function uploadProductImage(
+  productId: string,
+  file: File,
+  sortOrder: number,
+  alt: string,
+): Promise<ProductImage> {
+  const blob = await compressImage(file);
+  const ext = blob.type === "image/webp" ? "webp" : (file.name.split(".").pop() ?? "jpg");
+  const path = `${productId}/${crypto.randomUUID()}.${ext}`;
+  const { error: upError } = await supabase.storage
+    // path contains a UUID → immutable; Supabase's default cache is only 1h
+    .from("product-images")
+    .upload(path, blob, { cacheControl: "31536000", contentType: blob.type });
+  if (upError) throw upError;
+  const { data: pub } = supabase.storage.from("product-images").getPublicUrl(path);
+  const { data: row, error: insError } = await supabase
+    .from("product_images")
+    .insert({ product_id: productId, url: pub.publicUrl, alt, sort_order: sortOrder })
+    .select()
+    .single();
+  if (insError) throw insError;
+  return row as ProductImage;
+}
+
 export function ProductForm() {
   const { id } = useParams();
   const isNew = !id || id === "new";
@@ -135,6 +167,12 @@ export function ProductForm() {
   );
 }
 
+interface PendingImage {
+  key: string;
+  file: File;
+  previewUrl: string;
+}
+
 function ProductFormInner({
   productId,
   initial,
@@ -151,46 +189,53 @@ function ProductFormInner({
   const { data: categories } = useCategories();
 
   const [form, setForm] = useState<FormState>(initial);
+  const [activeLang, setActiveLang] = useState<Lang>("fr");
   const [images, setImages] = useState<ProductImage[]>(initialImages);
+  const [pending, setPending] = useState<PendingImage[]>([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Local previews are object URLs — they must be revoked, or navigating away
+  // with unsaved images leaks a blob for the life of the tab. Mirrored into a
+  // ref (updated in its own effect, never mutated during render) so the
+  // unmount-only cleanup below sees the LATEST list rather than a stale one
+  // captured when it first ran.
+  const pendingRef = useRef(pending);
+  useEffect(() => {
+    pendingRef.current = pending;
+  }, [pending]);
+  useEffect(() => {
+    return () => pendingRef.current.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+  }, []);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
   const invalidate = () => invalidateProduct(queryClient, productId);
 
+  const isLangComplete = (lang: Lang) => form[`name_${lang}`].trim().length > 0;
+
   const handleUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    if (!productId) return;
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
+
+    if (isNew) {
+      // No product row exists yet — stage locally, upload happens on submit.
+      setPending((prev) => [
+        ...prev,
+        ...files.map((file) => ({ key: crypto.randomUUID(), file, previewUrl: URL.createObjectURL(file) })),
+      ]);
+      e.target.value = "";
+      return;
+    }
+
     setUploading(true);
     setError(null);
     try {
       for (const [i, file] of files.entries()) {
-        // never upload the raw phone photo — compress first
-        const blob = await compressImage(file);
-        const ext = blob.type === "image/webp" ? "webp" : (file.name.split(".").pop() ?? "jpg");
-        const path = `${productId}/${crypto.randomUUID()}.${ext}`;
-        const { error: upError } = await supabase.storage
-          .from("product-images")
-          // path contains a UUID → immutable; Supabase's default cache is only 1h
-          .upload(path, blob, { cacheControl: "31536000", contentType: blob.type });
-        if (upError) throw upError;
-        const { data: pub } = supabase.storage.from("product-images").getPublicUrl(path);
-        const { data: row, error: insError } = await supabase
-          .from("product_images")
-          .insert({
-            product_id: productId,
-            url: pub.publicUrl,
-            alt: form.name_fr,
-            sort_order: images.length + i,
-          })
-          .select()
-          .single();
-        if (insError) throw insError;
-        setImages((prev) => [...prev, row as ProductImage]);
+        const row = await uploadProductImage(productId, file, images.length + i, form.name_fr);
+        setImages((prev) => [...prev, row]);
       }
       invalidate();
     } catch (err) {
@@ -200,6 +245,14 @@ function ProductFormInner({
       setUploading(false);
       e.target.value = "";
     }
+  };
+
+  const removePending = (key: string) => {
+    setPending((prev) => {
+      const target = prev.find((p) => p.key === key);
+      if (target) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((p) => p.key !== key);
+    });
   };
 
   const removeImage = async (image: ProductImage) => {
@@ -260,9 +313,29 @@ function ProductFormInner({
           .select("id")
           .single();
         if (insError) throw insError;
+        const newId = (data as { id: string }).id;
+
+        // Upload whatever was staged before the product existed. One failure
+        // must not lose the others or block navigation — the product is
+        // already saved, and any leftover file can be added from the edit
+        // page that opens next.
+        let uploadFailures = 0;
+        for (const [i, item] of pending.entries()) {
+          try {
+            await uploadProductImage(newId, item.file, i, payload.name_fr);
+          } catch {
+            uploadFailures += 1;
+          }
+          URL.revokeObjectURL(item.previewUrl);
+        }
+
         invalidate();
-        adminToast.success("admin.toast.saved");
-        navigate(`/admin/products/${(data as { id: string }).id}`, { replace: true });
+        if (uploadFailures > 0) {
+          adminToast.error("admin.toast.uploadError");
+        } else {
+          adminToast.success("admin.toast.saved");
+        }
+        navigate(`/admin/products/${newId}`, { replace: true });
       } else {
         const { error: upError } = await supabase
           .from("products")
@@ -283,6 +356,11 @@ function ProductFormInner({
     }
   };
 
+  const discountPct =
+    form.compare_at_price && Number(form.compare_at_price) > Number(form.price) && Number(form.price) > 0
+      ? Math.round((1 - Number(form.price) / Number(form.compare_at_price)) * 100)
+      : null;
+
   return (
     <div className="max-w-3xl">
       <Link
@@ -297,140 +375,205 @@ function ProductFormInner({
       </h1>
 
       <form onSubmit={submit} className="mt-6 space-y-6">
-        <Panel className="grid gap-4 p-6 sm:grid-cols-2">
-          <FieldWrapper label={t("admin.form.nameFr")}>
-            <Input value={form.name_fr} onChange={(e) => set("name_fr", e.target.value)} required />
-          </FieldWrapper>
-          <FieldWrapper label={t("admin.form.nameAr")}>
-            <Input value={form.name_ar} onChange={(e) => set("name_ar", e.target.value)} dir="rtl" />
-          </FieldWrapper>
-          {/* Every English box may be left empty. pickLang falls back to the
-              French one, so a half-translated product reads as French rather
-              than as a blank card — see lib/localized.ts. */}
-          <FieldWrapper label={t("admin.form.nameEn")}>
-            <Input value={form.name_en} onChange={(e) => set("name_en", e.target.value)} dir="ltr" />
-          </FieldWrapper>
-          <FieldWrapper label={t("admin.form.descFr")}>
-            <Textarea value={form.description_fr} onChange={(e) => set("description_fr", e.target.value)} />
-          </FieldWrapper>
-          <FieldWrapper label={t("admin.form.descAr")}>
-            <Textarea value={form.description_ar} onChange={(e) => set("description_ar", e.target.value)} dir="rtl" />
-          </FieldWrapper>
-          <FieldWrapper label={t("admin.form.descEn")}>
-            <Textarea value={form.description_en} onChange={(e) => set("description_en", e.target.value)} dir="ltr" />
-          </FieldWrapper>
-          <FieldWrapper label={t("admin.form.detailsFr")}>
-            <Textarea value={form.details_fr} onChange={(e) => set("details_fr", e.target.value)} />
-          </FieldWrapper>
-          <FieldWrapper label={t("admin.form.detailsAr")}>
-            <Textarea value={form.details_ar} onChange={(e) => set("details_ar", e.target.value)} dir="rtl" />
-          </FieldWrapper>
-          <FieldWrapper label={t("admin.form.detailsEn")}>
-            <Textarea value={form.details_en} onChange={(e) => set("details_en", e.target.value)} dir="ltr" />
-          </FieldWrapper>
+        <Panel className="p-6">
+          <h2 className="font-display text-xl">{t("admin.form.section.identity")}</h2>
+
+          <div className="mt-4 inline-flex rounded-full border border-line bg-panel-2/60 p-1">
+            {LANGS.map(({ key }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setActiveLang(key)}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+                  activeLang === key ? "bg-brand text-cream" : "text-muted hover:text-ink",
+                )}
+              >
+                <span
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    isLangComplete(key)
+                      ? activeLang === key
+                        ? "bg-cream"
+                        : "bg-emerald-600"
+                      : activeLang === key
+                        ? "bg-cream/50"
+                        : "bg-muted/50",
+                  )}
+                  title={isLangComplete(key) ? t("admin.form.langComplete") : t("admin.form.langMissing")}
+                />
+                {key.toUpperCase()}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-4 grid gap-4">
+            <FieldWrapper label={t(`admin.form.name${capitalize(activeLang)}` as const)}>
+              <Input
+                value={form[`name_${activeLang}`]}
+                onChange={(e) => set(`name_${activeLang}`, e.target.value)}
+                dir={LANGS.find((l) => l.key === activeLang)?.dir}
+                required={activeLang === "fr"}
+              />
+            </FieldWrapper>
+            <FieldWrapper label={t(`admin.form.desc${capitalize(activeLang)}` as const)}>
+              <Textarea
+                value={form[`description_${activeLang}`]}
+                onChange={(e) => set(`description_${activeLang}`, e.target.value)}
+                dir={LANGS.find((l) => l.key === activeLang)?.dir}
+              />
+            </FieldWrapper>
+            <FieldWrapper label={t(`admin.form.details${capitalize(activeLang)}` as const)}>
+              <Textarea
+                value={form[`details_${activeLang}`]}
+                onChange={(e) => set(`details_${activeLang}`, e.target.value)}
+                dir={LANGS.find((l) => l.key === activeLang)?.dir}
+              />
+            </FieldWrapper>
+          </div>
         </Panel>
 
-        <Panel className="grid gap-4 p-6 sm:grid-cols-3">
-          <FieldWrapper label={t("admin.form.price")}>
-            <Input type="number" step="0.01" min="0" value={form.price} onChange={(e) => set("price", e.target.value)} required />
-          </FieldWrapper>
-          <FieldWrapper label={t("admin.form.compareAt")}>
-            <Input type="number" step="0.01" min="0" value={form.compare_at_price} onChange={(e) => set("compare_at_price", e.target.value)} />
-          </FieldWrapper>
-          <FieldWrapper label={t("admin.form.stock")}>
-            <Input type="number" min="0" value={form.stock} onChange={(e) => set("stock", e.target.value)} />
-          </FieldWrapper>
-          <FieldWrapper label={t("admin.form.category")}>
-            <Select value={form.category_id} onChange={(e) => set("category_id", e.target.value)}>
-              <option value="">{t("admin.form.noCategory")}</option>
-              {(categories ?? []).map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name_fr}
-                </option>
-              ))}
-            </Select>
-          </FieldWrapper>
-          <FieldWrapper label={t("admin.form.intensity")}>
-            <Input type="number" min="0" max="100" value={form.intensity} onChange={(e) => set("intensity", e.target.value)} />
-          </FieldWrapper>
-          <FieldWrapper label={t("admin.form.dosage")}>
-            <Input value={form.dosage} onChange={(e) => set("dosage", e.target.value)} placeholder="5,6 g" />
-          </FieldWrapper>
-          <FieldWrapper label={t("admin.form.accent")}>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={form.accent_color}
-                onChange={(e) => set("accent_color", e.target.value)}
-                className="h-10 w-14 cursor-pointer rounded-lg border border-line bg-panel"
-                aria-label={t("admin.form.accent")}
+        <Panel className="p-6">
+          <h2 className="font-display text-xl">{t("admin.form.section.pricing")}</h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+            <FieldWrapper label={t("admin.form.price")}>
+              <Input type="number" step="0.01" min="0" value={form.price} onChange={(e) => set("price", e.target.value)} required />
+            </FieldWrapper>
+            <FieldWrapper
+              label={t("admin.form.compareAt")}
+              hint={discountPct !== null ? `-${discountPct}% ${t("admin.form.discount")}` : undefined}
+            >
+              <Input type="number" step="0.01" min="0" value={form.compare_at_price} onChange={(e) => set("compare_at_price", e.target.value)} />
+            </FieldWrapper>
+            <FieldWrapper label={t("admin.form.stock")}>
+              <Input type="number" min="0" value={form.stock} onChange={(e) => set("stock", e.target.value)} />
+            </FieldWrapper>
+          </div>
+        </Panel>
+
+        <Panel className="p-6">
+          <h2 className="font-display text-xl">{t("admin.form.section.attributes")}</h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <FieldWrapper label={t("admin.form.category")}>
+              <Select value={form.category_id} onChange={(e) => set("category_id", e.target.value)}>
+                <option value="">{t("admin.form.noCategory")}</option>
+                {(categories ?? []).map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name_fr}
+                  </option>
+                ))}
+              </Select>
+            </FieldWrapper>
+            <FieldWrapper label={t("admin.form.intensity")}>
+              <Input type="number" min="0" max="100" value={form.intensity} onChange={(e) => set("intensity", e.target.value)} />
+            </FieldWrapper>
+            <FieldWrapper label={t("admin.form.dosage")}>
+              <Input value={form.dosage} onChange={(e) => set("dosage", e.target.value)} placeholder="5,6 g" />
+            </FieldWrapper>
+            <FieldWrapper label={t("admin.form.accent")}>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={form.accent_color}
+                  onChange={(e) => set("accent_color", e.target.value)}
+                  className="h-10 w-14 cursor-pointer rounded-lg border border-line bg-panel"
+                  aria-label={t("admin.form.accent")}
+                />
+                <Input value={form.accent_color} onChange={(e) => set("accent_color", e.target.value)} dir="ltr" />
+              </div>
+            </FieldWrapper>
+            <FieldWrapper label={t("admin.form.videoUrl")} className="sm:col-span-2">
+              {/* plain URL — hosting can move to Cloudinary/Bunny with no code change */}
+              <Input value={form.video_url} onChange={(e) => set("video_url", e.target.value)} dir="ltr" />
+            </FieldWrapper>
+
+            <div className="flex items-center rounded-xl border border-line px-4 py-2.5">
+              <Switch
+                checked={form.featured}
+                onChange={(v) => set("featured", v)}
+                label={t("admin.products.featured")}
               />
-              <Input value={form.accent_color} onChange={(e) => set("accent_color", e.target.value)} dir="ltr" />
             </div>
-          </FieldWrapper>
-          <FieldWrapper label={t("admin.form.videoUrl")} className="sm:col-span-2">
-            {/* plain URL — hosting can move to Cloudinary/Bunny with no code change */}
-            <Input value={form.video_url} onChange={(e) => set("video_url", e.target.value)} dir="ltr" />
-          </FieldWrapper>
-          <label className="flex items-center gap-2 text-sm font-medium">
-            <input
-              type="checkbox"
-              checked={form.featured}
-              onChange={(e) => set("featured", e.target.checked)}
-              className="h-4 w-4 accent-[rgb(var(--c-brand))]"
-            />
-            {t("admin.products.featured")}
-          </label>
-          <FieldWrapper label={t("admin.products.status")}>
-            <Select value={form.status} onChange={(e) => set("status", e.target.value as FormState["status"])}>
-              <option value="draft">{t("admin.products.draft")}</option>
-              <option value="active">{t("admin.products.active")}</option>
-            </Select>
-          </FieldWrapper>
+            <FieldWrapper label={t("admin.products.status")}>
+              <div className="inline-flex w-full rounded-full border border-line bg-panel-2/60 p-1">
+                {(["draft", "active"] as const).map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => set("status", status)}
+                    className={cn(
+                      "flex-1 rounded-full px-4 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+                      form.status === status ? "bg-brand text-cream" : "text-muted hover:text-ink",
+                    )}
+                  >
+                    {t(status === "draft" ? "admin.products.draft" : "admin.products.active")}
+                  </button>
+                ))}
+              </div>
+            </FieldWrapper>
+          </div>
         </Panel>
 
         <Panel className="p-6">
           <h2 className="font-display text-xl">{t("admin.form.images")}</h2>
-          {isNew ? (
-            <p className="mt-2 text-sm text-muted">{t("common.save")} →</p>
-          ) : (
-            <div className="mt-4 flex flex-wrap gap-3">
-              {images.map((image) => (
-                <div key={image.id} className="group relative">
-                  <img
-                    src={image.url}
-                    alt=""
-                    width={96}
-                    height={96}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-24 w-24 rounded-xl border border-line object-contain"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => void removeImage(image)}
-                    className="absolute -top-2 -end-2 rounded-full bg-red-600 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 cursor-pointer"
-                    aria-label={t("common.delete")}
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-              ))}
-              <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-line text-muted hover:border-brand hover:text-brand">
-                <Upload size={18} />
-                <span className="text-[10px]">
-                  {uploading ? t("admin.form.uploading") : t("admin.form.upload")}
-                </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  disabled={uploading}
-                  onChange={(e) => void handleUpload(e)}
+          <div className="mt-4 flex flex-wrap gap-3">
+            {images.map((image) => (
+              <div key={image.id} className="group relative">
+                <img
+                  src={image.url}
+                  alt=""
+                  width={96}
+                  height={96}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-24 w-24 rounded-xl border border-line object-contain"
                 />
-              </label>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => void removeImage(image)}
+                  className="absolute -top-2 -end-2 rounded-full bg-red-600 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 cursor-pointer"
+                  aria-label={t("common.delete")}
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            ))}
+            {pending.map((item) => (
+              <div key={item.key} className="group relative">
+                <img
+                  src={item.previewUrl}
+                  alt=""
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 rounded-xl border border-dashed border-brand/50 object-contain opacity-80"
+                />
+                <button
+                  type="button"
+                  onClick={() => removePending(item.key)}
+                  className="absolute -top-2 -end-2 rounded-full bg-red-600 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 cursor-pointer"
+                  aria-label={t("common.delete")}
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+            ))}
+            <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-line text-muted hover:border-brand hover:text-brand">
+              <Upload size={18} />
+              <span className="text-[10px]">
+                {uploading ? t("admin.form.uploading") : t("admin.form.upload")}
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                disabled={uploading}
+                onChange={(e) => void handleUpload(e)}
+              />
+            </label>
+          </div>
+          {isNew && (
+            <p className="mt-3 text-xs text-muted">{t("admin.form.imagesPendingHint")}</p>
           )}
         </Panel>
 
@@ -441,4 +584,8 @@ function ProductFormInner({
       </form>
     </div>
   );
+}
+
+function capitalize<S extends string>(s: S): Capitalize<S> {
+  return (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>;
 }

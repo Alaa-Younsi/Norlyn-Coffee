@@ -1,14 +1,21 @@
 import { useState } from "react";
+import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FieldWrapper, Input } from "@/components/ui/Field";
 import { Panel } from "@/components/ui/Panel";
+import { Switch } from "@/components/ui/Switch";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminProfile } from "@/hooks/useAdminProfile";
+import { useNotificationPrefs, useSaveNotificationPrefs } from "@/hooks/useNotificationPrefs";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { ADMIN_SECTIONS } from "@/lib/adminSections";
 import { supabase } from "@/lib/supabase";
+import type { AdminNotificationPrefs } from "@/types/db";
 
 const MIN_LENGTH = 8;
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/;
+const CALLMEBOT_ACTIVATE_URL =
+  "https://wa.me/34644717104?text=" + encodeURIComponent("I allow callmebot to send me messages");
 
 export function AdminAccount() {
   const { t } = useLanguage();
@@ -140,6 +147,153 @@ export function AdminAccount() {
           </Button>
         </form>
       </Panel>
+
+      <NotificationPrefsPanel userId={session?.user.id} defaultEmail={email} />
     </div>
+  );
+}
+
+function NotificationPrefsPanel({
+  userId,
+  defaultEmail,
+}: {
+  userId: string | undefined;
+  defaultEmail: string;
+}) {
+  const { data: prefs, isLoading } = useNotificationPrefs(userId);
+
+  // Remount (via `key`) once the row has loaded rather than seeding it from
+  // an effect: a setState-in-effect here would fire on every load, which the
+  // project's react-hooks/set-state-in-effect rule treats as a build error —
+  // same trap as ProductForm's `key={product?.id ?? "new"}` remount.
+  if (isLoading) return null;
+  return <NotificationPrefsForm key={userId} userId={userId} defaultEmail={defaultEmail} initial={prefs} />;
+}
+
+function NotificationPrefsForm({
+  userId,
+  defaultEmail,
+  initial,
+}: {
+  userId: string | undefined;
+  defaultEmail: string;
+  initial: AdminNotificationPrefs | null | undefined;
+}) {
+  const { t } = useLanguage();
+  const save = useSaveNotificationPrefs(userId);
+
+  const [emailEnabled, setEmailEnabled] = useState(initial?.email_enabled ?? false);
+  const [notifyEmail, setNotifyEmail] = useState(initial?.notify_email ?? defaultEmail);
+  const [whatsappEnabled, setWhatsappEnabled] = useState(initial?.whatsapp_enabled ?? false);
+  const [whatsappNumber, setWhatsappNumber] = useState(initial?.whatsapp_number ?? "");
+  const [apikey, setApikey] = useState(initial?.callmebot_apikey ?? "");
+  const [status, setStatus] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
+    setStatus(null);
+
+    if (emailEnabled && !EMAIL_RE.test(notifyEmail.trim())) {
+      setStatus({ tone: "error", text: t("admin.account.notifEmailInvalid") });
+      return;
+    }
+    if (whatsappEnabled && (!whatsappNumber.trim() || !apikey.trim())) {
+      setStatus({ tone: "error", text: t("admin.account.notifWhatsappIncomplete") });
+      return;
+    }
+
+    save.mutate(
+      {
+        email_enabled: emailEnabled,
+        notify_email: notifyEmail.trim() || null,
+        whatsapp_enabled: whatsappEnabled,
+        whatsapp_number: whatsappNumber.trim() || null,
+        callmebot_apikey: apikey.trim() || null,
+      },
+      {
+        onSuccess: () => setStatus({ tone: "ok", text: t("admin.account.notifSaved") }),
+        onError: (err) =>
+          setStatus({ tone: "error", text: err instanceof Error ? err.message : String(err) }),
+      },
+    );
+  };
+
+  return (
+    <Panel className="mt-6 p-6">
+      <h2 className="font-display text-xl">{t("admin.account.notifTitle")}</h2>
+      <p className="mt-1 text-sm text-muted">{t("admin.account.notifSubtitle")}</p>
+
+      <form onSubmit={submit} className="mt-4 space-y-5">
+        <div className="rounded-2xl border border-line p-4">
+          <Switch
+            checked={emailEnabled}
+            onChange={setEmailEnabled}
+            label={t("admin.account.notifEmailToggle")}
+          />
+          {emailEnabled && (
+            <FieldWrapper label={t("admin.account.notifEmailLabel")} className="mt-3">
+              <Input
+                type="email"
+                dir="ltr"
+                value={notifyEmail}
+                onChange={(e) => setNotifyEmail(e.target.value)}
+              />
+            </FieldWrapper>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-line p-4">
+          <Switch
+            checked={whatsappEnabled}
+            onChange={setWhatsappEnabled}
+            label={t("admin.account.notifWhatsappToggle")}
+          />
+          {whatsappEnabled && (
+            <div className="mt-3 space-y-3">
+              <FieldWrapper
+                label={t("admin.account.notifWhatsappNumberLabel")}
+                hint={t("admin.account.notifWhatsappNumberHint")}
+              >
+                <Input
+                  dir="ltr"
+                  value={whatsappNumber}
+                  onChange={(e) => setWhatsappNumber(e.target.value)}
+                  placeholder="213555000000"
+                />
+              </FieldWrapper>
+              <FieldWrapper
+                label={t("admin.account.notifApikeyLabel")}
+                hint={t("admin.account.notifApikeyHint")}
+              >
+                <Input dir="ltr" value={apikey} onChange={(e) => setApikey(e.target.value)} />
+              </FieldWrapper>
+              <a
+                href={CALLMEBOT_ACTIVATE_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm text-brand hover:underline"
+              >
+                <MessageCircle size={15} />
+                {t("admin.account.notifActivateLink")}
+              </a>
+            </div>
+          )}
+        </div>
+
+        {status && (
+          <p
+            className={
+              status.tone === "ok" ? "text-sm text-brand" : "text-sm text-red-700 dark:text-red-400"
+            }
+          >
+            {status.text}
+          </p>
+        )}
+
+        <Button type="submit" disabled={save.isPending}>
+          {save.isPending ? t("admin.account.notifSaving") : t("admin.account.notifSave")}
+        </Button>
+      </form>
+    </Panel>
   );
 }

@@ -66,7 +66,7 @@ const SCHEMA: Schema<Order> = [
  * Behind a dynamic import it lands only when a dispatcher clicks Export.
  * Async as a consequence, which is why the callers `void` it.
  */
-export async function exportOrders(orders: Order[]): Promise<void> {
+export async function exportOrders(orders: Order[], labelSuffix?: string): Promise<void> {
   const { default: writeXlsxFile } = await import("write-excel-file");
 
   const today = new Date();
@@ -74,5 +74,9 @@ export async function exportOrders(orders: Order[]): Promise<void> {
     today.getDate(),
   ).padStart(2, "0")}`;
 
-  await writeXlsxFile(orders, { schema: SCHEMA, fileName: `commandes-${stamp}.xlsx` });
+  // labelSuffix lets a per-status export (e.g. "en-attente") name its file
+  // distinctly — a dispatcher opening several of these at once needs the
+  // filename to say which status it is without opening it first.
+  const suffix = labelSuffix ? `-${labelSuffix}` : "";
+  await writeXlsxFile(orders, { schema: SCHEMA, fileName: `commandes${suffix}-${stamp}.xlsx` });
 }

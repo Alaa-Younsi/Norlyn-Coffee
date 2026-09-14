@@ -78,6 +78,8 @@ export interface Order {
   language: Lang;
   delivery_type: DeliveryType;
   created_at: string;
+  /** set once, by claim_order_notification() — see notify-order edge function */
+  notified_at?: string | null;
   order_items?: OrderItem[];
 }
 
@@ -132,6 +134,17 @@ export interface AdminProfile {
   sections: string[];
   active: boolean;
   created_at: string;
+}
+
+/** Self-managed per-account order notification settings (0016). */
+export interface AdminNotificationPrefs {
+  user_id: string;
+  email_enabled: boolean;
+  notify_email: string | null;
+  whatsapp_enabled: boolean;
+  whatsapp_number: string | null;
+  callmebot_apikey: string | null;
+  updated_at: string;
 }
 
 /* --------------------------------------------------- meta pixels (0005) */

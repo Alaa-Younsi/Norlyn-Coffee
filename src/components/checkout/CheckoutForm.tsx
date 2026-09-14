@@ -125,6 +125,9 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
       // Purchase is NOT fired here: OrderConfirmation reads the authoritative
       // order.total back through get_order_by_number and reports it there.
       onSuccess(data as string);
+      // Best-effort staff ping (email/WhatsApp per Mon compte prefs) — never
+      // awaited, never allowed to affect checkout. See notify-order/index.ts.
+      void supabase.functions.invoke("notify-order", { body: { order_number: data } });
     } catch {
       setServerError(t("err.generic"));
     } finally {

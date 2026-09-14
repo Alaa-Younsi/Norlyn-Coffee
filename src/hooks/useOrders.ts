@@ -12,8 +12,14 @@ import type { Order, OrderStatus } from "@/types/db";
  */
 export const ORDERS_LIMIT = 200;
 
-export function useOrders(statusFilter?: OrderStatus) {
-  return useQuery({
+/**
+ * Shared query definition so the grouped-by-status admin view (one query per
+ * status, via useQueries) and the plain useOrders() callers below stay on
+ * identical cache keys — a status change from one place invalidates the
+ * other's cache too.
+ */
+export function ordersQueryOptions(statusFilter?: OrderStatus) {
+  return {
     queryKey: ["orders", statusFilter ?? "all"],
     queryFn: async (): Promise<Order[]> => {
       let query = supabase
@@ -26,7 +32,11 @@ export function useOrders(statusFilter?: OrderStatus) {
       if (error) throw error;
       return data as Order[];
     },
-  });
+  } as const;
+}
+
+export function useOrders(statusFilter?: OrderStatus) {
+  return useQuery(ordersQueryOptions(statusFilter));
 }
 
 export function useOrder(id: string | undefined) {

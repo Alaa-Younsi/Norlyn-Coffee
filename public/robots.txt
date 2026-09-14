@@ -7,4 +7,4 @@ Disallow: /checkout/
 Disallow: /order
 Disallow: /order/
 
-Sitemap: https://norlyn-seven.vercel.app/sitemap.xml
+Sitemap: https://www.norlyncoffee.com/sitemap.xml

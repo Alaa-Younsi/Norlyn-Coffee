@@ -14,8 +14,11 @@ import type { AdminNotificationPrefs } from "@/types/db";
 
 const MIN_LENGTH = 8;
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/;
+// CallMeBot's activation number — they have changed this before (it was
+// +34 644 71 71 04 previously), so if staff hit "not on WhatsApp" again,
+// re-check https://www.callmebot.com/blog/free-api-whatsapp-messages/ first.
 const CALLMEBOT_ACTIVATE_URL =
-  "https://wa.me/34644717104?text=" + encodeURIComponent("I allow callmebot to send me messages");
+  "https://wa.me/34694257952?text=" + encodeURIComponent("I allow callmebot to send me messages");
 
 export function AdminAccount() {
   const { t } = useLanguage();

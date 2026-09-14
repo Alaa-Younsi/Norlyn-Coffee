@@ -10,8 +10,10 @@
 //
 // Secrets: supabase secrets set RESEND_API_KEY=... [RESEND_FROM=...] [SITE_ADMIN_URL=...]
 //   RESEND_FROM defaults to Resend's shared onboarding.resend.dev sender,
-//   which only delivers to the Resend account's own inbox until norlyn.dz is
-//   registered and verified in Resend — switch RESEND_FROM once that's done.
+//   which only delivers to the Resend account's own inbox until the store's
+//   own domain (norlyncoffee.com) is added and verified in Resend — switch
+//   RESEND_FROM to an @norlyncoffee.com address once that's done.
+//   SITE_ADMIN_URL should be https://www.norlyncoffee.com (no trailing slash).
 //
 // Best-effort by design, like deleteUploadedImage() in lib/upload.ts: this
 // must never surface a failure to the shopper or affect the order. The caller

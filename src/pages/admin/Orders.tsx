@@ -5,9 +5,10 @@ import { ChevronDown, Download, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { Price } from "@/components/ui/Price";
+import { Select } from "@/components/ui/Field";
 import { DeleteAllOrdersModal } from "@/components/admin/DeleteAllOrdersModal";
 import { StatusBadge } from "./components/StatusBadge";
-import { ordersQueryOptions, ORDERS_LIMIT } from "@/hooks/useOrders";
+import { ordersQueryOptions, ORDERS_LIMIT, useUpdateOrderStatus } from "@/hooks/useOrders";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { exportOrders } from "@/lib/exportOrders";
 import { supabase } from "@/lib/supabase";
@@ -43,6 +44,11 @@ export function AdminOrders() {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState<Record<OrderStatus, boolean>>(DEFAULT_OPEN);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // Board-rail filter: null = every non-empty section shows, one status =
+  // only that section shows (forced open, even if it turns out empty — the
+  // tap still needs to give feedback).
+  const [boardFilter, setBoardFilter] = useState<OrderStatus | null>(null);
+  const updateStatus = useUpdateOrderStatus();
 
   const results = useQueries({
     queries: STATUSES.map((status) => ordersQueryOptions(status)),
@@ -56,6 +62,17 @@ export function AdminOrders() {
     });
     return map;
   }, [results, search]);
+
+  // Board tiles reflect the true per-status count/total regardless of the
+  // search box — they're a dispatcher's at-a-glance summary, not a filtered view.
+  const boardTotals = useMemo(() => {
+    const map = {} as Record<OrderStatus, { count: number; money: number }>;
+    STATUSES.forEach((status, i) => {
+      const rows = results[i].data ?? [];
+      map[status] = { count: rows.length, money: rows.reduce((sum, o) => sum + Number(o.total), 0) };
+    });
+    return map;
+  }, [results]);
 
   const allRows = useMemo(() => STATUSES.flatMap((s) => byStatus[s]), [byStatus]);
   const totalUnfiltered = results.reduce((sum, r) => sum + (r.data?.length ?? 0), 0);
@@ -127,11 +144,48 @@ export function AdminOrders() {
         </p>
       )}
 
-      <div className="mt-6 space-y-4">
+      <div
+        className="mt-6 flex gap-2.5 overflow-x-auto pb-1"
+        role="group"
+        aria-label={t("admin.orders.filter")}
+      >
+        {STATUSES.map((status) => {
+          const { count, money } = boardTotals[status];
+          const active = boardFilter === status;
+          return (
+            <button
+              key={status}
+              type="button"
+              onClick={() => setBoardFilter((prev) => (prev === status ? null : status))}
+              aria-pressed={active}
+              className={cn(
+                "flex shrink-0 flex-col gap-1 rounded-xl border px-4 py-3 text-start transition-colors cursor-pointer",
+                active
+                  ? "border-brand bg-brand/10 ring-2 ring-brand/30"
+                  : "border-line bg-panel hover:border-brand/50",
+              )}
+            >
+              <StatusBadge status={status} />
+              <span className="text-lg font-semibold" dir="ltr">
+                {count}
+              </span>
+              <Price value={money} className="text-xs text-muted" />
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-4 space-y-4">
         {STATUSES.map((status, i) => {
           const result = results[i];
           const rows = byStatus[status];
-          const isOpen = open[status];
+          const isFiltered = boardFilter !== null;
+          if (isFiltered && boardFilter !== status) return null;
+          // With no board filter, an empty section (no matches at all, search
+          // included) just clutters the desk — hide it. With a filter on,
+          // always render the section, even empty, so the tap gives feedback.
+          if (!isFiltered && rows.length === 0 && !anyLoading) return null;
+          const isOpen = isFiltered ? true : open[status];
           return (
             <Panel key={status} className="overflow-hidden">
               <div className="flex w-full flex-wrap items-center justify-between gap-3 px-5 py-4">
@@ -175,8 +229,40 @@ export function AdminOrders() {
                           <span dir="ltr">{ORDERS_LIMIT}</span> {t("admin.orders.truncated")}
                         </p>
                       )}
-                      <div className="overflow-x-auto">
-                        <table className="min-w-[620px] w-full whitespace-nowrap text-sm">
+                      {/* Phones get cards, not a table — a 7-column table at
+                          360px drags the whole admin page sideways. */}
+                      <div className="grid gap-3 p-4 sm:hidden">
+                        {rows.map((order) => (
+                          <div key={order.id} className="rounded-xl border border-line bg-panel-2/40 p-4">
+                            <div className="flex items-center justify-between gap-2">
+                              <Link
+                                to={`/admin/orders/${order.id}`}
+                                className="font-medium text-brand hover:underline"
+                                dir="ltr"
+                              >
+                                {order.order_number}
+                              </Link>
+                              <Price value={Number(order.total)} className="font-semibold" />
+                            </div>
+                            <p className="mt-1.5 text-sm">{order.customer_name}</p>
+                            <p className="text-sm text-muted" dir="ltr">
+                              {order.customer_phone}
+                            </p>
+                            <p className="text-sm text-muted">{order.wilaya}</p>
+                            <div className="mt-2 flex items-center justify-between gap-2 border-t border-line/60 pt-2">
+                              <span className="text-xs text-muted">{formatDate(order.created_at, lang)}</span>
+                              <OrderStatusPicker
+                                order={order}
+                                onChange={(next) => updateStatus.mutate({ id: order.id, status: next })}
+                                disabled={updateStatus.isPending}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="hidden overflow-x-auto sm:block">
+                        <table className="min-w-[700px] w-full whitespace-nowrap text-sm">
                           <thead>
                             <tr className="border-b border-line text-xs uppercase tracking-wider text-muted">
                               <th className="px-5 py-3 text-start">N°</th>
@@ -185,6 +271,7 @@ export function AdminOrders() {
                               <th className="px-5 py-3 text-start">{t("checkout.wilaya")}</th>
                               <th className="px-5 py-3 text-start">{t("admin.orders.total")}</th>
                               <th className="px-5 py-3 text-start">{t("admin.orders.date")}</th>
+                              <th className="px-5 py-3 text-start">{t("admin.orders.updateStatus")}</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -208,6 +295,13 @@ export function AdminOrders() {
                                   <Price value={Number(order.total)} />
                                 </td>
                                 <td className="px-5 py-3 text-muted">{formatDate(order.created_at, lang)}</td>
+                                <td className="px-5 py-3">
+                                  <OrderStatusPicker
+                                    order={order}
+                                    onChange={(next) => updateStatus.mutate({ id: order.id, status: next })}
+                                    disabled={updateStatus.isPending}
+                                  />
+                                </td>
                               </tr>
                             ))}
                           </tbody>
@@ -221,6 +315,38 @@ export function AdminOrders() {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/** Per-row status advance — lets a dispatcher move an order along the
+ * pipeline without opening it. Restock on cancellation is a server-side
+ * trigger (see 0003_functions.sql), so this needs no special case. */
+function OrderStatusPicker({
+  order,
+  onChange,
+  disabled,
+}: {
+  order: Order;
+  onChange: (status: OrderStatus) => void;
+  disabled: boolean;
+}) {
+  const { t } = useLanguage();
+  return (
+    <div className="w-36 shrink-0">
+      <Select
+        value={order.status}
+        disabled={disabled}
+        onClick={(e) => e.stopPropagation()}
+        onChange={(e) => onChange(e.target.value as OrderStatus)}
+        aria-label={t("admin.orders.updateStatus")}
+      >
+        {STATUSES.map((status) => (
+          <option key={status} value={status}>
+            {t(`admin.status.${status}`)}
+          </option>
+        ))}
+      </Select>
     </div>
   );
 }

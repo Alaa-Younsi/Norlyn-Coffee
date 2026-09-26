@@ -1,0 +1,43 @@
+Copyright (c) 2026 Alaa Younsi. All rights reserved.
+
+PROPRIETARY AND CONFIDENTIAL
+
+This repository and everything in it — including but not limited to the
+source code, database schema and migrations, edge functions, scripts, 3D
+scenes, animations, visual and interaction design, layouts, copy, and
+documentation (collectively, the "Software") — was designed and built by
+Alaa Younsi and is protected by copyright law and international treaties.
+
+No license is granted. The Software is made visible for viewing and
+portfolio-reference purposes only. Without the prior express written
+permission of the copyright holder, you may NOT, in whole or in part:
+
+  1. copy, reproduce, or clone the Software;
+  2. modify, adapt, translate, or create derivative works from it;
+  3. reuse any portion of it — code, components, design, or assets — in any
+     other project, commercial or non-commercial;
+  4. distribute, publish, sublicense, sell, rent, or otherwise make it
+     available to any third party;
+  5. deploy, host, or run it as a service;
+  6. use it, or any portion of it, to train or fine-tune machine-learning
+     models.
+
+Viewing this repository, whether publicly or privately, does not transfer
+any right, title, or interest in the Software.
+
+The "Norlyn Coffee" and "Moriva" names, logos, product photography, and
+related brand assets are the property of their respective owner and are
+likewise not licensed for any use.
+
+Third-party open-source packages this project depends on are not part of
+the Software; they remain subject to their own licenses.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+DAMAGES, OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE
+SOFTWARE OR ITS USE.
+
+Unauthorized use of the Software may result in civil and criminal
+penalties. For permission requests, contact the author:
+
+  Alaa Younsi — https://alaayounsi.vercel.app/

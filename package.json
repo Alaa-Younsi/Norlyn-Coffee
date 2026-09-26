@@ -1,6 +1,8 @@
 {
   "name": "moriva",
   "private": true,
+  "license": "UNLICENSED",
+  "author": "Alaa Younsi (https://alaayounsi.vercel.app/)",
   "version": "0.0.0",
   "type": "module",
   "scripts": {

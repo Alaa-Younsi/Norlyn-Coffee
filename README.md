@@ -1,208 +1,275 @@
-# Norlyn Coffee — Moriva
+<div align="center">
 
-Storefront + admin for **Norlyn Coffee** (Algiers). Moriva is the espresso
-capsule line: **two families of four**.
+<img src="public/images/norlyn-logo.webp" alt="Norlyn Coffee" width="220" />
 
-- **Espresso 100 % bio** — Noir (robusta-led, max intensity), Brun, Vert
-  (balanced), Or (arabica-led, finest). Natural, 0 % sugar, sealed in pure
-  food-grade aluminium with certified experts.
-- **Capsules aromatisées** — noisette, vanille, caramel, chocolat.
+# Moriva — L'espresso, élevé en art
 
-Tea and espresso machines are future lines; the machines already appear on
-La Maison as a "coming soon" band. Cash-on-delivery across the 69 wilayas,
-FR + AR (RTL) + EN.
+**A 3D, scroll-driven e-commerce experience and full business back-office for Norlyn Coffee's Moriva espresso capsules.**
 
-3D scroll-driven landing (React Three Fiber + GSAP/Lenis): a procedural
-faceted capsule floats over the page, drifts between sections and recolors
-per variant as you scroll. Mobile / save-data / reduced-motion visitors get a
-2D fallback — three.js never downloads for them.
+[**Live site → norlyncoffee.com**](https://www.norlyncoffee.com)
 
-## Stack
+![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript_strict-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
+![Three.js](https://img.shields.io/badge/Three.js_·_R3F-000000?style=flat-square&logo=threedotjs&logoColor=white)
+![GSAP](https://img.shields.io/badge/GSAP-0AE448?style=flat-square&logo=greensock&logoColor=black)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
+![License](https://img.shields.io/badge/license-All_rights_reserved-8B5A2B?style=flat-square)
 
-Bun · Vite · React 19 · TypeScript (strict) · TailwindCSS v4 (data-theme
-tokens, light/dark) · React Three Fiber + drei · GSAP ScrollTrigger + Lenis ·
-framer-motion · Zustand (cart) · TanStack Query · react-hook-form + zod ·
-Supabase (DB, Auth, Storage) · Vercel (SPA + edge middleware).
+<br />
 
-## Develop
+<img src="docs/screenshots/desktop-hero.webp" alt="Moriva landing page — hero with the 3D espresso cup" width="100%" />
+
+</div>
+
+---
+
+## Overview
+
+**Moriva** is the premium espresso-capsule line of **Norlyn Coffee**, an
+Algiers-based roaster. The collection is two families of four: **Espresso
+100 % bio** (Or, Vert, Brun, Noir, ordered by intensity) and **Capsules
+aromatisées** (noisette, vanille, caramel, chocolat). All are sealed in pure
+food-grade aluminium.
+
+This project is the brand's complete digital platform:
+
+- **A storefront** built as a cinematic, scroll-driven 3D experience that
+  still behaves like a fast and practical shop, with cash-on-delivery checkout
+  across all **69 wilayas** of Algeria.
+- **An admin back-office** that runs the business: catalogue, orders,
+  delivery pricing, content, marketing pixels, staff permissions, and two
+  separate financial ledgers (online store and physical shop).
+- **Three languages**: French, Arabic (full RTL) and English. Light and dark
+  themes are both designed, not just inverted.
+
+## Design concept
+
+> *"L'espresso, élevé en art"* — espresso, elevated to an art.
+
+The design treats buying coffee like a tasting ritual rather than a catalogue
+scan. The visitor scrolls through the brand the way you'd move through a
+tasting bar:
+
+- **One object, one story.** A single procedurally built 3D object leads the whole
+  landing page. It starts as a steaming espresso cup, morphs into a Moriva
+  capsule, and **recolours for each variant** (gold for *Or*, green for
+  *Vert*, chocolate for *Brun*, black for *Noir*) while the copy, intensity
+  meter and price change beside it. The product *is* the interface.
+- **A warm, tactile palette.** Cream paper tones, espresso browns and a
+  brushed-gold gradient taken from the capsule foil, set in the *Fraunces*
+  variable serif (with *Cairo* for Arabic). The effect is closer to
+  specialty-coffee packaging than a generic shop template.
+- **A character with feelings.** A hand-drawn cup mascot follows the reader
+  through tagged sections and changes expression with the story (curious,
+  delighted, in love). Its nine frames share one body, so an expression change
+  is a cross-fade, not a sticker swap.
+- **Motion with restraint.** Scroll-scrubbed reveals, drifting coffee beans
+  and gentle tilt all follow the reader's pace, never a timer. Reduced-motion
+  and data-saver visitors get the same layout, calm and static.
+- **Mobile is its own composition.** Phones don't get a squeezed desktop: the
+  3D object moves above the copy, the choreography is re-timed for a narrow
+  column, and render quality adapts to the device.
+
+## Screenshots
+
+### Desktop
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/desktop-collection.webp" alt="The 3D capsule recolours per variant — Moriva Or" /></td>
+    <td width="50%"><img src="docs/screenshots/desktop-ritual.webp" alt="Le rituel Moriva — photography section" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Scroll-driven collection: the capsule recolours per intensity</sub></td>
+    <td align="center"><sub>“Le rituel Moriva” editorial section</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/desktop-shop.webp" alt="Shop page with category filters" /></td>
+    <td><img src="docs/screenshots/desktop-product.webp" alt="Product page with quick order form" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Shop with search and category filters</sub></td>
+    <td align="center"><sub>Product page with one-step cash-on-delivery quick order</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/desktop-about.webp" alt="La Maison — brand story page" /></td>
+    <td><img src="docs/screenshots/desktop-dark.webp" alt="Landing page in dark theme" /></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>La Maison: the brand story</sub></td>
+    <td align="center"><sub>Dark “espresso” theme</sub></td>
+  </tr>
+</table>
+
+### Mobile
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/mobile-hero.webp" alt="Mobile hero" width="240" /><br /><sub>Hero</sub></td>
+    <td align="center"><img src="docs/screenshots/mobile-collection.webp" alt="Mobile collection — Moriva Vert" width="240" /><br /><sub>3D collection</sub></td>
+    <td align="center"><img src="docs/screenshots/mobile-shop.webp" alt="Mobile shop" width="240" /><br /><sub>Shop</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/mobile-product.webp" alt="Mobile product page" width="240" /><br /><sub>Product</sub></td>
+    <td align="center"><img src="docs/screenshots/mobile-dark.webp" alt="Mobile dark theme" width="240" /><br /><sub>Dark theme</sub></td>
+    <td align="center"><img src="docs/screenshots/mobile-arabic.webp" alt="Mobile Arabic right-to-left layout" width="240" /><br /><sub>Arabic (RTL)</sub></td>
+  </tr>
+</table>
+
+## Features
+
+### Storefront
+
+- Scroll-choreographed 3D landing page (React Three Fiber + GSAP ScrollTrigger + Lenis smooth scroll)
+- Shop with live search and category filters; product pages with gallery, intensity/dosage specs and a looping espresso film
+- Cart drawer plus a **one-step quick order** directly on each product page
+- **Cash-on-delivery checkout** with per-wilaya delivery pricing for all 69 wilayas, home or pickup-office delivery
+- Guest order confirmation page, retrievable by order number
+- Journal (blog), La Maison (brand story), contact form, newsletter and customer reviews
+- French / Arabic / English with complete right-to-left support, plus light and dark themes that remember the visitor's choice
+
+### Admin back-office
+
+- **Catalogue**: products, categories, stock, photos and videos, with a separate English field for each translated text
+- **Orders**: status workflow, automatic restock on cancel, Excel export
+- **Content & media**: hero slider, named image and video slots, journal articles, all editable without a redeploy
+- **Marketing**: several Meta Pixels, each run from the admin and scoped to its own pages; newsletter subscribers; reviews moderation
+- **Team**: staff accounts with **per-section permissions enforced in the database**, not just hidden in the UI
+- **Business suite**: website revenue and profit dashboards (booked vs. delivered), purchase-cost snapshots per order line, and a separate ledger and point-of-sale till for the physical shop
+- **Notifications**: staff are alerted to every new order and contact message
+
+## Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| Framework | React 19, TypeScript (strict), Vite |
+| Styling | Tailwind CSS v4 with theme tokens (light / dark) |
+| 3D & motion | Three.js, React Three Fiber, drei, GSAP ScrollTrigger, Lenis, Framer Motion |
+| State & data | Zustand (cart), TanStack Query (server state) |
+| Forms & validation | react-hook-form + Zod |
+| Routing | React Router 7, route-level code splitting |
+| Backend | Supabase: PostgreSQL, Row-Level Security, Auth, Storage, Edge Functions (Deno) |
+| Hosting | Vercel (static SPA + Edge Middleware) |
+| Tooling | Bun, ESLint, sharp image pipeline, ffmpeg video pipeline |
+
+## Performance
+
+- **3D only where it pays off.** The ~240 kB (gzip) Three.js scene is a lazily
+  loaded chunk that only the landing page requests. Visitors with *reduced
+  motion* or *data saver* turned on (or on a 2G connection) never download it
+  and see a static layout instead.
+- **Zero-re-render animation.** Scroll progress is written to a plain module
+  store and read inside the render loop, so the 3D choreography never
+  triggers a React render.
+- **Route-level code splitting.** Every secondary page and the entire admin app
+  are separate chunks that shoppers only download when they visit them.
+- **Image pipeline.** About 115 MB of original photography is compressed to
+  about 3.5 MB of responsive WebP. Every image has a capped `srcset` and
+  explicit dimensions (no layout shift), and loads lazily by default.
+- **Self-hosted variable fonts.** No third-party font requests and no
+  render-blocking round-trips.
+- **Aggressive caching.** Hashed build assets are `immutable` for a year;
+  images, videos and icons use `stale-while-revalidate`.
+- **Loading tied to real readiness.** The splash screen lifts when fonts, the
+  catalogue and the first WebGL frame are actually ready, not after a fixed
+  timer. The layout is then measured once, so nothing jumps after the reveal.
+- **No theme or language flash.** A tiny hash-allowed pre-paint script applies
+  the saved theme, `lang` and `dir` before first paint.
+
+## Security
+
+- **Server-side pricing.** Orders are placed through a `SECURITY DEFINER`
+  PostgreSQL function that recomputes every price, delivery fee and discount
+  from the database, validates stock and the wilaya, and ignores anything the
+  browser claims.
+- **Abuse protection.** Per-phone rate limits and a global burst breaker on
+  orders, a throttled newsletter endpoint, and 10-character unguessable order
+  numbers for guest lookups.
+- **Row-Level Security on every table.** Staff permissions are checked in the
+  database per admin section, so a worker's session can't read or write
+  outside the sections granted to them, even through direct API calls. Public
+  sign-up is disabled.
+- **Privileged keys stay server-side.** The service-role key is only used
+  inside Supabase Edge Functions (staff creation, notifications), and the
+  notification claims can't be replayed.
+- **Hardened HTTP headers.** A strict Content-Security-Policy with no
+  `unsafe-inline` scripts (the single inline script is pinned by its SHA-256
+  hash), HSTS with preload, `X-Frame-Options`, `nosniff`, a locked-down
+  `Permissions-Policy` and a strict referrer policy.
+- **Storage uploads are admin-only**, and customer pages (checkout and order
+  confirmation) are `noindex` and disallowed in `robots.txt`.
+- **No secrets in source.** Configuration comes from environment variables,
+  `.env` files are git-ignored, and Meta Pixel IDs are loaded from the database
+  at runtime instead of being inlined.
+
+## SEO
+
+- **Per-route metadata.** Title, description, canonical URL, Open Graph and
+  Twitter tags are set for every page.
+- **Structured data.** JSON-LD `Product` + `Offer` on product pages and
+  `Article` on journal posts, for rich results.
+- **Rich link previews.** A Vercel Edge Middleware serves pre-rendered Open
+  Graph tags to social crawlers (Facebook, WhatsApp, Telegram, X, LinkedIn,
+  Discord and more) for product and article links. It answers in Arabic when
+  the crawler asks for it.
+- **Automatic sitemap.** `sitemap.xml` is regenerated on every build from the
+  live catalogue and journal, and `robots.txt` keeps admin and customer pages
+  out of the index.
+- **International & accessible markup.** The `lang` and `dir` attributes are
+  correct per language, the HTML is semantic, and images carry descriptive alt text.
+- **Core Web Vitals.** The performance work above (no layout shift,
+  lightweight first load, cached assets) also counts toward ranking.
+
+## Project structure
+
+```
+├── src/
+│   ├── pages/            # Storefront routes + admin/ back-office
+│   ├── components/       # UI, layout, 3D scene, mascot, effects
+│   ├── hooks/            # Scroll stage, scroll FX, SEO, data hooks
+│   ├── lib/              # Pricing display, media, i18n helpers, finance engine
+│   ├── i18n/             # FR / AR / EN translations (compiler-enforced parity)
+│   └── store/            # Zustand stores
+├── supabase/
+│   ├── migrations/       # Schema, RLS, RPCs — run in order
+│   └── functions/        # Edge Functions (staff accounts, notifications)
+├── scripts/              # Sitemap, image & video optimisation, favicons, OG image
+├── middleware.ts         # Edge link previews for social crawlers
+├── vercel.json           # Security headers & cache policy
+└── docs/                 # Architecture notes, deployment checklist, screenshots
+```
+
+## Local development
+
+> Access to this repository does not grant a license to use it (see [License](#license)).
+> These instructions are for authorised collaborators only.
 
 ```bash
 bun install
-bun run dev        # works without Supabase — serves the fallback catalogue
+cp .env.example .env   # add the Supabase URL and anon key
+bun run dev            # also runs without Supabase, on the built-in fallback catalogue
 bun run typecheck
 bun run lint
-bun run build      # regenerates sitemap, typechecks, bundles
+bun run build          # sitemap → type-check → production bundle
 ```
 
-## Structure
+Further documentation:
 
-- `src/pages` — storefront (Landing/Shop/Product/About/Journal/Article/Contact/
-  Checkout/OrderConfirmation) and `admin/` dashboard: products, categories,
-  orders (Excel export + delete-all), delivery prices per wilaya, reviews,
-  content & media (hero slider + named image slots), journal, contact inbox,
-  website finances, physical-shop ledger + till, Meta pixels, team, settings,
-  account.
-- `src/lib/adminSections.ts` — the ONE source of truth for the admin nav, the
-  route→section map and the owner's grant checklist. Its keys must stay in sync
-  with the `has_section('…')` strings in the migrations and with
-  `ALLOWED_SECTIONS` in `supabase/functions/create-worker`.
-- `src/i18n` — `translations.ts` merges the `.admin` and `.site` modules and
-  compiler-enforces that AR and EN carry every FR key. `langs.ts` owns the
-  switcher cycle. FR is the source language and the only NOT NULL one. Since
-  migration 0012 every localized table also carries `*_en` (products,
-  categories, articles, slides, image slots, order lines), and
-  `lib/localized.ts`'s `pickLang` reads it — falling back to FR for a row the
-  client added without English, so a half-translated catalogue is a partly
-  French page and never a blank one.
-- `src/lib/finance.ts` — the pure aggregation engine shared by both ledgers
-  (ranges, totals, per-product/customer breakdowns, chart series). No Supabase.
-- `src/lib/metaPixel.ts` + `src/components/MetaPixelProvider.tsx` — DB-driven
-  multi-pixel tracking; every event goes out via `trackSingle`, never `track`.
-- `src/lib/imageSlots.ts` — the named picture slots the design declares and the
-  client fills from Admin → Contenu & médias.
-- `src/lib/videoSlots.ts` — the same for the two fixed films (the hero screen
-  and the product-page espresso loop). A slot resolves to the client's upload,
-  then to a file committed at `public/videos/…`, then to a still photograph, so
-  "the video is coming later" is an ordinary state and never a black box.
-- `src/lib/media.ts` + `src/components/ui/Photo.tsx` — the typed index of the
-  shipped photography and the one way to render it: capped srcSet, explicit
-  width/height, lazy by default. `dbSrcSet`/`dbSize` do the same for URLs that
-  came from the database (local seed paths get renditions, Storage uploads
-  don't). Files are produced by `scripts/optimize-images.mjs` from
-  `assets-src/raw/` — 115 MB of originals in, 3.5 MB of WebP out. The raw
-  folder is gitignored: keep your own backup of it.
-- `src/lib/mascot.ts` + `src/components/mascot/` — the brand cup. Nine drawings
-  of one character that differ only in the face, so stacked frames cross-fade
-  into an expression change instead of a sticker swap. `<ScrollMascot>` reads
-  `data-mascot="<emotion>"` off sections (same pattern as `data-reveal`) and
-  shows the cup only inside the tagged run.
-- `src/lib/contrast.ts` — `readableAccent` treats a product's `accent_color` as
-  a hue, clamping lightness into a band that passes contrast on the active
-  theme. Without it the near-black Noir headline renders invisible on dark.
-- `src/components/3d` — capsule scene; `sceneConfig.ts` maps scroll progress
-  to the choreography.
-- `src/hooks/useScrollStage.ts` — Lenis + master ScrollTrigger writing into
-  `lib/scrollProgress.ts` (read by the 3D scene in useFrame, zero re-renders).
-- `supabase/migrations` — schema, RLS, and the `place_order` SECURITY DEFINER
-  RPC (server-side prices, stock checks, per-phone rate limit, wilaya
-  validation, restock-on-cancel trigger) + `get_order_by_number` guest lookup;
-  then `0004` staff accounts + per-section RLS, `0005` Meta pixels, `0006` the
-  business suite (`create_store_sale` till RPC, cost snapshot trigger), `0007`
-  site content (`submit_contact_message` RPC), `0008` EN as a third order
-  language (replaces `place_order` verbatim except its language clamp), `0009`
-  the real catalogue (2 categories × 4 variants, product images, filled image
-  slots, hero slides and the five launch Journal articles — all ordinary rows
-  the client can edit afterwards; the four invented 0001 variants are deleted).
-- `supabase/functions/create-worker` — service-role edge function for staff
-  account creation (verifies the caller is the owner, re-validates the section
-  list, rolls back the auth user if the profile insert fails).
-- `middleware.ts` — Vercel Edge link previews for social crawlers on
-  `/product/:slug`.
-- `scripts/` — sitemap generation (wired into build), image optimization
-  (`node scripts/optimize-images.mjs`, idempotent, re-run after adding raw
-  photography), OG image generation (one-off).
-- `src/components/layout/SplashScreen.tsx` + `src/store/splash.ts` — the
-  opening curtain. It is not a timed animation: it holds until the webfont has
-  swapped, the catalogue has landed and the WebGL canvas has drawn a real
-  frame, because all three change the geometry the scroll choreography is
-  measured against. One `ScrollTrigger.refresh()` fires as it lifts, so every
-  trigger is measured against the layout the visitor actually scrolls. A floor
-  stops it flashing, a 6 s cap means it can never trap anyone, and the
-  pre-React shell in `index.html` is drawn to match it pixel for pixel so the
-  handoff has no seam — change one, change the other.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): code map, files that must stay in sync, and the CSP / caching headers
+- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md): the step-by-step go-live checklist
 
-## Headers
+## Author
 
-`vercel.json` carries the security headers and the cache policy, and two
-entries there are load-bearing:
+Designed and developed by **[Alaa Younsi](https://alaayounsi.vercel.app/)**: concept, UI/UX and motion design, 3D, frontend, backend and deployment.
 
-- **Content-Security-Policy** enumerates every origin the site may touch:
-  Supabase (REST, realtime over `wss`, and Storage for photography and video)
-  and Meta's pixel — which `src/lib/metaPixel.ts` installs at runtime, so no
-  pixel ID is ever inlined. Fonts are self-hosted (`@fontsource`, imported in
-  `src/main.tsx`), so there is no `fonts.googleapis.com` / `fonts.gstatic.com`
-  entry and `font-src` is just `'self'`. `style-src` keeps `'unsafe-inline'`
-  because framer-motion and GSAP write to the style attribute on every animated
-  frame; `script-src` deliberately does not, so the only inline script that can
-  run is the pre-paint theme/language read in `index.html`, allowed by an
-  explicit `sha256-`. **Edit that script and the hash must be recomputed** —
-  otherwise it is blocked and the dark-mode / RTL flash comes back. Get the new
-  value from the built file:
+## License
 
-  ```bash
-  bun run build
-  node -e "const h=require('crypto').createHash('sha256');const m=require('fs').readFileSync('dist/index.html','utf8').match(/<script>([\s\S]*?)<\/script>/);h.update(m[1]);console.log('sha256-'+h.digest('base64'))"
-  ```
+**Copyright © 2026 Alaa Younsi. All rights reserved.**
 
-- **`/videos/` caching.** The films autoplay and `hero.mp4` is ~1.9 MB. With
-  no rule they fall through to Vercel's revalidate-every-request default,
-  which is the whole file downloaded again on every visit by a shopper on
-  mobile data.
-
-**Env vars must be absent or complete, never empty.** `lib/supabase.ts` and
-the sitemap script both coerce `""` to "missing" for exactly this reason — an
-empty `VITE_SUPABASE_URL` used to crash the app at import, and an empty
-`SITE_URL` produced a sitemap of relative `<loc>`s that crawlers drop.
-
-## Go-live checklist
-
-1. Create a Supabase project; copy `.env.example` → `.env` with the URL +
-   anon key. Never commit `.env`.
-2. Create the admin user in Supabase Auth **first** (migration 0004 seeds it as
-   the owner), and **disable public sign-up** (Authentication → Settings).
-3. Open `supabase/migrations/0004_admin_permissions.sql` and replace
-   `OWNER_EMAIL_PLACEHOLDER` with that admin's real email, then run every
-   migration in `supabase/migrations` in order.
-   **After 0004 runs, only seeded admins can write** — that is the point: it
-   replaces the old blanket `TO authenticated` grant, so a self-registered
-   account is powerless. If the email didn't match, the migration's safety net
-   promotes the existing auth users instead; check Admin → Équipe afterwards.
-4. Create two public-read Storage buckets: `product-images` (product photos,
-   review photos, article covers, hero slides, site image slots) and
-   `product-videos` (hero/product video uploads). Both are authenticated-write.
-5. Migration 0009 already ships the catalogue, the product photos, the hero
-   slides, every named image slot and the launch articles, all pointing at the
-   WebP in `/public/images` — nothing has to be uploaded to go live. What DOES
-   need a human: **the eight prices are placeholders** (Admin → Produits), and
-   so is the **contact phone number** — it and the email both live in
-   `src/lib/contact.ts`, which is the only place either one appears. Set real
-   delivery prices per wilaya, and add real reviews (the three fallback ones
-   only show without Supabase). Anything the client later uploads in
-   **Contenu & médias** overrides the seed — 0009 never overwrites an
-   existing row.
-6. Free shipping is OFF by default (`free_ship_threshold` NULL). Set it in
-   Admin → Paramètres only if the promotion is wanted.
-7. Set `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` in the **Vercel project
-   env** (the edge middleware reads them). After deploy verify:
-   `curl -A "facebookexternalhit/1.1" https://<domain>/product/<slug>`.
-8. Update the production domain in `index.html` (canonical/OG), `SITE_URL`
-   env, `public/robots.txt`, and `middleware.ts` if it isn't `norlyn.dz`.
-9. Meta Pixels are entered by the client in **Admin → Pixels Meta** — no
-   snippet, no redeploy, several campaigns at once. Confirm at least one
-   `active` row exists at launch and check in Events Manager that each pixel
-   only receives its own pages' events. Never paste a pixel ID into
-   `index.html`.
-10. Staff: `supabase functions deploy create-worker`, then create a throwaway
-    worker in Admin → Équipe granted a single section and verify from *their*
-    login that (a) the nav shows only that section, (b) typing another
-    section's URL redirects to `/admin`, and (c) a direct PostgREST write to a
-    table they weren't granted changes nothing — judge by re-reading the row,
-    not by the absence of an error. Deactivate the account afterwards.
-11. Business suite: enter **buy prices for every product** in Finances →
-    Prix d'achat *before* the first real order. Cost is snapshotted onto each
-    order line at sale time, so prices entered later do not fix earlier orders'
-    profit — until they're filled in, profit equals revenue and every margin
-    reads 100 %. Explain the booked-vs-delivered toggle in the same sitting;
-    on COD that is the difference between ordered and actually collected. The
-    two ledgers never share a number: `/admin/finance` is the website,
-    `/admin/store` is the shop. Deleting a website order does NOT restock
-    (cancel it instead); deleting a shop sale DOES.
-12. Before ad spend: place one real test order end-to-end as an anonymous
-    visitor (both the cart checkout and the product-page quick buy), confirm
-    the confirmation page shows the recap, cancel one order in the admin and
-    confirm stock restocks, then delete the test orders. Fuzz `place_order`
-    over REST with junk input — every rejection must be an `ERR_*` message.
-13. Typography: the site is wired for **Gourmand** with Fraunces as the
-    fallback. Drop `Gourmand-Regular.woff2` / `Gourmand-Italic.woff2` into
-    `public/fonts/` and uncomment the `@font-face` block at the top of
-    `src/index.css` — nothing else changes.
+This is proprietary software. No part of this project (code, design,
+animations or assets) may be copied, modified, reused or distributed without
+the author's prior written permission. See [`LICENSE`](LICENSE) for the full
+terms.

@@ -65,8 +65,23 @@ export function Footer() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-line/70 py-5 text-center text-xs text-muted">
-        © {year} Norlyn Coffee — {t("footer.rights")}
+      <div className="border-t border-line/70">
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-2 px-6 py-5 text-center text-xs text-muted sm:flex-row sm:justify-between sm:text-start">
+          <p>
+            © {year} Norlyn Coffee — {t("footer.rights")}
+          </p>
+          <p dir="ltr">
+            Website Developed by{" "}
+            <a
+              href="https://alaayounsi.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-brand underline-offset-4 transition-colors hover:underline"
+            >
+              Alaa Younsi
+            </a>
+          </p>
+        </div>
       </div>
     </footer>
   );

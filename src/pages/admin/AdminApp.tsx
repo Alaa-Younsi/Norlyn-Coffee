@@ -13,6 +13,7 @@ import { AdminReviews } from "./Reviews";
 import { AdminSettings } from "./Settings";
 import { AdminAccount } from "./Account";
 import { AdminTeam } from "./Team";
+import { AdminActivity } from "./Activity";
 import { AdminPixels } from "./Pixels";
 import { AdminContent } from "./Content";
 import { AdminArticles } from "./Articles";
@@ -45,6 +46,7 @@ export function AdminApp() {
           <Route path="store" element={<AdminStoreLedger />} />
           <Route path="pixels" element={<AdminPixels />} />
           <Route path="team" element={<AdminTeam />} />
+          <Route path="activity" element={<AdminActivity />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="account" element={<AdminAccount />} />
         </Route>

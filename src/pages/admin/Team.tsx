@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { KeyRound, ShieldCheck, UserPlus } from "lucide-react";
+import { History, KeyRound, ShieldCheck, UserPlus } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { FieldWrapper, Input } from "@/components/ui/Field";
 import { Panel } from "@/components/ui/Panel";
+import { useTeamOverview } from "@/hooks/useAdminActivity";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { GRANTABLE_SECTIONS } from "@/lib/adminSections";
+import { formatDate } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 import type { AdminProfile } from "@/types/db";
@@ -46,6 +49,8 @@ export function AdminTeam() {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const { data: profiles } = useWorkers();
+  // owner-only page, so the owner-only RPC is safe to call unconditionally
+  const { data: overview } = useTeamOverview();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -155,7 +160,11 @@ export function AdminTeam() {
       ) : (
         <div className="mt-4 space-y-4">
           {workers.map((worker) => (
-            <WorkerPanel key={worker.user_id} worker={worker} />
+            <WorkerPanel
+              key={worker.user_id}
+              worker={worker}
+              lastSignIn={overview?.find((row) => row.user_id === worker.user_id)?.last_sign_in_at ?? null}
+            />
           ))}
         </div>
       )}
@@ -205,8 +214,8 @@ function SectionGrid({
   );
 }
 
-function WorkerPanel({ worker }: { worker: AdminProfile }) {
-  const { t } = useLanguage();
+function WorkerPanel({ worker, lastSignIn }: { worker: AdminProfile; lastSignIn: string | null }) {
+  const { t, lang } = useLanguage();
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<string[]>(worker.sections);
 
@@ -267,7 +276,14 @@ function WorkerPanel({ worker }: { worker: AdminProfile }) {
             </span>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Link
+            to={`/admin/activity?actor=${worker.user_id}`}
+            className="inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-panel-2 hover:text-ink"
+          >
+            <History size={14} className="me-1.5" />
+            {t("admin.team.viewHistory")}
+          </Link>
           <Button
             size="sm"
             variant="ghost"
@@ -289,6 +305,13 @@ function WorkerPanel({ worker }: { worker: AdminProfile }) {
           </Button>
         </div>
       </div>
+
+      <p className="mt-2 text-xs text-muted">
+        {t("admin.team.lastLogin")} :{" "}
+        <span className="text-ink">
+          {lastSignIn ? formatDate(lastSignIn, lang) : t("admin.activity.never")}
+        </span>
+      </p>
 
       {resetOpen && (
         <form

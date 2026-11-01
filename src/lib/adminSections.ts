@@ -2,6 +2,7 @@ import {
   AtSign,
   BarChart3,
   FolderTree,
+  History,
   Image,
   LayoutDashboard,
   Mail,
@@ -57,6 +58,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
   { key: "store", route: "/admin/store", labelKey: "admin.nav.store", icon: Store },
   { key: "pixels", route: "/admin/pixels", labelKey: "admin.nav.pixels", icon: Target },
   { key: "team", route: "/admin/team", labelKey: "admin.nav.team", icon: ShieldCheck, ownerOnly: true },
+  { key: "activity", route: "/admin/activity", labelKey: "admin.nav.activity", icon: History, ownerOnly: true },
   { key: "settings", route: "/admin/settings", labelKey: "admin.nav.settings", icon: Settings, always: true },
   { key: "account", route: "/admin/account", labelKey: "admin.nav.account", icon: UserCog, always: true },
 ];

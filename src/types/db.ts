@@ -397,3 +397,33 @@ export interface GuestOrder {
     image_url: string | null;
   }>;
 }
+
+/** One row of the owner-only audit log (0020). */
+export type AdminActivityAction = "insert" | "update" | "delete" | "login";
+
+export type ActivityValue = string | number | boolean | null | ActivityValue[] | { [key: string]: ActivityValue };
+
+export interface AdminActivity {
+  id: number;
+  at: string;
+  actor_id: string | null;
+  actor_email: string | null;
+  action: AdminActivityAction;
+  table_name: string | null;
+  record_id: string | null;
+  record_label: string | null;
+  /** update: { field: [before, after] } · insert/delete: { field: value } */
+  changes: Record<string, ActivityValue>;
+}
+
+/** admin_team_overview() — last sign-in / last action per dashboard account. */
+export interface TeamOverviewRow {
+  user_id: string;
+  email: string | null;
+  is_owner: boolean;
+  active: boolean;
+  created_at: string;
+  last_sign_in_at: string | null;
+  last_action_at: string | null;
+  actions_7d: number;
+}

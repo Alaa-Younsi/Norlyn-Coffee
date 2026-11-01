@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 import { Home, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FieldWrapper, Input, Select } from "@/components/ui/Field";
@@ -39,6 +40,19 @@ interface CheckoutFormProps {
   compact?: boolean;
 }
 
+/**
+ * The 1,541-commune list is ~55 KB of source — fetched as its own chunk the
+ * first time a checkout form renders, never part of the landing bundle.
+ */
+function useCommunes() {
+  return useQuery({
+    queryKey: ["communes"],
+    staleTime: Number.POSITIVE_INFINITY,
+    gcTime: Number.POSITIVE_INFINITY,
+    queryFn: async () => (await import("@/data/communes")).COMMUNES,
+  });
+}
+
 const formSchema = z.object({
   name: z.string().trim().min(2).max(80),
   phone: z.string().trim().regex(/^0[5-7][0-9]{8}$/),
@@ -54,6 +68,7 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
   const { t, lang } = useLanguage();
   const { data: wilayas } = useDeliveryPrices(true);
   const { data: settings } = useStoreSettings();
+  const { data: communesByWilaya, isError: communesFailed } = useCommunes();
   const { isSpam } = useHoneypot();
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -64,6 +79,7 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -73,6 +89,12 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
   // eslint-disable-next-line react-hooks/incompatible-library -- RHF watch() opts this component out of the React Compiler; correctness is unaffected
   const wilaya = watch("wilaya");
   const deliveryType = watch("delivery_type") as DeliveryType;
+
+  // No list for this wilaya (an admin renamed its delivery row, or the chunk
+  // failed to load) → fall back to free text rather than block the order.
+  const communes = wilaya ? communesByWilaya?.[wilaya] : undefined;
+  const cityFreeText = Boolean(wilaya) && (communesFailed || (communesByWilaya && !communes));
+  const wilayaField = register("wilaya");
 
   const subtotal = useMemo(
     () => lines.reduce((sum, line) => sum + line.price * line.quantity, 0),
@@ -169,7 +191,14 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
           <Input {...register("phone")} type="tel" inputMode="tel" dir="ltr" placeholder="05 XX XX XX XX" autoComplete="tel" />
         </FieldWrapper>
         <FieldWrapper label={t("checkout.wilaya")} error={errors.wilaya && t("checkout.wilayaRequired")}>
-          <Select {...register("wilaya")}>
+          <Select
+            {...wilayaField}
+            onChange={(e) => {
+              void wilayaField.onChange(e);
+              // a commune picked under the previous wilaya is never valid here
+              setValue("city", "");
+            }}
+          >
             <option value="">{t("checkout.selectWilaya")}</option>
             {(wilayas ?? []).map((w) => (
               <option key={w.id} value={w.wilaya}>
@@ -179,7 +208,21 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
           </Select>
         </FieldWrapper>
         <FieldWrapper label={t("checkout.city")} error={errors.city && t("checkout.cityRequired")}>
-          <Input {...register("city")} autoComplete="address-level2" />
+          {cityFreeText ? (
+            <Input {...register("city")} autoComplete="address-level2" />
+          ) : (
+            <Select {...register("city")} disabled={!communes} autoComplete="address-level2">
+              <option value="">
+                {wilaya ? t("checkout.selectCity") : t("checkout.cityPickWilayaFirst")}
+              </option>
+              {(communes ?? []).map(([latin, arabic]) => (
+                // the Latin name is what's stored, so staff read one spelling
+                <option key={latin} value={latin}>
+                  {lang === "ar" ? arabic : latin}
+                </option>
+              ))}
+            </Select>
+          )}
         </FieldWrapper>
       </div>
 

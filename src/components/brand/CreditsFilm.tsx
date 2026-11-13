@@ -6,25 +6,30 @@ import { gsap } from "@/lib/gsap";
 import { cn } from "@/lib/utils";
 
 /**
- * A page told as a film's credit sequence, played by the scroll.
+ * A page told as an old film, played by the scroll.
  *
  * The section pins one full screen (CSS sticky inside a tall wrapper) and a
- * single GSAP timeline, scrubbed to the scroll, plays every scene in turn:
+ * single GSAP timeline, scrubbed to the scroll, plays every scene in turn.
+ * Each scene gets ~1.8 screens of scroll, in three beats:
  *
- *   - the scene's photograph dissolves in full-bleed and slowly pushes in
- *     (a Ken Burns move), then dissolves out into the next;
- *   - its credits ROLL — the block rises through the frame like end credits,
- *     each line arriving on its own beat — and fade at the top;
- *   - cinema letterbox bars frame it all, with the scene number and a running
- *     timecode (HH:MM:SS:FF at 24 fps) in the bottom bar.
+ *   1. ARRIVE — the picture dissolves in under the last one, the words rise
+ *      into place line by line, and the inset print slides up beside them;
+ *   2. HOLD — for most of the scene nothing but a slow drift moves, so the
+ *      text can actually be read;
+ *   3. LEAVE — the words lift away and the next picture takes over.
  *
- * The first scene is on screen at once (it is the page's title card) and the
- * last one settles in the centre and stays, so its actions can be used.
- * Scenes use `autoAlpha` (opacity + visibility), so a scene that is not on
- * screen is not clickable either.
+ * The look is an archive print: heavy letterbox bars (they close in when the
+ * film starts), a sepia/low-saturation grade, a vignette, grain, and on
+ * desktop a light flicker, the odd scratch and a hair of gate weave.
+ *
+ * Performance: every picture sits in the same sticky frame, so the browser's
+ * lazy loading would fetch them all at once. Instead only the scenes next to
+ * the current one mount their pictures at all, and phones are served a
+ * smaller rendition (the picture is dimmed and graded — it does not need
+ * 1600 px).
  *
  * Reduced motion: no pin, no timeline — the same scenes, stacked as plain
- * full-height panels over their pictures.
+ * full-height panels.
  */
 
 export interface Credit {
@@ -34,11 +39,16 @@ export interface Credit {
   name: ReactNode;
 }
 
-export interface FilmScene {
-  id: string;
+export interface FilmPicture {
   /** a managed image slot, or a raw URL (article covers) */
   slot?: string;
   src?: string;
+}
+
+export interface FilmScene extends FilmPicture {
+  id: string;
+  /** a photograph printed beside the words (on phones: above them) */
+  inset?: FilmPicture;
   /** a big statement, set larger than credits */
   title?: ReactNode;
   credits?: Credit[];
@@ -52,33 +62,18 @@ export interface FilmScene {
   creditsFirst?: boolean;
 }
 
-const FPS = 24;
+/** the archive grade — applied per picture so each stays its own GPU layer */
+const GRADE = "[filter:sepia(0.42)_saturate(0.68)_contrast(1.1)_brightness(0.92)]";
 
-function timecode(seconds: number): string {
-  const total = Math.max(0, seconds);
-  const hh = Math.floor(total / 3600);
-  const mm = Math.floor((total % 3600) / 60);
-  const ss = Math.floor(total % 60);
-  const ff = Math.floor((total % 1) * FPS);
-  return [hh, mm, ss, ff].map((n) => String(n).padStart(2, "0")).join(":");
-}
+/** scroll per scene, in viewport heights */
+const SCENE_VH = 180;
 
-export function CreditsFilm({
-  scenes,
-  label,
-  /** the running length the timecode counts up to, in seconds */
-  runtime = 252,
-}: {
-  scenes: FilmScene[];
-  label: string;
-  runtime?: number;
-}) {
+export function CreditsFilm({ scenes, label }: { scenes: FilmScene[]; label: string }) {
   const { lang } = useLanguage();
   const wrapRef = useRef<HTMLElement>(null);
-  const sceneRef = useRef<HTMLSpanElement>(null);
-  const codeRef = useRef<HTMLSpanElement>(null);
-  const barRef = useRef<HTMLSpanElement>(null);
   const [reduced] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  // which scene is playing — only its neighbours mount their pictures
+  const [at, setAt] = useState(0);
   const count = scenes.length;
 
   useEffect(() => {
@@ -88,24 +83,29 @@ export function CreditsFilm({
     const ctx = gsap.context(() => {
       const bgs = gsap.utils.toArray<HTMLElement>("[data-film-bg]");
       const blocks = gsap.utils.toArray<HTMLElement>("[data-film-scene]");
+      const bars = gsap.utils.toArray<HTMLElement>("[data-film-bar]");
       const last = count - 1;
 
-      // everything but the title card starts hidden
+      // the bars close in as the film starts
+      gsap.from(bars, { scaleY: 0, duration: 1.4, ease: "expo.out", delay: 0.2 });
+
       gsap.set(bgs.slice(1), { autoAlpha: 0 });
       gsap.set(blocks.slice(1), { autoAlpha: 0 });
 
+      let current = 0;
       const tl = gsap.timeline({
         defaults: { ease: "none" },
         scrollTrigger: {
           trigger: wrap,
           start: "top top",
           end: "bottom bottom",
-          scrub: 0.8,
+          scrub: 1,
           onUpdate: (self) => {
-            const at = Math.min(last, Math.floor(self.progress * count));
-            if (sceneRef.current) sceneRef.current.textContent = String(at + 1).padStart(2, "0");
-            if (codeRef.current) codeRef.current.textContent = timecode(self.progress * runtime);
-            if (barRef.current) barRef.current.style.transform = `scaleX(${self.progress.toFixed(4)})`;
+            const next = Math.min(last, Math.floor(self.progress * count));
+            if (next !== current) {
+              current = next;
+              setAt(next);
+            }
           },
         },
       });
@@ -113,108 +113,141 @@ export function CreditsFilm({
       blocks.forEach((block, i) => {
         const bg = bgs[i];
         const lines = block.querySelectorAll<HTMLElement>("[data-film-line]");
+        const inset = block.querySelector<HTMLElement>("[data-film-inset]");
         const isFirst = i === 0;
         const isLast = i === last;
 
-        // the picture: dissolve in, push in for the whole scene, dissolve out
+        // the picture: a long cross-dissolve across the cut, then a slow push
         if (bg) {
-          if (!isFirst) tl.fromTo(bg, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.22 }, i);
-          tl.fromTo(bg, { scale: 1.16 }, { scale: 1.02, duration: 1 }, i);
-          if (!isLast) tl.to(bg, { autoAlpha: 0, duration: 0.22 }, i + 0.86);
+          if (!isFirst) tl.fromTo(bg, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.24 }, i - 0.12);
+          tl.fromTo(bg, { scale: 1.14 }, { scale: 1, duration: 1.24 }, Math.max(0, i - 0.12));
+          if (!isLast) tl.to(bg, { autoAlpha: 0, duration: 0.24 }, i + 0.88);
         }
 
-        // the credits roll: the block rises through the frame…
-        tl.fromTo(
-          block,
-          { yPercent: isFirst ? 0 : 38 },
-          { yPercent: isLast ? 0 : -38, duration: 1 },
-          i,
-        );
-        // …arriving and leaving on a dissolve…
-        if (!isFirst) tl.fromTo(block, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.18 }, i + 0.04);
-        if (!isLast) tl.to(block, { autoAlpha: 0, duration: 0.16 }, i + 0.82);
-        // …and its lines catch up one after another
-        if (!isFirst && lines.length) {
-          tl.from(lines, { y: 70, duration: 0.3, stagger: 0.05, ease: "power2.out" }, i + 0.04);
+        // ARRIVE
+        if (!isFirst) {
+          tl.fromTo(block, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.12 }, i + 0.02);
+          if (lines.length) {
+            tl.fromTo(
+              lines,
+              { y: 60, autoAlpha: 0 },
+              { y: 0, autoAlpha: 1, duration: 0.24, stagger: 0.045, ease: "power2.out" },
+              i + 0.04,
+            );
+          }
         }
+        // HOLD — a slow drift, readable the whole way
+        tl.fromTo(block, { yPercent: isFirst ? 0 : 4 }, { yPercent: isLast ? 0 : -4, duration: 1 }, i);
+        if (inset) tl.fromTo(inset, { y: 70 }, { y: -50, duration: 1 }, i);
+        // LEAVE
+        if (!isLast) tl.to(block, { autoAlpha: 0, y: -40, duration: 0.12, ease: "power1.in" }, i + 0.82);
       });
-      // a little held time on the end card before the section releases
-      tl.to({}, { duration: 0.35 });
+      // the end card holds before the section releases
+      tl.to({}, { duration: 0.25 });
     }, wrap);
 
     return () => ctx.revert();
-  }, [reduced, count, runtime, lang]);
+  }, [reduced, count, lang]);
 
   /* ---------------------------------------------------------------- render */
-  const sceneContent = (scene: FilmScene) => {
-    const creditsBlock = (
-      <>
-      {scene.credits && (
-            <dl
-              className={cn(
-                "grid gap-9",
-                scene.creditsFirst ? "mb-8" : "mt-10",
-                scene.credits.length > 2 && "sm:grid-cols-2 sm:gap-x-16",
-              )}
-            >
-              {scene.credits.map((credit, i) => (
-                <div key={i} data-film-line>
-                  {credit.role && (
-                    <dt className="font-display text-lg italic text-gold-hi sm:text-xl">{credit.role}</dt>
-                  )}
-                  <dd className="mt-1.5 font-display text-2xl leading-snug text-on-shade sm:text-[2rem]">{credit.name}</dd>
-                </div>
-              ))}
-            </dl>
-          )}
-          </>
+  const picture = (pic: FilmPicture, priority: boolean, sizes: string) =>
+    pic.slot ? (
+      <ImageSlot slot={pic.slot} fill flat rounded="rounded-none" priority={priority} sizes={sizes} />
+    ) : pic.src ? (
+      <img src={pic.src} alt="" className="h-full w-full object-cover" loading={priority ? "eager" : "lazy"} decoding="async" />
+    ) : null;
+
+  const insetPrint = (scene: FilmScene, i: number, mounted: boolean) =>
+    scene.inset ? (
+      <figure
+        data-film-inset
+        className={cn(
+          "relative shrink-0 bg-[#ece2cf] p-2 pb-7 shadow-[0_30px_60px_-20px_rgb(0_0_0/0.85)] sm:p-3 sm:pb-10",
+          "w-[min(44vw,11rem)] md:w-[min(28vw,24rem)]",
+          i % 2 ? "rotate-[2.5deg]" : "-rotate-[2.5deg]",
+        )}
+      >
+        <div className={cn("relative aspect-[4/5] overflow-hidden bg-shade", GRADE)}>
+          {mounted && picture(scene.inset, false, "(max-width: 767px) 44vw, 28vw")}
+          <div aria-hidden className="absolute inset-0 shadow-[inset_0_0_40px_rgb(40_22_8/0.55)]" />
+        </div>
+      </figure>
+    ) : null;
+
+  const sceneContent = (scene: FilmScene, i: number, mounted: boolean) => {
+    const hasInset = Boolean(scene.inset);
+    const align = hasInset ? "start" : (scene.align ?? "center");
+    const creditsBlock = scene.credits && (
+      <dl
+        className={cn(
+          "grid gap-6 sm:gap-9",
+          scene.creditsFirst ? "mb-6 sm:mb-8" : "mt-8 sm:mt-10",
+          scene.credits.length > 2 && "sm:grid-cols-2 sm:gap-x-16",
+        )}
+      >
+        {scene.credits.map((credit, k) => (
+          <div key={k} data-film-line>
+            {credit.role && <dt className="font-display text-base italic text-gold-hi sm:text-xl">{credit.role}</dt>}
+            <dd className="mt-1.5 font-display text-xl leading-snug text-on-shade sm:text-[2rem]">{credit.name}</dd>
+          </div>
+        ))}
+      </dl>
     );
+    const words = (
+      <div
+        className={cn(
+          "flex min-w-0 flex-col",
+          align === "start" ? "items-start text-start" : "items-center text-center",
+        )}
+      >
+        {scene.creditsFirst ? creditsBlock : null}
+        {scene.title && (
+          <h2
+            data-film-line
+            className="font-display text-[2.5rem] leading-[0.98] font-medium tracking-[-0.03em] text-balance sm:text-7xl lg:text-[6rem]"
+          >
+            {scene.title}
+          </h2>
+        )}
+        {scene.body && (
+          <div
+            data-film-line
+            className="mt-5 max-w-2xl font-display text-lg leading-[1.6] italic text-on-shade/85 sm:mt-7 sm:text-2xl"
+          >
+            {scene.body}
+          </div>
+        )}
+        {scene.creditsFirst ? null : creditsBlock}
+        {scene.extra && (
+          <div data-film-line className="mt-8 sm:mt-10">
+            {scene.extra}
+          </div>
+        )}
+      </div>
+    );
+    if (!hasInset) return <div className="mx-auto w-full max-w-5xl px-6">{words}</div>;
+    // the print beside the words, alternating sides; stacked on phones
     return (
-    <div
-      className={cn(
-        "mx-auto flex w-full max-w-5xl flex-col px-6",
-        scene.align === "start" ? "items-start text-start" : "items-center text-center",
-      )}
-    >
-      {scene.creditsFirst ? creditsBlock : null}
-      {scene.title && (
-        <h2
-          data-film-line
-          className="font-display text-[2.8rem] leading-[0.98] font-medium tracking-[-0.03em] text-balance sm:text-7xl lg:text-[6.5rem]"
-        >
-          {scene.title}
-        </h2>
-      )}
-      {scene.body && (
-        <div data-film-line className="mt-7 max-w-2xl font-display text-xl leading-[1.6] italic text-on-shade/80 sm:text-2xl">
-          {scene.body}
-        </div>
-      )}
-      {scene.creditsFirst ? null : creditsBlock}
-      {scene.extra && (
-        <div data-film-line className="mt-10">
-          {scene.extra}
-        </div>
-      )}
-    </div>
+      <div
+        className={cn(
+          "mx-auto flex w-full max-w-6xl flex-col items-start gap-6 px-6 md:items-center md:gap-16",
+          i % 2 ? "md:flex-row-reverse" : "md:flex-row",
+        )}
+      >
+        {insetPrint(scene, i, mounted)}
+        {words}
+      </div>
     );
   };
-
-  const picture = (scene: FilmScene, priority: boolean) =>
-    scene.slot ? (
-      <ImageSlot slot={scene.slot} fill flat rounded="rounded-none" priority={priority} sizes="100vw" />
-    ) : scene.src ? (
-      <img src={scene.src} alt="" className="h-full w-full object-cover" loading={priority ? "eager" : "lazy"} decoding="async" />
-    ) : null;
 
   if (reduced) {
     return (
       <section aria-label={label} className="bg-shade text-on-shade">
         {scenes.map((scene, i) => (
           <div key={scene.id} className="relative flex min-h-screen items-center overflow-hidden py-24">
-            <div className="absolute inset-0">{picture(scene, i === 0)}</div>
+            <div className={cn("absolute inset-0", GRADE)}>{picture(scene, i === 0, "(max-width: 767px) 85vw, 100vw")}</div>
             <div className="absolute inset-0 bg-shade" style={{ opacity: scene.dim ?? 0.62 }} aria-hidden />
-            <div className="relative w-full">{sceneContent(scene)}</div>
+            <div className="relative w-full">{sceneContent(scene, i, true)}</div>
           </div>
         ))}
       </section>
@@ -222,44 +255,48 @@ export function CreditsFilm({
   }
 
   return (
-    <section ref={wrapRef} aria-label={label} className="relative" style={{ height: `${count * 100 + 35}vh` }}>
+    <section ref={wrapRef} aria-label={label} className="relative" style={{ height: `${count * SCENE_VH + 100}vh` }}>
       <div className="sticky top-0 h-[100svh] overflow-hidden bg-shade text-on-shade">
-        {/* pictures */}
-        {scenes.map((scene, i) => (
-          <div key={scene.id} data-film-bg className="absolute inset-0 will-change-transform">
-            {picture(scene, i === 0)}
-            <div className="absolute inset-0 bg-shade" style={{ opacity: scene.dim ?? 0.62 }} aria-hidden />
-          </div>
-        ))}
-        {/* vignette + grain, over every picture */}
+        {/* pictures — only the current scene and its neighbours are mounted */}
+        <div className="fx-weave absolute -inset-2">
+          {scenes.map((scene, i) => {
+            const mounted = Math.abs(i - at) <= 1;
+            return (
+              <div key={scene.id} data-film-bg className={cn("absolute inset-0 will-change-transform", GRADE)}>
+                {mounted && picture(scene, i === 0, "(max-width: 767px) 85vw, 100vw")}
+                <div
+                  className="absolute inset-0 bg-shade"
+                  style={{ opacity: scene.dim ?? (scene.inset ? 0.74 : 0.62) }}
+                  aria-hidden
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* the print: vignette, grain, and on desktop flicker + scratches */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgb(var(--c-shade)/0.85)_100%)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgb(20_11_4/0.9)_100%)]"
         />
-        <div aria-hidden className="fx-grain pointer-events-none absolute -inset-1/2 hidden opacity-[0.07] md:block" />
+        <div aria-hidden className="fx-grain pointer-events-none absolute -inset-1/2 opacity-[0.06] md:opacity-[0.1]" />
+        <div aria-hidden className="fx-flicker pointer-events-none absolute inset-0 hidden bg-[#f4e3c2] md:block" />
+        <div aria-hidden className="fx-scratches pointer-events-none absolute inset-0 hidden md:block" />
 
-        {/* credits */}
-        {scenes.map((scene) => (
-          <div key={scene.id} data-film-scene className="absolute inset-0 flex items-center will-change-transform">
-            {sceneContent(scene)}
+        {/* the scenes */}
+        {scenes.map((scene, i) => (
+          <div
+            key={scene.id}
+            data-film-scene
+            className="absolute inset-x-0 top-[10vh] bottom-[10vh] flex items-center will-change-transform md:top-[13vh] md:bottom-[13vh]"
+          >
+            {sceneContent(scene, i, Math.abs(i - at) <= 1)}
           </div>
         ))}
 
-        {/* letterbox, with the scene counter and the timecode in the lower bar */}
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[7vh] bg-black" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-[7vh] items-center bg-black px-6">
-          <div className="mx-auto flex w-full max-w-7xl items-center gap-6 font-mono text-[11px] tracking-[0.25em] text-on-shade/60">
-            <span aria-hidden>
-              <span className="text-gold-hi">SC</span> <span ref={sceneRef}>01</span> / {String(count).padStart(2, "0")}
-            </span>
-            <span aria-hidden className="relative h-px flex-1 bg-on-shade/15">
-              <span ref={barRef} className="absolute inset-0 origin-left scale-x-0 bg-gold-hi/70 rtl:origin-right" />
-            </span>
-            <span aria-hidden ref={codeRef} dir="ltr">
-              00:00:00:00
-            </span>
-          </div>
-        </div>
+        {/* letterbox — a real scope ratio, not a strip */}
+        <div aria-hidden data-film-bar className="pointer-events-none absolute inset-x-0 top-0 h-[10vh] origin-top bg-black md:h-[13vh]" />
+        <div aria-hidden data-film-bar className="pointer-events-none absolute inset-x-0 bottom-0 h-[10vh] origin-bottom bg-black md:h-[13vh]" />
       </div>
     </section>
   );

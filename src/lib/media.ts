@@ -129,6 +129,8 @@ export const MEDIA = {
   /** photography: the product in the world */
   life: {
     espressoGlass: m("life/espresso-glass", "photo", 1080, 1080),
+    /** first frame of product-2.mp4 — the still behind the second product film */
+    followPoster: m("life/follow-poster", "photo", 720, 900),
     beansCapsules: m("life/beans-capsules", "photo", 460, 288),
     rangeTable: m("life/range-table", "photo", 1080, 1080),
     rangeFan: m("life/range-fan", "photo", 513, 912),

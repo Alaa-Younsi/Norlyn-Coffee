@@ -1,6 +1,6 @@
 # Drop-in films
 
-Two files are read from this folder by name. They are the **fallback** for the
+Three files are read from this folder by name. They are the **fallback** for the
 video slots declared in `src/lib/videoSlots.ts` — whatever the client uploads
 from **Admin → Contenu & médias → Vidéos** wins over anything here.
 
@@ -8,6 +8,7 @@ from **Admin → Contenu & médias → Vidéos** wins over anything here.
 | ----------------------- | --------------------------------------------------------- |
 | `hero.mp4`              | the vertical screen beside the title on the home page      |
 | `espresso.mp4`          | the loop beside the order form on **every** product page   |
+| `product-2.mp4`         | the second (4:5 "batterie") film beside it                 |
 
 Commit a file at exactly that path and it appears on the next build. Until one
 exists, each slot shows its still photograph instead — a designed state, not a

@@ -11,7 +11,7 @@ import { readableAccent } from "@/lib/contrast";
 import { formatPrice } from "@/lib/format";
 import { ScrollTrigger } from "@/lib/gsap";
 import { dbSize } from "@/lib/media";
-import { getLenisInstance } from "@/lib/lenis";
+import { intensityBeans, printedIntensity } from "@/lib/intensity";
 import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/db";
@@ -80,7 +80,6 @@ function Variants3D({ products }: { products: Product[] }) {
   const theme = useSurfaceTone();
   const zoneRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
-  const fillRefs = useRef<Array<HTMLSpanElement | null>>([]);
   const [index, setIndex] = useState(0);
   const count = products.length;
   // the capsule swoops to the start side as this zone arrives — the copy
@@ -98,25 +97,10 @@ function Variants3D({ products }: { products: Product[] }) {
         // count capsule chapters, then the machine chapter (index === count)
         const position = self.progress * (count + 1);
         setIndex(Math.min(count, Math.floor(position)));
-        // each chapter's bar fills with the scroll through its own stretch
-        fillRefs.current.forEach((fill, i) => {
-          if (fill) fill.style.transform = `scaleX(${Math.min(1, Math.max(0, position - i)).toFixed(3)})`;
-        });
       },
     });
     return () => trigger.kill();
   }, [count]);
-
-  // jump to the middle of a capsule's stretch of the zone
-  const goTo = (i: number) => {
-    const zone = zoneRef.current;
-    if (!zone) return;
-    const span = zone.offsetHeight - window.innerHeight;
-    const y = zone.getBoundingClientRect().top + window.scrollY + ((i + 0.5) / (count + 1)) * span;
-    const lenis = getLenisInstance();
-    if (lenis) lenis.scrollTo(y, { duration: 1.2 });
-    else window.scrollTo({ top: y, behavior: "smooth" });
-  };
 
   // the last chapter is the machine: the capsule morphs into it on the 3D
   // layer, so the copy talks about the machine instead of a capsule
@@ -129,11 +113,13 @@ function Variants3D({ products }: { products: Product[] }) {
     ? t("about.machines.text")
     : pickLang(lang, product.description_fr, product.description_ar, product.description_en);
   const accent = readableAccent(product.accent_color, theme);
-  const beans = Math.round(((product.intensity ?? 0) / 100) * 5);
+  const beans = intensityBeans(product.slug, product.intensity);
+  // the number printed on the box — the one shoppers compare
+  const level = printedIntensity(product.slug);
 
   // the intensity scale, drawn once and reused
   const beanRow = (
-    <span className="flex items-center gap-1" aria-label={`${beans}/5`}>
+    <span className="flex items-center gap-1" aria-hidden>
       {Array.from({ length: 5 }, (_, i) => (
         <motion.svg
           key={`${product.id}-${i}`}
@@ -202,9 +188,14 @@ function Variants3D({ products }: { products: Product[] }) {
             >
               {!isMachine && (
                 <>
-                  <span className="block font-mono text-[11px] tracking-[0.3em] text-muted">
-                    0{index + 1} / 0{count}
+                  <span className="block text-[10px] uppercase tracking-[0.3em] text-muted">
+                    {t("variants.intensity")}
                   </span>
+                  {level !== null && (
+                    <span className="mt-1 block font-display text-5xl leading-none tabular-nums" style={{ color: accent }} dir="ltr">
+                      {level}
+                    </span>
+                  )}
                   <span className="mt-2 flex justify-center">{beanRow}</span>
                 </>
               )}
@@ -214,26 +205,26 @@ function Variants3D({ products }: { products: Product[] }) {
 
         <div
           ref={copyRef}
-          className="max-md:absolute max-md:inset-x-0 max-md:bottom-0 max-md:px-6 max-md:pb-10 md:absolute md:inset-y-0 md:start-[calc(50vw+39.65vh-min(17rem,21vw))] md:flex md:w-[min(34rem,42vw)] md:flex-col md:justify-center md:pb-[4.2vh]"
+          className="max-md:absolute max-md:inset-x-0 max-md:bottom-0 max-md:px-6 max-md:pb-7 md:absolute md:inset-y-0 md:start-[calc(50vw+39.65vh-min(17rem,21vw))] md:flex md:w-[min(34rem,42vw)] md:flex-col md:justify-center md:pb-[4.2vh]"
         >
           {/* top row: the section's question, sitting just above the name */}
           <div className="md:pb-5">
-            <h2 className="font-display text-lg italic text-muted sm:text-xl">{t("variants.title")}</h2>
+            <h2 className="font-display text-base italic text-muted sm:text-xl">{t("variants.title")}</h2>
           </div>
 
           {/* middle row: the name, on the capsule's centre line */}
-          <h3 className="relative mt-4 font-display text-[3.2rem] leading-[0.95] font-medium tracking-[-0.035em] text-ink sm:text-7xl md:mt-0 lg:text-[5.25rem]">
+          <h3 className="relative mt-2 font-display text-[2.6rem] leading-[0.95] font-medium tracking-[-0.035em] text-ink sm:text-7xl md:mt-0 lg:text-[5.25rem]">
             <AnimatePresence mode="wait" initial={false}>
               <SwapName key={chapterKey} text={name} color="currentColor" lang={lang} />
             </AnimatePresence>
           </h3>
 
-          {/* bottom row: the tasting note, the facts, the actions, the index */}
+          {/* bottom row: the tasting note, the facts, the actions */}
           <div className="md:pt-6">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div key={chapterKey}>
                 <motion.p
-                  className="mt-6 font-display text-xl leading-[1.5] italic text-ink/75 sm:text-[1.3rem] md:mt-0"
+                  className="mt-4 line-clamp-3 font-display text-[1.05rem] leading-[1.45] italic text-ink/75 sm:text-[1.3rem] md:mt-0 md:line-clamp-none"
                   initial={{ y: 18, filter: "blur(6px)" }}
                   animate={{ y: 0, filter: "blur(0px)" }}
                   exit={{ y: -12, opacity: 0 }}
@@ -244,7 +235,7 @@ function Variants3D({ products }: { products: Product[] }) {
 
                 {!isMachine && (
                 <motion.dl
-                  className="mt-8 grid grid-cols-3 border-y border-line"
+                  className="mt-5 grid grid-cols-3 border-y border-line md:mt-8 [&>div]:max-md:py-3"
                   initial={{ y: 18 }}
                   animate={{ y: 0 }}
                   exit={{ y: -12, opacity: 0 }}
@@ -254,7 +245,18 @@ function Variants3D({ products }: { products: Product[] }) {
                     <dt className="text-[10px] uppercase tracking-[0.28em] text-muted">
                       {t("variants.intensity")}
                     </dt>
-                    <dd className="mt-3">{beanRow}</dd>
+                    <dd
+                      className="mt-1.5 flex items-center gap-2.5"
+                      aria-label={level !== null ? String(level) : `${beans}/5`}
+                    >
+                      {level !== null && (
+                        <span className="font-display text-2xl leading-none tabular-nums" style={{ color: accent }} dir="ltr">
+                          {level}
+                        </span>
+                      )}
+                      {/* a phone's third of a row holds the number OR the beans */}
+                      <span className={level !== null ? "max-sm:hidden" : undefined}>{beanRow}</span>
+                    </dd>
                   </div>
                   <div className="border-s border-line px-4 py-4">
                     <dt className="text-[10px] uppercase tracking-[0.28em] text-muted">
@@ -272,7 +274,7 @@ function Variants3D({ products }: { products: Product[] }) {
                 )}
 
                 <motion.div
-                  className="mt-7 flex flex-wrap items-center gap-x-7 gap-y-4"
+                  className="mt-5 flex flex-wrap items-center gap-x-7 gap-y-4 md:mt-7"
                   initial={{ y: 18 }}
                   animate={{ y: 0 }}
                   exit={{ y: -12, opacity: 0 }}
@@ -298,43 +300,6 @@ function Variants3D({ products }: { products: Product[] }) {
               </motion.div>
             </AnimatePresence>
 
-            {/* chapter index — same width as the spec grid above it, so the
-                block has one left edge and one right edge */}
-            <nav
-              className="mt-8 grid gap-4"
-              style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}
-              aria-label={t("variants.title")}
-            >
-              {products.map((p, i) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => goTo(i)}
-                  aria-current={i === index ? "true" : undefined}
-                  className="group cursor-pointer text-start"
-                >
-                  <span className="block h-px w-full overflow-hidden bg-line">
-                    <span
-                      ref={(el) => {
-                        fillRefs.current[i] = el;
-                      }}
-                      className="block h-full w-full origin-left scale-x-0 bg-gold-hi rtl:origin-right"
-                    />
-                  </span>
-                  <span className="mt-3 flex items-baseline gap-2">
-                    <span className="font-display text-xs tabular-nums text-brand">0{i + 1}</span>
-                    <span
-                      className={cn(
-                        "truncate text-xs transition-colors duration-300",
-                        i === index ? "text-ink" : "text-muted group-hover:text-ink",
-                      )}
-                    >
-                      {pickLang(lang, p.name_fr, p.name_ar, p.name_en)}
-                    </span>
-                  </span>
-                </button>
-              ))}
-            </nav>
           </div>
         </div>
       </div>

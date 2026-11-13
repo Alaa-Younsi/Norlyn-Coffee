@@ -503,6 +503,51 @@ html[data-theme="dark"] .fx-gold-text-deep {
   animation: grain 0.6s steps(4) infinite;
 }
 
+/* the archive print (CreditsFilm, desktop): the projector lamp breathing,
+   the odd scratch running down the frame, and a hair of gate weave. All
+   opacity/transform keyframes on their own layers — nothing repaints. */
+@keyframes film-flicker {
+  0%, 100% { opacity: 0; }
+  8% { opacity: 0.035; }
+  12% { opacity: 0.01; }
+  37% { opacity: 0.045; }
+  41% { opacity: 0; }
+  66% { opacity: 0.025; }
+  70% { opacity: 0.055; }
+  74% { opacity: 0.01; }
+}
+.fx-flicker {
+  mix-blend-mode: soft-light;
+  animation: film-flicker 2.3s steps(1) infinite;
+}
+@keyframes film-scratch {
+  0%, 100% { transform: translateX(18vw); opacity: 0; }
+  6% { opacity: 0.5; }
+  10% { transform: translateX(19vw); opacity: 0; }
+  46% { transform: translateX(71vw); opacity: 0; }
+  50% { opacity: 0.35; }
+  53% { transform: translateX(70.6vw); opacity: 0; }
+  78% { transform: translateX(42vw); opacity: 0; }
+  80% { opacity: 0.4; }
+  82% { transform: translateX(42.3vw); opacity: 0; }
+}
+.fx-scratches {
+  background: linear-gradient(to right, transparent calc(50% - 0.5px), rgb(244 227 194 / 0.7) 50%, transparent calc(50% + 0.5px));
+  width: 2px;
+  animation: film-scratch 5.7s steps(1) infinite;
+}
+@keyframes gate-weave {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(0.6px, -0.4px); }
+  50% { transform: translate(-0.4px, 0.5px); }
+  75% { transform: translate(0.3px, 0.3px); }
+}
+@media (min-width: 768px) {
+  .fx-weave {
+    animation: gate-weave 0.5s steps(1) infinite;
+  }
+}
+
 /* the hero's rotating text seal */
 .fx-spin-badge {
   animation: spin-slow 18s linear infinite;
@@ -562,6 +607,9 @@ html[data-theme="dark"] .fx-gold-text-deep {
   .fx-twinkle,
   .fx-spin-badge,
   .fx-grain,
+  .fx-flicker,
+  .fx-scratches,
+  .fx-weave,
   .fx-steam,
   .fx-float,
   .fx-crema,

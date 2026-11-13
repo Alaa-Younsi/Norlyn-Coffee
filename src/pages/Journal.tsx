@@ -70,8 +70,9 @@ export function Journal() {
       return {
         id: article.id,
         src: article.cover_url ?? undefined,
+        inset: article.cover_url ? { src: article.cover_url } : undefined,
         creditsFirst: true,
-        dim: 0.66,
+        dim: 0.8,
         credits: [
           {
             role: `${String(i + 1).padStart(2, "0")}${tag ? ` — ${tag}` : ""}`,
@@ -95,7 +96,7 @@ export function Journal() {
 
   return (
     <main className="relative">
-      <CreditsFilm scenes={scenes} label={t("blog.title")} runtime={60 + rows.length * 42} />
+      <CreditsFilm scenes={scenes} label={t("blog.title")} />
     </main>
   );
 }

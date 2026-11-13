@@ -63,6 +63,21 @@ const RECIPES = [
     maxrate: "2400k",
     audio: false,
   },
+  {
+    in: "follow-video.mp4",
+    out: "product-2.mp4",
+    /*
+      The second product film: the client's finished 4:5 social edit (battery
+      HUD along the top, captions along the bottom), so its box is 4/5 and it
+      is never cropped. It plays at most ~600 CSS px wide; 720x900 keeps the
+      burnt-in type sharp. Muted scenery like EspressoLoop, so no audio. CRF 28
+      lands it at ~2.4 MB from a 33 MB master.
+    */
+    box: [720, 900],
+    crf: 28,
+    maxrate: "1600k",
+    audio: false,
+  },
 ];
 
 /**

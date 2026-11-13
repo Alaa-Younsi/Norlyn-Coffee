@@ -6,6 +6,7 @@ import { readableAccent } from "@/lib/contrast";
 import { formatPrice } from "@/lib/format";
 import { dbSrcSet } from "@/lib/media";
 import { pickLang } from "@/lib/localized";
+import { intensityBeans, printedIntensity } from "@/lib/intensity";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/db";
 
@@ -45,7 +46,8 @@ export function ProductCard({ product }: { product: Product }) {
   const image = [...(product.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0];
   const out = product.stock <= 0;
   const accent = product.accent_color ?? "#b08439";
-  const beans = Math.round(((product.intensity ?? 0) / 100) * 5);
+  const beans = intensityBeans(product.slug, product.intensity);
+  const level = printedIntensity(product.slug);
   // the raw pack colour lights the plinth; the beans need one that reads on the page
   const tone = useSurfaceTone();
   const beanColor = readableAccent(accent, tone);
@@ -99,8 +101,13 @@ export function ProductCard({ product }: { product: Product }) {
               <div
                 className="mt-2 flex items-center gap-1"
                 role="img"
-                aria-label={`${t("variants.intensity")} ${beans}/5`}
+                aria-label={`${t("variants.intensity")} ${level ?? `${beans}/5`}`}
               >
+                {level !== null && (
+                  <span className="me-1.5 font-display text-base leading-none tabular-nums" style={{ color: beanColor }} dir="ltr">
+                    {level}
+                  </span>
+                )}
                 {Array.from({ length: 5 }, (_, i) => (
                   <Bean key={i} filled={i < beans} color={beanColor} />
                 ))}

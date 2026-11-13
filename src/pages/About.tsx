@@ -9,11 +9,13 @@ import { useSeo } from "@/hooks/useSeo";
 import { MEDIA } from "@/lib/media";
 import type { TranslationKey } from "@/i18n/translations";
 
-const STEPS: Array<{ titleKey: TranslationKey; textKey: TranslationKey; slot: string }> = [
-  { titleKey: "about.step1.title", textKey: "about.step1.text", slot: "about.origin" },
-  { titleKey: "about.step2.title", textKey: "about.step2.text", slot: "about.roastery" },
-  { titleKey: "about.step3.title", textKey: "about.step3.text", slot: "about.packaging" },
-  { titleKey: "about.step4.title", textKey: "about.step4.text", slot: "about.sealing" },
+// `slot` is the print beside the words; `bg` is the picture behind them — the
+// step before, still dissolving away, so the chain reads as one process
+const STEPS: Array<{ titleKey: TranslationKey; textKey: TranslationKey; slot: string; bg: string }> = [
+  { titleKey: "about.step1.title", textKey: "about.step1.text", slot: "about.origin", bg: "about.story.3" },
+  { titleKey: "about.step2.title", textKey: "about.step2.text", slot: "about.roastery", bg: "about.origin" },
+  { titleKey: "about.step3.title", textKey: "about.step3.text", slot: "about.packaging", bg: "about.roastery" },
+  { titleKey: "about.step4.title", textKey: "about.step4.text", slot: "about.sealing", bg: "about.packaging" },
 ];
 
 const BIO: Array<keyof typeof MEDIA.capsule> = ["black", "brown", "green", "gold"];
@@ -96,13 +98,15 @@ export function About() {
     },
     {
       id: "story",
-      slot: "about.story.1",
+      slot: "about.story.3",
+      inset: { slot: "about.story.1" },
       title: t("about.story.title"),
       body: t("about.story.p1"),
     },
     {
       id: "story-2",
-      slot: "about.story.2",
+      slot: "about.story.1",
+      inset: { slot: "about.story.2" },
       body: (
         <>
           <p>{t("about.story.p2")}</p>
@@ -129,12 +133,13 @@ export function About() {
     ...STEPS.map(
       (step, i): FilmScene => ({
         id: step.slot,
-        slot: step.slot,
+        slot: step.bg,
+        inset: { slot: step.slot },
         creditsFirst: true,
         credits: [
           {
             role: `0${i + 1}`,
-            name: <span className="text-5xl font-medium tracking-[-0.02em] sm:text-7xl">{t(step.titleKey)}</span>,
+            name: <span className="text-4xl font-medium tracking-[-0.02em] sm:text-7xl">{t(step.titleKey)}</span>,
           },
         ],
         body: t(step.textKey),
@@ -163,14 +168,16 @@ export function About() {
     },
     {
       id: "fleet",
-      slot: "about.fleet.1",
+      slot: "about.fleet.3",
+      inset: { slot: "about.fleet.1" },
       title: t("about.fleet.title"),
       body: t("about.fleet.text"),
       credits: [{ name: <span className="italic text-gold-hi">{t("about.fleet.badge")}</span> }],
     },
     {
       id: "retail",
-      slot: "about.retail",
+      slot: "about.machines",
+      inset: { slot: "about.retail" },
       credits: [
         { role: t("about.retail.title"), name: <span className="text-xl leading-relaxed text-on-shade/85 sm:text-2xl">{t("about.retail.text")}</span> },
         { role: t("about.machines.title"), name: <span className="text-xl leading-relaxed text-on-shade/85 sm:text-2xl">{t("about.machines.text")}</span> },
@@ -203,7 +210,7 @@ export function About() {
 
   return (
     <main className="relative">
-      <CreditsFilm scenes={scenes} label={t("about.metaTitle")} runtime={318} />
+      <CreditsFilm scenes={scenes} label={t("about.metaTitle")} />
     </main>
   );
 }

@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Check, ChevronLeft, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import { EspressoLoop } from "@/components/product/EspressoLoop";
+import { Gallery } from "@/components/product/Gallery";
 import { ProductCard } from "@/components/product/ProductCard";
 import { RevealHeading } from "@/components/brand/RevealHeading";
 import { KineticLine } from "@/components/brand/KineticLine";
@@ -20,10 +20,10 @@ import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useSeo } from "@/hooks/useSeo";
 import { useCart, MAX_LINE_QTY } from "@/store/cart";
 import { formatPrice } from "@/lib/format";
-import { dbSize, dbSrcSet } from "@/lib/media";
 import { usePixel } from "@/components/MetaPixelProvider";
 import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
+import { intensityBeans, printedIntensity } from "@/lib/intensity";
 
 export function Product() {
   const { slug } = useParams();
@@ -142,7 +142,8 @@ export function Product() {
     setTimeout(() => setAdded(false), 1600);
   };
 
-  const beans = Math.round(((product.intensity ?? 0) / 100) * 5);
+  const beans = intensityBeans(product.slug, product.intensity);
+  const level = printedIntensity(product.slug);
   const related = (allProducts ?? []).filter((p) => p.id !== product.id).slice(0, 4);
 
   return (
@@ -157,68 +158,25 @@ export function Product() {
           <div ref={stageRef} className="lg:sticky lg:top-24 lg:self-start [perspective:1400px]">
             {/* fully on screen the moment the page opens: on desktop the stage
                 is sized to the viewport (minus header and thumbnails), not to
-                its column width */}
-            <div
-              data-tilt="5"
-              className="relative aspect-square overflow-hidden rounded-[2.25rem] bg-panel-2/50 lg:aspect-auto lg:h-[calc(100svh-12.5rem)]"
-            >
-              {/* the pool of light, in the pack's own colour */}
-              <div
-                aria-hidden
-                className="absolute inset-0"
-                style={{ background: `radial-gradient(55% 45% at 50% 60%, ${accent}55, transparent 72%)` }}
-              />
-              <div aria-hidden className="absolute bottom-[13%] left-1/2 h-5 w-1/2 -translate-x-1/2 rounded-[50%] bg-shade/40 blur-lg" />
-              <Steam className="absolute top-6 start-1/2 -translate-x-1/2 opacity-60" />
-              {images[imageIndex] && (
-                // transform-only swap: the new shot rises into place
-                <motion.img
-                  key={images[imageIndex].id}
-                  initial={{ y: 40, scale: 0.94, rotate: -4 }}
-                  animate={{ y: 0, scale: 1, rotate: 0 }}
-                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                  src={images[imageIndex].url}
-                  srcSet={dbSrcSet(images[imageIndex].url)}
-                  sizes="(min-width: 1024px) 50vw, 90vw"
-                  alt={images[imageIndex].alt ?? name}
-                  width={1000}
-                  height={1000}
-                  loading="eager"
-                  fetchPriority="high"
-                  decoding="async"
-                  // every product shot is re-framed at build time to the same
-                  // margin (scripts/optimize-images.mjs) — no CSS re-scaling
-                  className="fx-float absolute inset-[6%] h-[88%] w-[88%] object-contain drop-shadow-[0_35px_35px_rgb(0_0_0/0.4)]"
-                />
-              )}
-            </div>
-            {images.length > 1 && (
-              <div className="mt-4 flex gap-3">
-                {images.map((img, i) => (
-                  <button
-                    key={img.id}
-                    type="button"
-                    onClick={() => setImageIndex(i)}
-                    aria-label={`${name} — ${i + 1}`}
-                    aria-current={i === imageIndex ? "true" : undefined}
-                    className={cn(
-                      "h-20 w-20 cursor-pointer overflow-hidden rounded-2xl border bg-panel-2/40 p-1.5 transition-colors",
-                      i === imageIndex ? "border-brand" : "border-line hover:border-ink/30",
-                    )}
-                  >
-                    <img
-                      src={dbSize(img.url, "sm")}
-                      alt=""
-                      width={80}
-                      height={80}
-                      loading="lazy"
-                      decoding="async"
-                      className="h-full w-full object-contain"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
+                its column width. Swipe / drag between the shots. */}
+            <Gallery
+              images={images.map((img) => ({ key: img.id, url: img.url, alt: img.alt }))}
+              activeIndex={imageIndex}
+              onActiveChange={setImageIndex}
+              name={name}
+              stage={
+                <>
+                  {/* the pool of light, in the pack's own colour */}
+                  <div
+                    aria-hidden
+                    className="absolute inset-0"
+                    style={{ background: `radial-gradient(55% 45% at 50% 60%, ${accent}55, transparent 72%)` }}
+                  />
+                  <div aria-hidden className="absolute bottom-[13%] left-1/2 h-5 w-1/2 -translate-x-1/2 rounded-[50%] bg-shade/40 blur-lg" />
+                  <Steam className="absolute top-6 start-1/2 -translate-x-1/2 opacity-60" />
+                </>
+              }
+            />
           </div>
 
           {/* --------------------------------------------- the details */}
@@ -249,9 +207,14 @@ export function Product() {
             <dl className="mt-10 grid max-w-lg grid-cols-3 border-y border-line">
               <div className="py-4 pe-4">
                 <dt className="text-[10px] uppercase tracking-[0.28em] text-muted">{t("variants.intensity")}</dt>
-                <dd className="mt-3 flex items-center gap-1" aria-label={`${beans}/5`}>
+                <dd className="mt-1.5 flex items-center gap-1" aria-label={level !== null ? String(level) : `${beans}/5`}>
+                  {level !== null && (
+                    <span className="me-1.5 font-display text-2xl leading-none tabular-nums" style={{ color: titleAccent }} dir="ltr">
+                      {level}
+                    </span>
+                  )}
                   {Array.from({ length: 5 }, (_, i) => (
-                    <svg key={i} viewBox="0 0 12 16" className="h-4 w-3" aria-hidden>
+                    <svg key={i} viewBox="0 0 12 16" className={cn("h-4 w-3", level !== null && "max-sm:hidden")} aria-hidden>
                       <ellipse
                         cx="6"
                         cy="8"
@@ -370,14 +333,14 @@ export function Product() {
           </div>
         </div>
 
-        {/* two square films side by side (stacked on phones). The second is
-            its own admin slot and mirrors the first until it gets a film. */}
-        <div className="mt-24 grid gap-6 md:grid-cols-2">
+        {/* two 4:5 films side by side (stacked on phones), each its own admin
+            slot — the second is the client's vertical social edit */}
+        <div className="mx-auto mt-24 grid max-w-5xl gap-6 md:grid-cols-2">
           <Reveal>
-            <EspressoLoop slot={PRODUCT_VIDEO_SLOT} className="aspect-square" />
+            <EspressoLoop slot={PRODUCT_VIDEO_SLOT} className="aspect-[4/5]" />
           </Reveal>
           <Reveal index={1}>
-            <EspressoLoop slot={PRODUCT_VIDEO_SLOT_2} className="aspect-square" />
+            <EspressoLoop slot={PRODUCT_VIDEO_SLOT_2} className="aspect-[4/5]" />
           </Reveal>
         </div>
 

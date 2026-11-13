@@ -111,14 +111,15 @@ export function HeroSection({ show3D, showArt }: { show3D: boolean; showArt: boo
           animate={play ? { y: 0, filter: "blur(0px)" } : undefined}
           transition={{ duration: 0.9, delay: 2.4, ease: EASE }}
         >
-          <p className="max-w-sm text-pretty text-[0.95rem] leading-[1.7] text-ink/70">
+          <p className="max-w-sm text-pretty text-[0.95rem] leading-[1.7] text-ink/70 max-sm:mx-auto max-sm:text-center">
             {t("hero.subtitle")}
           </p>
-          <div className="mt-6 flex flex-wrap items-center gap-x-7 gap-y-5">
+          {/* phones stack the two: centred, the order button run out wide */}
+          <div className="mt-6 flex flex-wrap items-center gap-x-7 gap-y-5 max-sm:flex-col max-sm:items-center">
             {/* magnetic: the wrapper leans toward the cursor, the button keeps its own hover */}
-            <div ref={ctaRef} className="inline-block">
+            <div ref={ctaRef} className="inline-block max-sm:w-full max-sm:max-w-[22rem]">
               <Link to="/shop" className="group block">
-                <Button size="lg" className="gap-3 ps-8 pe-3">
+                <Button size="lg" className="gap-3 ps-8 pe-3 max-sm:w-full max-sm:justify-between">
                   {t("hero.ctaOrder")}
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-cream/15 transition-transform duration-500 group-hover:-rotate-45 rtl:group-hover:rotate-45">
                     <ArrowRight size={17} strokeWidth={1.8} className="rtl:-scale-x-100" />

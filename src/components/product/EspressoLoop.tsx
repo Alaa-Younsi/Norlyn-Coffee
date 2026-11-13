@@ -41,15 +41,11 @@ export function EspressoLoop({
   slot = PRODUCT_VIDEO_SLOT,
 }: {
   className?: string;
-  /** which video slot to play; a slot nobody filled yet plays the first one */
+  /** which video slot to play — each has its own committed drop-in film */
   slot?: string;
 }) {
   const { reducedMotion, saveData } = useMediaFlags();
-  const own = useVideoSlot(slot);
-  const first = useVideoSlot(PRODUCT_VIDEO_SLOT);
-  // "duplicate the first video for now": an empty second slot mirrors the
-  // first slot exactly — including a film the client uploaded to it
-  const { src, poster } = own.custom || slot === PRODUCT_VIDEO_SLOT ? own : first;
+  const { src, poster } = useVideoSlot(slot);
   const videoRef = useRef<HTMLVideoElement>(null);
   // The drop-in path promises a file that may not be there. We learn that from
   // the element's own error event and remember WHICH url failed, so a later

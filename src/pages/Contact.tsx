@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FieldWrapper, Input, Textarea } from "@/components/ui/Field";
-import { Panel } from "@/components/ui/Panel";
+import { ImageSlot } from "@/components/ui/ImageSlot";
 import { Mascot } from "@/components/mascot/Mascot";
-import { CreditsFilm } from "@/components/brand/CreditsFilm";
+import { ClipReveal } from "@/components/brand/ClipReveal";
+import { PageTitle } from "@/components/brand/PageTitle";
+import { FloatingBeans } from "@/components/effects/FloatingBeans";
+import { useMagnetic } from "@/hooks/useMagnetic";
 import { Reveal } from "@/components/brand/Reveal";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useHoneypot } from "@/hooks/useHoneypot";
@@ -39,8 +41,23 @@ const schema = z
 
 type FormValues = z.infer<typeof schema>;
 
+/**
+ * Contact, as the house's counter: the phone number set large like the price
+ * on a menu board (one tap calls), the address and hours ruled off beneath,
+ * and the message form printed as a counter ticket — dated, stamped, with a
+ * tear line and punched notches.
+ */
 export function Contact() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const phoneRef = useRef<HTMLDivElement>(null);
+  useMagnetic(phoneRef, 0.2);
+  const [today] = useState(() =>
+    new Date().toLocaleDateString(lang === "ar" ? "ar-DZ" : lang === "en" ? "en-GB" : "fr-DZ", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }),
+  );
   const { isSpam } = useHoneypot();
   const submitMessage = useSubmitContactMessage();
   const [sent, setSent] = useState(false);
@@ -95,47 +112,94 @@ export function Contact() {
   };
 
   return (
-    <main className="relative">
-      <CreditsFilm
-        label={t("contact.title")}
-        runtime={96}
-        scenes={[
-          {
-            id: "title",
-            slot: "contact.side",
-            dim: 0.62,
-            title: t("contact.title"),
-            body: t("contact.subtitle"),
-          },
-          {
-            id: "credits",
-            slot: "contact.side",
-            dim: 0.8,
-            // the house's contacts, credited like a crew — the phone and the
-            // address are real links: on a phone you tap to call
-            credits: [
-              { role: t("contact.infoPhone"), name: <a href={CONTACT_PHONE_HREF} dir="ltr" className="transition-colors hover:text-gold-hi">{CONTACT_PHONE}</a> },
-              { role: t("contact.infoEmail"), name: <a href={CONTACT_EMAIL_HREF} dir="ltr" className="break-all transition-colors hover:text-gold-hi">{CONTACT_EMAIL}</a> },
-              { role: t("contact.infoHours"), name: t("contact.infoHoursValue") },
-              { role: t("contact.infoArea"), name: t("contact.infoAreaValue") },
-            ],
-            extra: (
-              <a
-                href="#write"
-                className="group inline-flex items-center gap-3 border-b border-on-shade/40 pb-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-on-shade transition-colors hover:border-gold-hi"
-              >
-                {t("contact.writeCta")}
-                <ArrowDown size={15} className="transition-transform group-hover:translate-y-0.5" />
-              </a>
-            ),
-          },
-        ]}
-      />
+    <main className="relative min-h-screen overflow-x-clip px-6 pb-28 pt-28 sm:pt-32">
+      <FloatingBeans count={5} seed={9} />
 
-      {/* post-credits: the message itself */}
-      <div id="write" className="mx-auto max-w-3xl scroll-mt-24 px-6 pb-24 pt-24">
-        <Reveal>
-        <Panel className="p-6 sm:p-8">
+      <div className="relative mx-auto max-w-7xl">
+        <header className="grid gap-6 lg:grid-cols-[1fr_minmax(0,26rem)] lg:items-end">
+          <PageTitle text={t("contact.title")} />
+          <Reveal as="p" index={4} className="max-w-md font-display text-xl leading-relaxed italic text-ink/70 lg:pb-3">
+            {t("contact.subtitle")}
+          </Reveal>
+        </header>
+
+        {/* `items-start`: the ticket keeps its own height instead of being
+            stretched to the taller column */}
+        <div className="mt-16 grid items-start gap-16 lg:mt-24 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20">
+          {/* ---------------------------------------------- the line */}
+          <div>
+            <Reveal index={5}>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted">{t("contact.infoPhone")}</p>
+              {/* the number set like the price on a menu board — on a phone,
+                  one tap calls */}
+              <div ref={phoneRef} className="mt-3 inline-block">
+                <a
+                  href={CONTACT_PHONE_HREF}
+                  dir="ltr"
+                  className="group relative inline-block font-display text-[2.7rem] leading-none font-medium tracking-[-0.02em] tabular-nums text-ink transition-colors hover:text-gold-hi sm:text-6xl xl:text-7xl"
+                >
+                  {CONTACT_PHONE}
+                  <span
+                    aria-hidden
+                    className="absolute inset-x-0 -bottom-2 h-px origin-left scale-x-0 bg-gold-hi transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-x-100"
+                  />
+                </a>
+              </div>
+            </Reveal>
+
+            <Reveal index={6} className="mt-10">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted">{t("contact.infoEmail")}</p>
+              <a
+                href={CONTACT_EMAIL_HREF}
+                dir="ltr"
+                className="mt-3 inline-block break-all font-display text-2xl italic text-ink/85 transition-colors hover:text-gold-hi sm:text-[2.1rem]"
+              >
+                {CONTACT_EMAIL}
+              </a>
+            </Reveal>
+
+            <Reveal index={7}>
+              <dl className="mt-12 divide-y divide-line border-y border-line">
+                {[
+                  [t("contact.infoHours"), t("contact.infoHoursValue")],
+                  [t("contact.infoArea"), t("contact.infoAreaValue")],
+                ].map(([label, value]) => (
+                  <div key={label} className="grid grid-cols-[7.5rem_1fr] items-baseline gap-4 py-4 sm:grid-cols-[9rem_1fr]">
+                    <dt className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted">{label}</dt>
+                    <dd className="font-display text-lg text-ink">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </Reveal>
+
+            <ClipReveal className="mt-12 hidden sm:block" parallax={30}>
+              <ImageSlot slot="contact.side" sizes="(min-width: 1024px) 40vw, 90vw" />
+            </ClipReveal>
+          </div>
+
+          {/* -------------------------------------------- the ticket */}
+          <Reveal index={6} className="relative">
+            {/* the house stamp, pressed on the corner of the ticket */}
+            <div aria-hidden className="absolute -top-9 end-5 z-10 rotate-[14deg] rounded-full border-2 border-dashed border-gold-hi/70 bg-bg p-2 sm:end-8">
+              <Mascot emotion="love" palette={["love"]} size={58} />
+            </div>
+            <div className="relative overflow-hidden rounded-[2rem] border border-line bg-panel/80 shadow-[0_40px_80px_-40px_rgb(0_0_0/0.8)] backdrop-blur-sm">
+              {/* the ticket's head: who and when — the stamp owns the far corner */}
+              <div className="flex items-center gap-3 px-6 pt-7 font-mono text-[10px] uppercase tracking-[0.25em] text-muted sm:px-9">
+                <span>Norlyn Coffee</span>
+                <span aria-hidden className="h-px w-6 bg-line" />
+                <span dir="ltr">{today}</span>
+              </div>
+              <h2 className="mt-5 px-6 font-display text-[2.1rem] leading-[1.05] font-medium tracking-[-0.02em] sm:px-9 sm:text-5xl">
+                {t("contact.writeCta")}
+              </h2>
+              {/* the tear line, with the two punched notches of a counter ticket */}
+              <div aria-hidden className="relative my-7 h-0">
+                <div className="mx-8 border-t-2 border-dashed border-line sm:mx-11" />
+                <span className="absolute -start-4 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full border border-line bg-bg" />
+                <span className="absolute -end-4 top-1/2 h-8 w-8 -translate-y-1/2 rounded-full border border-line bg-bg" />
+              </div>
+              <div className="px-6 pb-8 sm:px-9 sm:pb-10">
           {sent ? (
             <div className="flex flex-col items-center py-10 text-center">
               <Mascot emotion="love" palette={["love"]} size={88} />
@@ -225,9 +289,10 @@ export function Contact() {
               </div>
             </form>
           )}
-        </Panel>
-        </Reveal>
-
+              </div>
+            </div>
+          </Reveal>
+        </div>
       </div>
     </main>
   );

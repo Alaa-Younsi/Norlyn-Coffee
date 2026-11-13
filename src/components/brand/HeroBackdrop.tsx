@@ -37,7 +37,7 @@ export function HeroBackdrop() {
         className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-bg to-transparent"
       />
 
-      <div ref={markRef} className="absolute inset-x-0 top-[13%] flex justify-center px-4 sm:top-[15%] lg:top-[17%]">
+      <div ref={markRef} className="absolute inset-x-0 top-[18%] flex justify-center px-4 sm:top-[15%] lg:top-[17%]">
         <h1 className="text-ink">
           <GoldDustLogo title={t("hero.title1")} className="w-[92vw] max-w-[1180px] opacity-95" />
         </h1>

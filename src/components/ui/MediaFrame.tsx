@@ -71,7 +71,7 @@ export function MediaFrame({
   return (
     <div
       className={cn(
-        "relative border border-brand/30 bg-gradient-to-b from-panel/80 to-panel-2/55 shadow-[0_30px_70px_-40px_rgb(var(--c-ink)/0.5)] backdrop-blur-md",
+        "relative border border-brand/30 bg-gradient-to-b from-panel/80 to-panel-2/55 shadow-[0_30px_70px_-40px_rgb(var(--c-ink)/0.5)] md:backdrop-blur-md",
         rounded,
         pad,
         className,

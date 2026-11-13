@@ -15,7 +15,7 @@ const core = {
     // hero
     "hero.kicker": "Norlyn Coffee présente",
     "hero.title1": "Moriva",
-    "hero.title2": "L'espresso, élevé en art",
+    "hero.title2": "L’espresso, élevé en art",
     "hero.subtitle":
       "Capsules espresso 100 % bio, scellées dans un aluminium alimentaire pur. Quatre intensités, quatre arômes — payées à la livraison.",
     "hero.ctaOrder": "Commander",

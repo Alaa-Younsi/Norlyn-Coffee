@@ -2,13 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { LogOut, Menu, ShieldAlert, Store, X } from "lucide-react";
-import { MoonIcon, SunIcon } from "@/components/ui/icons";
 import { AdminToasts } from "@/components/admin/AdminToast";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminProfile } from "@/hooks/useAdminProfile";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { LANG_LABEL, LANG_NAME, nextLang } from "@/i18n/langs";
-import { useTheme } from "@/theme/ThemeProvider";
 import { ADMIN_SECTIONS, routeToSection } from "@/lib/adminSections";
 import type { AdminSection } from "@/lib/adminSections";
 import { cn } from "@/lib/utils";
@@ -199,7 +197,6 @@ export function AdminLayout() {
 }
 
 function QuickToggles() {
-  const { theme, toggleTheme } = useTheme();
   const { lang, setLang } = useLanguage();
   return (
     <div className="flex items-center gap-2">
@@ -209,13 +206,6 @@ function QuickToggles() {
         aria-label={`Switch language — ${LANG_NAME[nextLang(lang)]}`}
       >
         {LANG_LABEL[nextLang(lang)]}
-      </button>
-      <button
-        onClick={toggleTheme}
-        className="rounded-full border border-line p-1.5 cursor-pointer"
-        aria-label="theme"
-      >
-        {theme === "dark" ? <SunIcon size={15} /> : <MoonIcon size={15} />}
       </button>
     </div>
   );

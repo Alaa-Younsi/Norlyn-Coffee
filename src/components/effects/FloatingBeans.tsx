@@ -38,7 +38,7 @@ export function FloatingBeans({ count = 8, seed = 1, className }: FloatingBeansP
       {beans.map((bean, i) => (
         <CoffeeBeanIcon
           key={i}
-          className="fx-float absolute text-brand"
+          className="fx-float fx-bean absolute text-brand"
           style={
             {
               insetInlineStart: `${bean.x}%`,

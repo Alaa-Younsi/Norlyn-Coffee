@@ -2,14 +2,13 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Clock, Mail, Phone, Truck } from "lucide-react";
+import { ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { FieldWrapper, Input, Textarea } from "@/components/ui/Field";
 import { Panel } from "@/components/ui/Panel";
-import { ImageSlot } from "@/components/ui/ImageSlot";
 import { Mascot } from "@/components/mascot/Mascot";
-import { CoffeeRing } from "@/components/effects/CoffeeRing";
-import { FloatingBeans } from "@/components/effects/FloatingBeans";
+import { CreditsFilm } from "@/components/brand/CreditsFilm";
+import { Reveal } from "@/components/brand/Reveal";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useHoneypot } from "@/hooks/useHoneypot";
 import { useSeo } from "@/hooks/useSeo";
@@ -96,26 +95,46 @@ export function Contact() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-x-clip px-6 pb-24 pt-28">
-      <FloatingBeans count={6} seed={3} />
-      <CoffeeRing className="fx-spin-slow -end-20 top-24 w-64 opacity-10" />
+    <main className="relative">
+      <CreditsFilm
+        label={t("contact.title")}
+        runtime={96}
+        scenes={[
+          {
+            id: "title",
+            slot: "contact.side",
+            dim: 0.62,
+            title: t("contact.title"),
+            body: t("contact.subtitle"),
+          },
+          {
+            id: "credits",
+            slot: "contact.side",
+            dim: 0.8,
+            // the house's contacts, credited like a crew — the phone and the
+            // address are real links: on a phone you tap to call
+            credits: [
+              { role: t("contact.infoPhone"), name: <a href={CONTACT_PHONE_HREF} dir="ltr" className="transition-colors hover:text-gold-hi">{CONTACT_PHONE}</a> },
+              { role: t("contact.infoEmail"), name: <a href={CONTACT_EMAIL_HREF} dir="ltr" className="break-all transition-colors hover:text-gold-hi">{CONTACT_EMAIL}</a> },
+              { role: t("contact.infoHours"), name: t("contact.infoHoursValue") },
+              { role: t("contact.infoArea"), name: t("contact.infoAreaValue") },
+            ],
+            extra: (
+              <a
+                href="#write"
+                className="group inline-flex items-center gap-3 border-b border-on-shade/40 pb-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-on-shade transition-colors hover:border-gold-hi"
+              >
+                {t("contact.writeCta")}
+                <ArrowDown size={15} className="transition-transform group-hover:translate-y-0.5" />
+              </a>
+            ),
+          },
+        ]}
+      />
 
-      <header className="mx-auto max-w-3xl text-center">
-        <p className="text-xs uppercase tracking-[0.35em] text-brand sm:text-sm">
-          {t("contact.kicker")}
-        </p>
-        <h1 className="mt-4 font-display text-5xl font-semibold sm:text-6xl">
-          <span className="fx-accent fx-gold-text-deep">{t("contact.title")}</span>
-        </h1>
-        <p className="mt-5 text-balance font-display text-lg leading-relaxed text-ink/75 sm:text-xl">
-          {t("contact.subtitle")}
-        </p>
-      </header>
-
-      {/* `items-start` matters: without it the grid stretches the form panel to
-          the height of the taller info column, leaving a lake of empty panel
-          under the submit button. */}
-      <div className="mx-auto mt-14 grid max-w-6xl items-start gap-10 lg:grid-cols-[1.15fr_0.85fr]">
+      {/* post-credits: the message itself */}
+      <div id="write" className="mx-auto max-w-3xl scroll-mt-24 px-6 pb-24 pt-24">
+        <Reveal>
         <Panel className="p-6 sm:p-8">
           {sent ? (
             <div className="flex flex-col items-center py-10 text-center">
@@ -207,78 +226,9 @@ export function Contact() {
             </form>
           )}
         </Panel>
+        </Reveal>
 
-        <div className="space-y-6">
-          <ImageSlot slot="contact.side" sizes="(min-width: 1024px) 30vw, 92vw" />
-
-          <Panel className="p-6 text-start">
-            <h2 className="font-display text-xl">{t("contact.infoTitle")}</h2>
-            <ul className="mt-4 space-y-4 text-sm">
-              {/* both are links: on the device most of this store's traffic
-                  arrives on, a phone number you cannot press is decoration */}
-              <InfoRow
-                icon={Phone}
-                label={t("contact.infoPhone")}
-                value={CONTACT_PHONE}
-                href={CONTACT_PHONE_HREF}
-                ltr
-              />
-              <InfoRow
-                icon={Mail}
-                label={t("contact.infoEmail")}
-                value={CONTACT_EMAIL}
-                href={CONTACT_EMAIL_HREF}
-                ltr
-              />
-              <InfoRow
-                icon={Clock}
-                label={t("contact.infoHours")}
-                value={t("contact.infoHoursValue")}
-              />
-              <InfoRow
-                icon={Truck}
-                label={t("contact.infoArea")}
-                value={t("contact.infoAreaValue")}
-              />
-            </ul>
-          </Panel>
-        </div>
       </div>
     </main>
-  );
-}
-
-function InfoRow({
-  icon: Icon,
-  label,
-  value,
-  href,
-  ltr,
-}: {
-  icon: typeof Phone;
-  label: string;
-  value: string;
-  /** makes the value a tel:/mailto: link — omitted for the rows that are prose */
-  href?: string;
-  ltr?: boolean;
-}) {
-  return (
-    <li className="flex items-start gap-3">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-brand/30 text-brand">
-        <Icon size={15} strokeWidth={1.7} />
-      </span>
-      <span>
-        <span className="block text-xs uppercase tracking-wider text-muted">{label}</span>
-        {href ? (
-          <a href={href} className="block hover:text-brand transition-colors" dir={ltr ? "ltr" : undefined}>
-            {value}
-          </a>
-        ) : (
-          <span className="block" dir={ltr ? "ltr" : undefined}>
-            {value}
-          </span>
-        )}
-      </span>
-    </li>
   );
 }

@@ -3,18 +3,20 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, ChevronLeft, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Panel } from "@/components/ui/Panel";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import { EspressoLoop } from "@/components/product/EspressoLoop";
-import { CoffeeDivider } from "@/components/effects/CoffeeDivider";
-import { CoffeeRing } from "@/components/effects/CoffeeRing";
+import { ProductCard } from "@/components/product/ProductCard";
+import { RevealHeading } from "@/components/brand/RevealHeading";
+import { KineticLine } from "@/components/brand/KineticLine";
+import { Reveal } from "@/components/brand/Reveal";
+import { useTiltCards } from "@/hooks/useScrollFX";
+import { PRODUCT_VIDEO_SLOT, PRODUCT_VIDEO_SLOT_2 } from "@/lib/videoSlots";
 import { FloatingBeans } from "@/components/effects/FloatingBeans";
-import { ScrollProgressBar } from "@/components/effects/ScrollProgressBar";
 import { Steam } from "@/components/effects/Steam";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useTheme } from "@/theme/ThemeProvider";
 import { BRAND_ACCENT, readableAccent } from "@/lib/contrast";
-import { useProduct } from "@/hooks/useProducts";
+import { useProduct, useProducts } from "@/hooks/useProducts";
 import { useSeo } from "@/hooks/useSeo";
 import { useCart, MAX_LINE_QTY } from "@/store/cart";
 import { formatPrice } from "@/lib/format";
@@ -29,12 +31,16 @@ export function Product() {
   const { t, lang } = useLanguage();
   const { theme } = useTheme();
   const { data: product, isLoading } = useProduct(slug);
+  const { data: allProducts } = useProducts();
   const addItem = useCart((s) => s.addItem);
   const [quantity, setQuantity] = useState(1);
   const [imageIndex, setImageIndex] = useState(0);
   const [added, setAdded] = useState(false);
   const pixel = usePixel();
   const trackedViewId = useRef<string | null>(null);
+  // the stage leans toward the cursor (data-tilt, pointer-fine only)
+  const stageRef = useRef<HTMLDivElement>(null);
+  useTiltCards(stageRef, [product?.id]);
 
   const images = useMemo(
     () => [...(product?.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order),
@@ -136,227 +142,259 @@ export function Product() {
     setTimeout(() => setAdded(false), 1600);
   };
 
+  const beans = Math.round(((product.intensity ?? 0) / 100) * 5);
+  const related = (allProducts ?? []).filter((p) => p.id !== product.id).slice(0, 4);
+
   return (
-    <main className="relative mx-auto min-h-screen max-w-7xl overflow-x-clip px-6 pb-24 pt-24">
-      <ScrollProgressBar />
-      {/* coffee ambience tinted by the variant's accent */}
-      <FloatingBeans count={8} seed={13} />
-      <CoffeeRing className="fx-spin-slow -start-20 top-40 w-64 opacity-10" />
-      <CoffeeRing className="-end-16 bottom-24 w-52 opacity-10" />
+    <main className="relative min-h-screen overflow-x-clip pb-24 pt-24 sm:pt-28">
+      <FloatingBeans count={6} seed={13} />
 
-      <Link
-        to="/shop"
-        className="relative inline-flex items-center gap-1 text-sm text-muted hover:text-brand transition-colors"
-      >
-        <ChevronLeft size={16} className="rtl:rotate-180" />
-        {t("product.backToShop")}
-      </Link>
+      <div className="relative mx-auto max-w-7xl px-6">
 
-      {/*
-        Two columns that are never the same height: the buy side carries the
-        whole checkout form, the gallery carries one square. On desktop the
-        film is placed into that leftover row so the column finishes instead of
-        trailing off; on mobile there is no leftover — the columns stack — so
-        it falls to the bottom of the page in source order, well clear of the
-        price and the order button.
-      */}
-      <div className="relative mt-6 grid gap-10 lg:grid-cols-2 lg:grid-rows-[auto_1fr]">
-        {/* gallery */}
-        <div className="lg:col-start-1 lg:row-start-1">
-          <div
-            className="relative flex aspect-square items-center justify-center overflow-hidden rounded-3xl border border-line bg-panel p-4 sm:p-6"
-            style={{ background: `radial-gradient(ellipse at 50% 65%, ${accent}22, rgb(var(--c-panel)) 70%)` }}
-          >
-            {/* steam curling off the capsule, like it just finished brewing */}
-            <Steam className="absolute top-6 start-1/2 -translate-x-1/2 opacity-70" />
-            {images[imageIndex] && (
-              // transform-only swap: the new shot rises into place
-              <motion.img
-                key={images[imageIndex].id}
-                initial={{ y: 30, scale: 0.96 }}
-                animate={{ y: 0, scale: 1 }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                src={images[imageIndex].url}
-                srcSet={dbSrcSet(images[imageIndex].url)}
-                sizes="(min-width: 1024px) 45vw, 85vw"
-                alt={images[imageIndex].alt ?? name}
-                width={1000}
-                height={1000}
-                loading="eager"
-                fetchPriority="high"
-                decoding="async"
-                // fills its frame: every product shot is re-framed at build
-                // time to carry the same margin around the same subject size
-                // (see scripts/optimize-images.mjs), so shrinking it again
-                // here would only re-introduce the scale drift it removes
-                className="fx-float h-full w-full object-contain drop-shadow-[0_35px_35px_rgb(var(--c-ink)/0.3)]"
+        <div className="grid gap-12 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
+          {/* ------------------------------------------------ the stage */}
+          {/* sticky on desktop: the capsule stays in view while the details scroll */}
+          <div ref={stageRef} className="lg:sticky lg:top-24 lg:self-start [perspective:1400px]">
+            {/* fully on screen the moment the page opens: on desktop the stage
+                is sized to the viewport (minus header and thumbnails), not to
+                its column width */}
+            <div
+              data-tilt="5"
+              className="relative aspect-square overflow-hidden rounded-[2.25rem] bg-panel-2/50 lg:aspect-auto lg:h-[calc(100svh-12.5rem)]"
+            >
+              {/* the pool of light, in the pack's own colour */}
+              <div
+                aria-hidden
+                className="absolute inset-0"
+                style={{ background: `radial-gradient(55% 45% at 50% 60%, ${accent}55, transparent 72%)` }}
+              />
+              <div aria-hidden className="absolute bottom-[13%] left-1/2 h-5 w-1/2 -translate-x-1/2 rounded-[50%] bg-shade/40 blur-lg" />
+              <Steam className="absolute top-6 start-1/2 -translate-x-1/2 opacity-60" />
+              {images[imageIndex] && (
+                // transform-only swap: the new shot rises into place
+                <motion.img
+                  key={images[imageIndex].id}
+                  initial={{ y: 40, scale: 0.94, rotate: -4 }}
+                  animate={{ y: 0, scale: 1, rotate: 0 }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                  src={images[imageIndex].url}
+                  srcSet={dbSrcSet(images[imageIndex].url)}
+                  sizes="(min-width: 1024px) 50vw, 90vw"
+                  alt={images[imageIndex].alt ?? name}
+                  width={1000}
+                  height={1000}
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                  // every product shot is re-framed at build time to the same
+                  // margin (scripts/optimize-images.mjs) — no CSS re-scaling
+                  className="fx-float absolute inset-[6%] h-[88%] w-[88%] object-contain drop-shadow-[0_35px_35px_rgb(0_0_0/0.4)]"
+                />
+              )}
+            </div>
+            {images.length > 1 && (
+              <div className="mt-4 flex gap-3">
+                {images.map((img, i) => (
+                  <button
+                    key={img.id}
+                    type="button"
+                    onClick={() => setImageIndex(i)}
+                    aria-label={`${name} — ${i + 1}`}
+                    aria-current={i === imageIndex ? "true" : undefined}
+                    className={cn(
+                      "h-20 w-20 cursor-pointer overflow-hidden rounded-2xl border bg-panel-2/40 p-1.5 transition-colors",
+                      i === imageIndex ? "border-brand" : "border-line hover:border-ink/30",
+                    )}
+                  >
+                    <img
+                      src={dbSize(img.url, "sm")}
+                      alt=""
+                      width={80}
+                      height={80}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-contain"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* --------------------------------------------- the details */}
+          <div className="lg:pt-2">
+            <Link
+              to="/shop"
+              className="group inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-muted transition-colors hover:text-ink"
+            >
+              <ChevronLeft size={14} className="transition-transform group-hover:-translate-x-0.5 rtl:rotate-180 rtl:group-hover:translate-x-0.5" />
+              {t("product.backToShop")}
+            </Link>
+            <p className="mt-8 flex items-center gap-3 text-[11px] uppercase tracking-[0.28em] text-muted">
+              <span aria-hidden className="h-px w-8" style={{ backgroundColor: titleAccent }} />
+              {out ? t("product.outOfStock") : low ? t("product.lowStock") : t("product.inStock")}
+            </p>
+            <h1 className="mt-5 font-display text-[3.2rem] leading-[0.95] font-medium tracking-[-0.035em] sm:text-7xl">
+              <KineticLine key={product.id} text={name} delay={0.45} stagger={0.04} />
+            </h1>
+
+            {description && (
+              <Reveal as="p" index={1} className="mt-6 max-w-lg font-display text-xl leading-[1.55] italic text-ink/75">
+                {description}
+              </Reveal>
+            )}
+
+            {/* the facts, ruled off like a menu — same card as the home page */}
+            <Reveal index={2}>
+            <dl className="mt-10 grid max-w-lg grid-cols-3 border-y border-line">
+              <div className="py-4 pe-4">
+                <dt className="text-[10px] uppercase tracking-[0.28em] text-muted">{t("variants.intensity")}</dt>
+                <dd className="mt-3 flex items-center gap-1" aria-label={`${beans}/5`}>
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <svg key={i} viewBox="0 0 12 16" className="h-4 w-3" aria-hidden>
+                      <ellipse
+                        cx="6"
+                        cy="8"
+                        rx="5.2"
+                        ry="7.2"
+                        fill={i < beans ? titleAccent : "none"}
+                        stroke={i < beans ? titleAccent : "rgb(var(--c-line))"}
+                      />
+                      <path
+                        d="M6 1.4c-1.5 2.3 1.5 4.7 0 6.6s-1.5 4.3 0 6.6"
+                        fill="none"
+                        stroke={i < beans ? "rgb(var(--c-bg))" : "rgb(var(--c-line))"}
+                        strokeWidth="0.9"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  ))}
+                </dd>
+              </div>
+              <div className="border-s border-line px-4 py-4">
+                <dt className="text-[10px] uppercase tracking-[0.28em] text-muted">{t("variants.dosage")}</dt>
+                <dd className="mt-2 font-display text-2xl">{product.dosage ?? "—"}</dd>
+              </div>
+              <div className="border-s border-line py-4 ps-4">
+                <dt className="text-[10px] uppercase tracking-[0.28em] text-muted">{t("variants.price")}</dt>
+                <dd className="mt-2 font-display text-2xl">
+                  {formatPrice(Number(product.price))}
+                  {product.compare_at_price !== null && Number(product.compare_at_price) > Number(product.price) && (
+                    <span className="ms-2 align-middle text-sm text-muted line-through">
+                      {formatPrice(Number(product.compare_at_price))}
+                    </span>
+                  )}
+                </dd>
+              </div>
+            </dl>
+            </Reveal>
+
+            {details.length > 0 && (
+              <ol className="mt-8 max-w-lg divide-y divide-line">
+                {details.map((detail, i) => (
+                  <Reveal as="li" index={3 + i} y={16} key={detail} className="flex items-baseline gap-5 py-3 text-sm text-ink/85">
+                    <span className="font-display text-xs tabular-nums text-brand">{String(i + 1).padStart(2, "0")}</span>
+                    {detail}
+                  </Reveal>
+                ))}
+              </ol>
+            )}
+
+            {!out && (
+              <div className="mt-10 flex max-w-lg items-center gap-4">
+                <div className="flex items-center gap-4 rounded-full border border-line px-4 py-3">
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    className="cursor-pointer text-muted hover:text-ink"
+                    aria-label={t("product.decrease")}
+                  >
+                    <Minus size={15} />
+                  </button>
+                  <span className="w-6 text-center font-display text-lg tabular-nums" aria-live="polite">
+                    {quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((q) => Math.min(MAX_LINE_QTY, q + 1))}
+                    className="cursor-pointer text-muted hover:text-ink"
+                    aria-label={t("product.increase")}
+                  >
+                    <Plus size={15} />
+                  </button>
+                </div>
+                <Button onClick={handleAdd} variant={added ? "outline" : "gold"} size="lg" className="flex-1 gap-3">
+                  {added ? (
+                    <>
+                      <Check size={17} />
+                      {t("product.added")}
+                    </>
+                  ) : (
+                    t("product.addToCart")
+                  )}
+                </Button>
+              </div>
+            )}
+
+            {/* quick-buy — bypasses the cart entirely */}
+            {!out && (
+              <section className="mt-12 max-w-lg rounded-[2rem] border border-line bg-panel/60 p-6 sm:p-8">
+                <h2 className="font-display text-2xl">{t("product.orderNow")}</h2>
+                <p className="mb-6 mt-1.5 text-sm text-muted">{t("product.orderNowSub")}</p>
+                <CheckoutForm
+                  compact
+                  intent="focus"
+                  intentKey={product.id}
+                  lines={[
+                    {
+                      product_id: product.id,
+                      quantity,
+                      price: Number(product.price),
+                      name: product.name_fr,
+                    },
+                  ]}
+                  onSuccess={(orderNumber) => navigate(`/order/${orderNumber}`)}
+                />
+              </section>
+            )}
+
+            {product.video_url && (
+              <video
+                src={product.video_url}
+                poster={images[0]?.url}
+                preload="none"
+                controls
+                className="mt-10 w-full max-w-lg rounded-2xl border border-line"
               />
             )}
           </div>
-          {images.length > 1 && (
-            <div className="mt-3 flex gap-3">
-              {images.map((img, i) => (
-                <button
-                  key={img.id}
-                  onClick={() => setImageIndex(i)}
-                  className={cn(
-                    "h-20 w-20 overflow-hidden rounded-xl border p-1 cursor-pointer",
-                    i === imageIndex ? "border-brand" : "border-line",
-                  )}
-                >
-                  <img
-                    src={dbSize(img.url, "sm")}
-                    alt=""
-                    width={80}
-                    height={80}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-contain"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
-          {product.video_url && (
-            <video
-              src={product.video_url}
-              poster={images[0]?.url}
-              preload="none"
-              controls
-              className="mt-4 w-full rounded-2xl border border-line"
-            />
-          )}
         </div>
 
-        {/* info + buy — owns the whole end column, both rows of it */}
-        <div className="lg:col-start-2 lg:row-start-1 lg:row-span-2">
-          <h1
-            className="font-display text-4xl font-semibold sm:text-5xl"
-            style={{ color: titleAccent }}
-          >
-            {name}
-          </h1>
-          <div className="mt-3 flex items-center gap-3">
-            <span className="font-display text-3xl text-brand">{formatPrice(Number(product.price))}</span>
-            {product.compare_at_price !== null &&
-              Number(product.compare_at_price) > Number(product.price) && (
-                <span className="text-muted line-through">
-                  {formatPrice(Number(product.compare_at_price))}
-                </span>
-              )}
-            <span
-              className={cn(
-                "rounded-full px-3 py-1 text-xs font-semibold",
-                out
-                  ? "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300"
-                  : "bg-brand/10 text-brand",
-              )}
-            >
-              {out ? t("product.outOfStock") : low ? t("product.lowStock") : t("product.inStock")}
-            </span>
-          </div>
-
-          {description && <p className="mt-5 leading-relaxed text-muted">{description}</p>}
-
-          {/* intensity + dosage, same language as the landing showcase */}
-          {(product.intensity !== null || product.dosage) && (
-            <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-3">
-              {product.intensity !== null && (
-                <div>
-                  <dt className="text-xs uppercase tracking-widest text-muted">
-                    {t("variants.intensity")}
-                  </dt>
-                  <dd className="mt-1.5 flex items-center gap-1.5">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <span
-                        key={i}
-                        className="h-2 w-7 rounded-full"
-                        style={{
-                          backgroundColor:
-                            i < Math.round(((product.intensity ?? 0) / 100) * 5)
-                              ? accent
-                              : "rgb(var(--c-line))",
-                        }}
-                      />
-                    ))}
-                  </dd>
-                </div>
-              )}
-              {product.dosage && (
-                <div>
-                  <dt className="text-xs uppercase tracking-widest text-muted">
-                    {t("variants.dosage")}
-                  </dt>
-                  <dd className="mt-1 font-display text-2xl">{product.dosage}</dd>
-                </div>
-              )}
-            </dl>
-          )}
-
-          {details.length > 0 && (
-            <ul className="mt-5 space-y-2">
-              {details.map((detail) => (
-                <li key={detail} className="flex items-start gap-2 text-sm">
-                  <Check size={15} className="mt-0.5 shrink-0 text-brand" />
-                  {detail}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {!out && (
-            <div className="mt-7 flex items-center gap-4">
-              <div className="flex items-center gap-3 rounded-full border border-line bg-panel px-3 py-2">
-                <button
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="text-muted hover:text-ink cursor-pointer"
-                  aria-label={t("product.decrease")}
-                >
-                  <Minus size={15} />
-                </button>
-                <span className="w-6 text-center font-semibold" aria-live="polite">
-                  {quantity}
-                </span>
-                <button
-                  onClick={() => setQuantity((q) => Math.min(MAX_LINE_QTY, q + 1))}
-                  className="text-muted hover:text-ink cursor-pointer"
-                  aria-label={t("product.increase")}
-                >
-                  <Plus size={15} />
-                </button>
-              </div>
-              <Button onClick={handleAdd} variant={added ? "outline" : "gold"} className="flex-1">
-                {added ? t("product.added") : t("product.addToCart")}
-              </Button>
-            </div>
-          )}
-
-          {/* quick-buy — bypasses the cart entirely */}
-          {!out && (
-            <Panel className="fx-sheen mt-8 p-6">
-              <CoffeeDivider className="mb-5" />
-              <h2 className="font-display text-2xl">{t("product.orderNow")}</h2>
-              <p className="mt-1 mb-5 text-sm text-muted">{t("product.orderNowSub")}</p>
-              <CheckoutForm
-                compact
-                intent="focus"
-                intentKey={product.id}
-                lines={[
-                  {
-                    product_id: product.id,
-                    quantity,
-                    price: Number(product.price),
-                    name: product.name_fr,
-                  },
-                ]}
-                onSuccess={(orderNumber) => navigate(`/order/${orderNumber}`)}
-              />
-            </Panel>
-          )}
+        {/* two square films side by side (stacked on phones). The second is
+            its own admin slot and mirrors the first until it gets a film. */}
+        <div className="mt-24 grid gap-6 md:grid-cols-2">
+          <Reveal>
+            <EspressoLoop slot={PRODUCT_VIDEO_SLOT} className="aspect-square" />
+          </Reveal>
+          <Reveal index={1}>
+            <EspressoLoop slot={PRODUCT_VIDEO_SLOT_2} className="aspect-square" />
+          </Reveal>
         </div>
 
-        {/* the espresso loop, filling out the start column under the gallery */}
-        <EspressoLoop className="lg:col-start-1 lg:row-start-2 lg:h-full" />
+        {related.length > 0 && (
+          <section className="mt-24">
+            <RevealHeading className="font-display text-[2.4rem] leading-[1] font-medium tracking-[-0.02em] sm:text-5xl">
+              {t("product.related")}
+            </RevealHeading>
+            <div className="mt-12 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+              {related.map((p, i) => (
+                <Reveal key={p.id} index={i}>
+                  <ProductCard product={p} />
+                </Reveal>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </main>
   );

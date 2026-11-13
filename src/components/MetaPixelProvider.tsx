@@ -10,6 +10,7 @@ import {
 import type { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import { useActivePixels } from "@/hooks/useMetaPixels";
+import { useConsent } from "@/store/consent";
 import { initPixels, matchPixels, trackEvent } from "@/lib/metaPixel";
 import type { PixelContext, PixelParams } from "@/lib/metaPixel";
 import type { PixelEventKey } from "@/types/db";
@@ -43,13 +44,16 @@ export function MetaPixelProvider({ children }: { children: ReactNode }) {
   // Firing conversions while the owner clicks around their own dashboard
   // poisons every campaign's data with staff traffic.
   const isAdmin = pathname.startsWith("/admin");
+  // no marketing consent → no pixel is initialised and nothing reaches Meta
+  // (see store/consent.ts and the cookie policy)
+  const marketing = useConsent((state) => state.marketing);
 
   const active = useMemo(() => {
-    if (isAdmin || !pixels || pixels.length === 0) return [];
+    if (!marketing || isAdmin || !pixels || pixels.length === 0) return [];
     const fresh = routeCtx.path === pathname ? routeCtx : {};
     const ctx: PixelContext = { pathname, ...fresh };
     return matchPixels(pixels, ctx);
-  }, [isAdmin, pixels, pathname, routeCtx]);
+  }, [marketing, isAdmin, pixels, pathname, routeCtx]);
 
   useEffect(() => {
     if (active.length > 0) initPixels(active);

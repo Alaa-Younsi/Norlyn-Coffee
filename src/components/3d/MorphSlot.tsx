@@ -45,7 +45,8 @@ export function MorphSlot({ weight, children }: MorphSlotProps) {
         material.opacity = (material.userData.baseOpacity as number) * w;
         // only write depth once the model is essentially solid — mid-morph the
         // two overlapping models would otherwise punch holes in each other
-        material.depthWrite = w > 0.9;
+        // (glass opts out entirely via userData.noDepthWrite — see CupModel)
+        material.depthWrite = w > 0.9 && !material.userData.noDepthWrite;
       }
     });
   });

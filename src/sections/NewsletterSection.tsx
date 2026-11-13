@@ -1,11 +1,7 @@
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { Check, Send } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Field";
+import { ArrowRight, Check } from "lucide-react";
 import { Mascot } from "@/components/mascot/Mascot";
-import { CoffeeBeanIcon } from "@/components/effects/CoffeeBeanIcon";
-import { CoffeeRing } from "@/components/effects/CoffeeRing";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useHoneypot } from "@/hooks/useHoneypot";
 import { useSubscribeNewsletter } from "@/hooks/useNewsletter";
@@ -72,52 +68,46 @@ export function NewsletterSection() {
   const face: MascotEmotion = done ? "love" : errorKey ? "surprised" : "happy";
 
   return (
-    // the ref is the SECTION and data-reveal is on the card inside it:
+    // the ref is the SECTION and data-reveal is on the block inside it:
     // useRevealOnScroll does root.querySelectorAll(), which never matches the
     // root itself — the two on one element is a silent no-op
-    <section ref={sectionRef} className="relative overflow-hidden px-6 py-20 sm:py-24">
-      <CoffeeRing className="fx-spin-slow -end-24 -top-10 w-64 opacity-10 sm:w-80" />
-
+    <section ref={sectionRef} className="relative overflow-clip px-6 py-24 sm:py-32">
       <div
         data-reveal
-        className="relative mx-auto max-w-3xl rounded-[2rem] border border-brand/25 bg-panel/75 p-8 text-center shadow-[0_40px_90px_-50px_rgb(var(--c-ink)/0.5)] backdrop-blur-md sm:p-12"
+        className="relative mx-auto grid max-w-7xl items-end gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-20"
       >
-        <div className="flex items-center justify-center gap-3">
-          <CoffeeBeanIcon className="w-3 text-brand/70" />
-          <p className="text-xs uppercase tracking-[0.35em] text-brand">
-            {t("newsletter.kicker")}
-          </p>
-        </div>
-
-        <Mascot
-          emotion={face}
-          palette={["happy", "love", "surprised"]}
-          size={84}
-          className="mx-auto mt-5"
-        />
-
-        {done ? (
-          <>
-            <h2 className="mt-4 font-display text-3xl sm:text-4xl">{t("newsletter.doneTitle")}</h2>
-            <p className="mx-auto mt-3 max-w-md text-balance text-muted">
-              {t("newsletter.doneBody")}
-            </p>
-            <span className="mt-6 inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/10 px-4 py-1.5 text-sm font-medium text-brand">
-              <Check size={15} />
-              {t("newsletter.doneBadge")}
-            </span>
-          </>
-        ) : (
-          <>
-            <h2 className="mt-4 font-display text-3xl sm:text-4xl">
+        <div>
+          {done ? (
+            <h2 className="font-display text-[2.6rem] leading-[1.02] font-medium tracking-[-0.02em] sm:text-6xl">
+              {t("newsletter.doneTitle")}
+            </h2>
+          ) : (
+            <h2 className="font-display text-[2.6rem] leading-[1.02] font-medium tracking-[-0.02em] sm:text-6xl">
               {t("newsletter.title")}{" "}
               <span className="fx-accent text-brand">{t("newsletter.titleAccent")}</span>
             </h2>
-            <p className="mx-auto mt-3 max-w-md text-balance text-muted">
-              {t("newsletter.subtitle")}
-            </p>
+          )}
+          <p className="mt-6 max-w-md leading-relaxed text-muted">
+            {done ? t("newsletter.doneBody") : t("newsletter.subtitle")}
+          </p>
+        </div>
 
-            <form onSubmit={onSubmit} className="mx-auto mt-7 max-w-md" noValidate>
+        <div className="flex items-end gap-5">
+          {/* the cup watches you type — happy, surprised at a typo, in love once you're in */}
+          <Mascot
+            emotion={face}
+            palette={["happy", "love", "surprised"]}
+            size={76}
+            className="hidden shrink-0 sm:block"
+          />
+
+          {done ? (
+            <span className="inline-flex items-center gap-2 border-b border-brand/50 pb-3 font-display text-xl text-brand">
+              <Check size={18} />
+              {t("newsletter.doneBadge")}
+            </span>
+          ) : (
+            <form onSubmit={onSubmit} className="w-full" noValidate>
               {/* honeypot — off-screen, never focusable, invisible to real users */}
               <input
                 type="text"
@@ -129,8 +119,9 @@ export function NewsletterSection() {
                 className="absolute -left-[9999px] h-0 w-0 opacity-0"
               />
 
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Input
+              {/* one line, one gold rule, one round button — the whole form */}
+              <div className="flex items-center gap-3 border-b border-ink/30 pb-3 transition-colors focus-within:border-brand">
+                <input
                   type="email"
                   inputMode="email"
                   autoComplete="email"
@@ -142,12 +133,16 @@ export function NewsletterSection() {
                   placeholder={t("newsletter.placeholder")}
                   aria-label={t("newsletter.placeholder")}
                   aria-invalid={errorKey !== null}
-                  className="flex-1"
+                  className="min-w-0 flex-1 bg-transparent font-display text-xl text-ink placeholder:text-muted/60 focus:outline-none sm:text-2xl"
                 />
-                <Button type="submit" disabled={subscribe.isPending} className="shrink-0">
-                  <Send size={15} />
-                  {subscribe.isPending ? t("newsletter.sending") : t("newsletter.cta")}
-                </Button>
+                <button
+                  type="submit"
+                  disabled={subscribe.isPending}
+                  aria-label={subscribe.isPending ? t("newsletter.sending") : t("newsletter.cta")}
+                  className="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-full bg-brand text-cream transition-transform duration-300 hover:scale-105 disabled:opacity-50"
+                >
+                  <ArrowRight size={18} className="rtl:-scale-x-100" />
+                </button>
               </div>
 
               {errorKey && (
@@ -157,8 +152,8 @@ export function NewsletterSection() {
               )}
               <p className="mt-3 text-xs text-muted">{t("newsletter.privacy")}</p>
             </form>
-          </>
-        )}
+          )}
+        </div>
       </div>
     </section>
   );

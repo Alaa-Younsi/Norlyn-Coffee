@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -300,6 +301,15 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
         />
         <p className="text-start text-xs text-muted">{t("checkout.codNote")}</p>
       </div>
+
+      {/* Loi 18-05: the buyer is told which terms the order is placed under */}
+      <p className="text-center text-xs text-muted">
+        {t("checkout.termsLead")}{" "}
+        <Link to="/legal/conditions-de-vente" className="text-ink underline decoration-brand/60 underline-offset-4">
+          {t("checkout.termsLink")}
+        </Link>
+        .
+      </p>
     </form>
   );
 }

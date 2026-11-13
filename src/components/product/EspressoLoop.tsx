@@ -36,9 +36,20 @@ import { cn } from "@/lib/utils";
  * not this product's, and a per-product video would be eight shoots the client
  * never asked for. Changing it changes every product page at once.
  */
-export function EspressoLoop({ className }: { className?: string }) {
+export function EspressoLoop({
+  className,
+  slot = PRODUCT_VIDEO_SLOT,
+}: {
+  className?: string;
+  /** which video slot to play; a slot nobody filled yet plays the first one */
+  slot?: string;
+}) {
   const { reducedMotion, saveData } = useMediaFlags();
-  const { src, poster } = useVideoSlot(PRODUCT_VIDEO_SLOT);
+  const own = useVideoSlot(slot);
+  const first = useVideoSlot(PRODUCT_VIDEO_SLOT);
+  // "duplicate the first video for now": an empty second slot mirrors the
+  // first slot exactly — including a film the client uploaded to it
+  const { src, poster } = own.custom || slot === PRODUCT_VIDEO_SLOT ? own : first;
   const videoRef = useRef<HTMLVideoElement>(null);
   // The drop-in path promises a file that may not be there. We learn that from
   // the element's own error event and remember WHICH url failed, so a later

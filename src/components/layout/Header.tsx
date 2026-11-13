@@ -1,40 +1,71 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
-import { CoffeeBagIcon, MoonIcon, SunIcon } from "@/components/ui/icons";
+import { CoffeeBagIcon } from "@/components/ui/icons";
+import { GoldDust } from "@/components/brand/GoldDust";
+import { NorlynLogo } from "@/components/brand/Logos";
+import { Mascot } from "@/components/mascot/Mascot";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { LANG_LABEL, LANG_NAME, nextLang } from "@/i18n/langs";
-import { useTheme } from "@/theme/ThemeProvider";
 import { useCart, cartCount } from "@/store/cart";
 import { reactMascot } from "@/store/mascot";
+import { useHeaderStore } from "@/store/header";
+import { CONTACT_EMAIL, CONTACT_EMAIL_HREF } from "@/lib/contact";
+import { lockScroll, unlockScroll } from "@/lib/lenis";
 import { cn } from "@/lib/utils";
 
+const EASE = [0.76, 0, 0.24, 1] as const;
+
 /**
- * True once the page has left the top. Passive listener + a plain comparison,
- * so it re-renders the header twice per session rather than on every frame.
- * Lenis drives real window scroll, so this works on the landing page too.
+ * Header state from scroll: `scrolled` once the page leaves the top (the bar
+ * condenses into its floating capsule) and `hidden` while the visitor is
+ * reading downward — it slides away to give the page the whole screen and
+ * comes back the moment they scroll up, which is when they want it.
+ * Passive listener; React only re-renders when one of the two flips.
  */
-function useScrolled(threshold = 24): boolean {
-  const [scrolled, setScrolled] = useState(false);
+function useHeaderScroll(): { scrolled: boolean; hidden: boolean } {
+  const [state, setState] = useState({ scrolled: false, hidden: false });
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > threshold);
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      const delta = y - last;
+      last = y;
+      setState((prev) => {
+        const scrolled = y > 24;
+        // a dead-band so a trackpad's jitter doesn't flicker the bar
+        const hidden = y < 420 ? false : delta > 6 ? true : delta < -6 ? false : prev.hidden;
+        return prev.scrolled === scrolled && prev.hidden === hidden ? prev : { scrolled, hidden };
+      });
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [threshold]);
-  return scrolled;
+  }, []);
+  return state;
 }
 
+/** Cut-out capsules that drift behind the open menu — the real AluSense colours. */
+const MENU_CAPSULES = [
+  { src: "/images/capsules/hd/gold-side-md.webp", className: "end-[-6%] top-[14%] w-40 rotate-[18deg] sm:w-52" },
+  { src: "/images/capsules/hd/green-side-md.webp", className: "end-[22%] bottom-[18%] w-24 -rotate-[24deg] sm:w-32" },
+  { src: "/images/capsules/hd/black-side-md.webp", className: "end-[4%] bottom-[-4%] w-36 rotate-[36deg] sm:w-44" },
+] as const;
+
 export function Header() {
-  const { t, lang, setLang } = useLanguage();
-  const { theme, toggleTheme } = useTheme();
+  const { t, lang, setLang, dir } = useLanguage();
   const items = useCart((s) => s.items);
   const openCart = useCart((s) => s.openCart);
   const count = cartCount(items);
   const { pathname } = useLocation();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const scrolled = useScrolled();
+  // the menu remembers which page it was opened on, so navigating anywhere
+  // closes it without an effect — it is simply not open on the new path
+  const [openedOn, setOpenedOn] = useState<string | null>(null);
+  const menuOpen = openedOn === pathname;
+  const setMenuOpen = (open: boolean) => setOpenedOn(open ? pathname : null);
+  const { scrolled, hidden } = useHeaderScroll();
+  // publish it for sticky elements that sit under the header
+  useEffect(() => useHeaderStore.setState({ hidden: hidden && !menuOpen }), [hidden, menuOpen]);
 
   const links = [
     { to: "/", label: t("nav.home") },
@@ -44,181 +75,234 @@ export function Header() {
     { to: "/contact", label: t("nav.contact") },
   ];
 
+  // the page under an open menu must not scroll — Lenis included
+  useEffect(() => {
+    if (!menuOpen) return;
+    lockScroll();
+    document.documentElement.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenedOn(null);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      unlockScroll();
+      document.documentElement.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
+  const toggleLang = () => {
+    setLang(nextLang(lang));
+    reactMascot("playful");
+  };
+
+  // the menu's circle opens from the button's corner, whichever side that is
+  const origin = dir === "rtl" ? "8% 3.5%" : "92% 3.5%";
+
   return (
-    // At the top the header is a scrim over the hero; once the page scrolls it
-    // condenses into a real bar. Without that, the wordmark — the one element
-    // with no chip behind it — collides with whatever photo scrolls under it.
-    <header
-      className={cn(
-        "fixed inset-x-0 top-0 z-40 transition-all duration-300",
-        // the condensed bar keeps a little tail on phones: with pb-0 the fade
-        // had nowhere to happen and the mask ate into the buttons themselves
-        scrolled ? "pb-1.5 sm:pb-0" : "pb-3",
-      )}
-    >
-      {/*
-        The condensed bar's backdrop, as its own layer rather than as styles on
-        the header.
-
-        It used to be a flat `bg-bg/85` with a `border-b`, and both ends were
-        visible against a dark hero: a hairline of --c-line straight across the
-        page, and above it a panel a shade darker than what it covered. So the
-        bar stops with a fade instead of an edge — the gradient takes the tint
-        to zero and the mask takes the BLUR with it, which a background alone
-        cannot do (an unmasked backdrop-filter keeps its own hard boundary
-        however transparent the colour over it becomes).
-
-        Why a child and not the header itself: the mobile menu is also a child
-        of <header>, and a mask on the header would fade the bottom of that
-        open panel too.
-      */}
-      {/*
-        Where the fade stops matters more than it looks. At 60% the tint was
-        already dropping through the row the logo and the buttons sit in, so on
-        a phone — where the bar is barely taller than the wordmark — whatever
-        scrolled underneath showed straight through the controls and the bar
-        read as half-drawn. The opaque part now covers the full control row and
-        only the last stretch fades, which is the part that exists to avoid a
-        hard edge in the first place.
-      */}
-      <div
-        aria-hidden
+    <>
+      <header
         className={cn(
-          "pointer-events-none absolute inset-x-0 top-0 -z-10 h-full transition-opacity duration-300",
-          "bg-gradient-to-b from-bg/96 via-bg/94 to-bg/0 backdrop-blur-lg",
-          "[mask-image:linear-gradient(to_bottom,#000_82%,transparent_100%)]",
-          "[-webkit-mask-image:linear-gradient(to_bottom,#000_82%,transparent_100%)]",
-          scrolled ? "opacity-100" : "opacity-0",
-        )}
-      />
-      {/* the top-of-page scrim, which has always faded and needs no mask */}
-      <div
-        aria-hidden
-        className={cn(
-          "pointer-events-none absolute inset-x-0 top-0 -z-10 h-full transition-opacity duration-300",
-          "bg-gradient-to-b from-bg/90 via-bg/50 to-transparent",
-          scrolled ? "opacity-0" : "opacity-100",
-        )}
-      />
-      <div
-        className={cn(
-          "mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 transition-all duration-300 sm:px-6",
-          // 8px of padding around a 36px wordmark left it all but touching the
-          // top of the screen once the browser's own chrome slid away
-          scrolled ? "py-2.5 sm:py-2" : "py-3",
+          "fixed inset-x-0 top-0 z-40 px-3 transition-transform duration-500 ease-[cubic-bezier(.76,0,.24,1)] sm:px-5",
+          hidden && !menuOpen ? "-translate-y-[130%]" : "translate-y-0",
         )}
       >
-        <Link to="/" className="flex items-center gap-2" aria-label="Norlyn Coffee">
-          <img
-            src="/images/norlyn-logo.webp"
-            alt="Norlyn Coffee"
-            width={640}
-            height={237}
-            decoding="async"
-            className="norlyn-logo h-9 w-auto sm:h-11"
-          />
-        </Link>
-
-        {/*
-          None of the chips in this bar are frosted any more, and the bar they
-          sit in still is.
-
-          `backdrop-filter` is not a colour — it promotes its element to its own
-          compositing surface and re-reads and re-blurs the pixels behind it on
-          every frame that anything moves. Six of those were pinned to the top
-          of the screen for the entire scroll, each one blurring a backdrop that
-          is either the bar's OWN blurred panel (already frosted, so the second
-          pass adds nothing) or, at the top of the page, a flat cream gradient
-          with nothing in it to blur. Raising the fill from /70 to /85 is
-          visually indistinguishable and costs a paint instead of a surface.
-        */}
-        <nav className="hidden items-center gap-1 rounded-full border border-line/70 bg-panel/85 px-2 py-1 lg:flex">
-          {links.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
+        <div
+          className={cn(
+            "mx-auto flex items-center justify-between gap-4 transition-all duration-500 ease-[cubic-bezier(.76,0,.24,1)]",
+            scrolled
+              ? // frosted on desktop only: a backdrop-filter re-blurs the page under
+              // it on every scrolled frame, and on a phone that is the jank
+              "mt-3 max-w-6xl rounded-full border border-line/60 bg-panel/95 py-1.5 ps-5 pe-1.5 shadow-[0_18px_40px_-22px_rgb(var(--c-shade)/0.55)] md:bg-panel/80 md:backdrop-blur-md"
+              : "mt-0 max-w-7xl border border-transparent py-4 ps-1 pe-1",
+          )}
+        >
+          <Link to="/" className="shrink-0 text-ink" aria-label="Norlyn Coffee">
+            <NorlynLogo
               className={cn(
-                "rounded-full px-4 py-1.5 text-sm transition-colors",
-                pathname === link.to
-                  ? "bg-brand/15 text-brand font-semibold"
-                  : "text-muted hover:text-ink",
+                "w-auto transition-all duration-500",
+                scrolled ? "h-8 sm:h-9" : "h-10 sm:h-12",
               )}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+            />
+          </Link>
 
-        <div className="flex items-center gap-1.5">
-          {/* the two toggles that change how the whole site looks or reads get
-              a glance from the cup — see store/mascot.ts */}
-          <button
-            onClick={() => {
-              setLang(nextLang(lang));
-              reactMascot("playful");
-            }}
-            className="min-w-11 rounded-full border border-line/70 bg-panel/85 px-3 py-1.5 text-sm font-semibold text-muted transition-colors hover:text-ink cursor-pointer"
-            aria-label={`Switch language — ${LANG_NAME[nextLang(lang)]}`}
-          >
-            {LANG_LABEL[nextLang(lang)]}
-          </button>
-          <button
-            onClick={() => {
-              toggleTheme();
-              reactMascot("wink");
-            }}
-            className="rounded-full border border-line/70 bg-panel/85 p-2 text-muted transition-colors hover:text-ink cursor-pointer"
-            aria-label={t("nav.theme")}
-          >
-            {theme === "dark" ? <SunIcon size={17} /> : <MoonIcon size={17} />}
-          </button>
-          <button
-            onClick={openCart}
-            className="relative rounded-full border border-brand/50 bg-panel/85 p-2 text-brand transition-colors hover:bg-brand/10 cursor-pointer"
-            aria-label={t("nav.cart")}
-          >
-            <CoffeeBagIcon size={17} />
-            {count > 0 && (
-              <span className="absolute -top-1.5 -end-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-cream">
-                {count}
+          <nav className="hidden items-center gap-1 lg:flex" aria-label={t("nav.menu")}>
+            {links.map((link) => {
+              const active = pathname === link.to;
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "group relative px-4 py-2 font-display text-[15px] transition-colors",
+                    active ? "text-ink" : "text-muted hover:text-ink",
+                  )}
+                >
+                  {link.label}
+                  {/* hairline that grows out from the centre on hover; the
+                      active page keeps a single gold bean under its name */}
+                  <span
+                    aria-hidden
+                    className="absolute inset-x-4 bottom-1 h-px origin-center scale-x-0 bg-brand transition-transform duration-500 group-hover:scale-x-100"
+                  />
+                  {active && (
+                    <motion.span
+                      layoutId="nav-bean"
+                      aria-hidden
+                      className="absolute -bottom-0.5 left-1/2 h-1.5 w-1 -translate-x-1/2 rounded-full bg-brand"
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={toggleLang}
+              className="hidden h-10 min-w-10 cursor-pointer rounded-full px-3 font-display text-sm text-muted transition-colors hover:text-ink sm:block"
+              aria-label={`Switch language — ${LANG_NAME[nextLang(lang)]}`}
+            >
+              {LANG_LABEL[nextLang(lang)]}
+            </button>
+
+            {/* the cart is the one solid object in the bar — cream on espresso */}
+            <button
+              type="button"
+              onClick={openCart}
+              className="flex h-10 cursor-pointer items-center gap-2 rounded-full bg-ink ps-3.5 pe-4 text-bg transition-transform duration-300 hover:-translate-y-0.5"
+              aria-label={`${t("nav.cart")} (${count})`}
+            >
+              <CoffeeBagIcon size={16} />
+              <span className="relative h-5 min-w-3 overflow-hidden font-display text-sm tabular-nums leading-5">
+                <AnimatePresence mode="popLayout" initial={false}>
+                  <motion.span
+                    key={count}
+                    className="block"
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "-100%" }}
+                    transition={{ duration: 0.35, ease: EASE }}
+                  >
+                    {count}
+                  </motion.span>
+                </AnimatePresence>
               </span>
-            )}
-          </button>
-          <button
-            onClick={() => setMenuOpen((v) => !v)}
-            className="rounded-full border border-line/70 bg-panel/85 p-2 text-muted lg:hidden cursor-pointer"
-            aria-label="menu"
-          >
-            {menuOpen ? <X size={16} /> : <Menu size={16} />}
-          </button>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="relative z-[61] flex h-10 cursor-pointer items-center gap-2.5 rounded-full ps-3 pe-3.5 text-xs font-semibold uppercase tracking-[0.2em] text-ink lg:hidden"
+              aria-expanded={menuOpen}
+              aria-controls="site-menu"
+            >
+              <span className="sr-only sm:not-sr-only">{t("nav.menu")}</span>
+              <span className="relative block h-3 w-5" aria-hidden>
+                <span className="absolute inset-x-0 top-0 h-px bg-current" />
+                <span className="absolute bottom-0 end-0 h-px w-3 bg-current" />
+              </span>
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
 
       <AnimatePresence>
         {menuOpen && (
-          <motion.nav
-            className="mx-4 rounded-2xl border border-line bg-panel p-2 shadow-xl lg:hidden"
-            initial={{ y: -8 }}
-            animate={{ y: 0 }}
-            exit={{ y: -8, opacity: 0 }}
-            transition={{ duration: 0.18 }}
+          <motion.div
+            id="site-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t("nav.menu")}
+            className="fixed inset-0 z-[60] flex flex-col overflow-hidden bg-shade text-on-shade lg:hidden"
+            initial={{ clipPath: `circle(0% at ${origin})` }}
+            animate={{ clipPath: `circle(150% at ${origin})` }}
+            exit={{ clipPath: `circle(0% at ${origin})` }}
+            transition={{ duration: 0.75, ease: EASE }}
           >
-            {links.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                onClick={() => setMenuOpen(false)}
-                className={cn(
-                  "block rounded-xl px-4 py-3 text-sm",
-                  pathname === link.to ? "bg-brand/10 text-brand font-semibold" : "text-ink",
-                )}
-              >
-                {link.label}
-              </Link>
+            <GoldDust className="inset-0 h-full w-full opacity-70" seed={23} count={260} />
+            {MENU_CAPSULES.map((capsule, i) => (
+              <motion.img
+                key={capsule.src}
+                src={capsule.src}
+                alt=""
+                aria-hidden
+                width={520}
+                height={650}
+                decoding="async"
+                className={cn("pointer-events-none absolute drop-shadow-2xl", capsule.className)}
+                initial={{ y: 120, rotate: -20 }}
+                animate={{ y: 0, rotate: 0 }}
+                transition={{ duration: 1.1, delay: 0.25 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              />
             ))}
-          </motion.nav>
+
+            <div className="relative flex items-center justify-between px-5 pt-5">
+              <NorlynLogo className="h-10 w-auto text-on-shade" />
+              <button
+                type="button"
+                onClick={() => setMenuOpen(false)}
+                className="flex h-10 cursor-pointer items-center gap-2.5 rounded-full px-3.5 text-xs font-semibold uppercase tracking-[0.2em]"
+              >
+                {t("nav.close")}
+                <span className="relative block h-4 w-4" aria-hidden>
+                  <span className="absolute left-0 top-1/2 h-px w-4 rotate-45 bg-current" />
+                  <span className="absolute left-0 top-1/2 h-px w-4 -rotate-45 bg-current" />
+                </span>
+              </button>
+            </div>
+
+            <nav className="relative mt-[8vh] flex flex-col px-6">
+              {links.map((link, i) => (
+                <span key={link.to} className="block overflow-hidden">
+                  <motion.span
+                    className="block"
+                    initial={{ y: "110%" }}
+                    animate={{ y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2 + i * 0.07, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <Link
+                      to={link.to}
+                      className={cn(
+                        "flex items-baseline gap-4 py-1.5 font-display text-[2.6rem] leading-tight sm:text-6xl",
+                        pathname === link.to ? "text-gold-hi" : "text-on-shade",
+                      )}
+                    >
+                      <span className="w-7 font-sans text-xs tabular-nums text-gold-hi/70">
+                        0{i + 1}
+                      </span>
+                      {link.label}
+                    </Link>
+                  </motion.span>
+                </span>
+              ))}
+            </nav>
+
+            <motion.div
+              className="relative mt-auto flex items-end justify-between gap-4 px-6 pb-8"
+              initial={{ y: 30 }}
+              animate={{ y: 0 }}
+              transition={{ duration: 0.8, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="space-y-3 text-sm">
+                <a href={CONTACT_EMAIL_HREF} dir="ltr" className="block text-on-shade/70">
+                  {CONTACT_EMAIL}
+                </a>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={toggleLang}
+                    className="cursor-pointer rounded-full border border-on-shade/25 px-4 py-2 font-display"
+                  >
+                    {LANG_LABEL[nextLang(lang)]}
+                  </button>
+                </div>
+              </div>
+              <Mascot emotion="wink" palette={["wink"]} size={72} />
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
-    </header>
+    </>
   );
 }

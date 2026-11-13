@@ -6,6 +6,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { SplashScreen } from "@/components/layout/SplashScreen";
+import { CookieBanner } from "@/components/layout/CookieBanner";
+import { PageTransition } from "@/components/brand/PageTransition";
 import { MetaPixelProvider } from "@/components/MetaPixelProvider";
 /*
   What ships in the FIRST download, and what waits to be asked for.
@@ -33,6 +35,7 @@ const OrderConfirmation = lazy(() =>
   import("@/pages/OrderConfirmation").then((m) => ({ default: m.OrderConfirmation })),
 );
 const NotFound = lazy(() => import("@/pages/NotFound").then((m) => ({ default: m.NotFound })));
+const Legal = lazy(() => import("@/pages/Legal").then((m) => ({ default: m.Legal })));
 
 // admin never ships to shoppers
 const AdminApp = lazy(() =>
@@ -80,6 +83,8 @@ function StoreLayout() {
         </RoutedBoundary>
       </Suspense>
       <Footer />
+      <CookieBanner />
+      <PageTransition />
     </>
   );
 }
@@ -102,6 +107,8 @@ export function App() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order/:orderNumber" element={<OrderConfirmation />} />
+            <Route path="/legal" element={<Legal />} />
+            <Route path="/legal/:slug" element={<Legal />} />
             <Route path="*" element={<NotFound />} />
           </Route>
           <Route

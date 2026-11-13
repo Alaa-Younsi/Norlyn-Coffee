@@ -11,7 +11,18 @@ import { resolveSiteUrl } from "./site-url.mjs";
 const SITE_URL = resolveSiteUrl();
 
 // Must mirror the public <Route> list in src/App.tsx — never advertise a 404.
-const STATIC_ROUTES = ["/", "/shop", "/about", "/journal", "/contact"];
+const STATIC_ROUTES = [
+  "/",
+  "/shop",
+  "/about",
+  "/journal",
+  "/contact",
+  // the legal documents (src/data/legal.ts — keep the slugs in sync)
+  "/legal/mentions-legales",
+  "/legal/conditions-de-vente",
+  "/legal/confidentialite",
+  "/legal/cookies",
+];
 
 async function fetchRows(path, label) {
   const url = process.env.VITE_SUPABASE_URL;

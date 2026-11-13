@@ -134,6 +134,10 @@ export const MEDIA = {
     rangeFan: m("life/range-fan", "photo", 513, 912),
     rangeCapsules: m("life/range-capsules", "photo", 912, 513),
     aluminiumMacro: m("life/aluminium-macro", "photo", 1080, 1080),
+    // stills from the client's own footage & packaging shoot (Nov 2026)
+    pourMachine: m("life/pour-machine", "photo", 864, 1080),
+    boxOpen: m("life/box-open", "photo", 1600, 2000),
+    boxClosed: m("life/box-closed", "photo", 1600, 2000),
     packGreenTable: m("life/pack-green-table", "photo", 912, 513),
     packBrownTable: m("life/pack-brown-table", "photo", 912, 513),
     packBlackTable: m("life/pack-black-table", "photo", 513, 912),

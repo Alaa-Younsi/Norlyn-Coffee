@@ -1,10 +1,7 @@
 import { Camera } from "lucide-react";
 import { MediaFrame } from "@/components/ui/MediaFrame";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { useSiteImages } from "@/hooks/useSiteContent";
-import { imageSlot } from "@/lib/imageSlots";
-import { dbSrcSet, mediaSrc, mediaSrcSet } from "@/lib/media";
-import { pickLang } from "@/lib/localized";
+import { useSlotImage } from "@/hooks/useSlotImage";
 import { cn } from "@/lib/utils";
 
 /**
@@ -45,27 +42,9 @@ export function ImageSlot({
   /** fill the positioned parent instead of imposing a ratio box of its own */
   fill?: boolean;
 }) {
-  const { t, lang } = useLanguage();
-  const { data: images } = useSiteImages();
-
-  const definition = imageSlot(slot);
-  const row = images?.[slot];
+  const { t } = useLanguage();
+  const { definition, src, srcSet, alt } = useSlotImage(slot);
   const aspect = ratio ?? definition?.ratio ?? "4/3";
-
-  // an uploaded row brings its own alt; the shipped photo brings the one its
-  // definition describes it with
-  const alt = row
-    ? (pickLang(lang, row.alt_fr, row.alt_ar, row.alt_en) ?? "")
-    : (pickLang(lang, definition?.alt_fr, definition?.alt_ar, definition?.alt_en) ?? "");
-
-  const src = row?.url ?? (definition ? mediaSrc(definition.fallback) : null);
-  // a Storage upload is a single file with no renditions; the shipped photo has
-  // the full sm/md/lg set that lib/media.ts knows how to advertise
-  const srcSet = row
-    ? dbSrcSet(row.url)
-    : definition
-      ? mediaSrcSet(definition.fallback)
-      : undefined;
 
   const picture = src ? (
     <img
@@ -137,3 +116,4 @@ export function ImageSlot({
     </div>
   );
 }
+

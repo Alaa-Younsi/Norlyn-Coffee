@@ -1,55 +1,61 @@
 import { useRef } from "react";
-import { Panel } from "@/components/ui/Panel";
-import { CoffeeRing } from "@/components/effects/CoffeeRing";
+import { RevealHeading } from "@/components/brand/RevealHeading";
+import { ScrollLitText } from "@/components/brand/ScrollLitText";
 import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { useDriftIn, useFadeUp, useRevealOnScroll } from "@/hooks/useScrollFX";
+import { useDriftIn, useFadeUp } from "@/hooks/useScrollFX";
 
+/** "Deux gammes, un seul standard" → the clause after the comma is the accent. */
+function splitAccent(title: string): [string, string] {
+  const match = title.match(/^(.+?[,،])\s*(.+)$/);
+  return match ? [match[1], match[2]] : [title, ""];
+}
+
+/**
+ * Chapter one. The copy sits on the start side — the cup has
+ * just flown to the end side and parks there as a capsule.
+ *
+ *  - the heading's second clause is set in the gold italic accent;
+ *  - the first paragraph is a statement read at scroll pace: its words light
+ *    up one after another as the page moves.
+ */
 export function StorySection() {
   const { t } = useLanguage();
   const sectionRef = useRef<HTMLElement>(null);
-  const statsRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
-  useRevealOnScroll(statsRef);
   useFadeUp(sectionRef);
   // the cup flies to the end side as this section arrives — the copy slides
   // in from the start side, so the two motions mirror around the centreline
   useDriftIn(copyRef, "start", 90);
-  const stats = [
-    { n: t("story.stat1n"), l: t("story.stat1l") },
-    { n: t("story.stat2n"), l: t("story.stat2l") },
-    { n: t("story.stat3n"), l: t("story.stat3l") },
-  ] as const;
+
+  const [lead, accent] = splitAccent(t("story.title"));
 
   return (
     <section
       ref={sectionRef}
       id="story"
-      className="relative mx-auto flex min-h-screen max-w-7xl items-center overflow-hidden px-6 py-24"
+      className="relative mx-auto flex min-h-screen max-w-7xl items-center overflow-clip px-6 py-28"
     >
-      <FloatingBeans count={6} seed={3} />
-      {/* stain ring floats behind the capsule's parking spot on the end side */}
-      <CoffeeRing className="fx-spin-slow end-0 top-1/4 hidden w-80 opacity-15 md:block" />
+      <FloatingBeans count={5} seed={3} />
 
-      {/* text on the start side — the capsule parks on the end side of the viewport */}
-      <div ref={copyRef} className="relative max-w-xl">
-        <p data-fade="16" className="text-sm uppercase tracking-[0.3em] text-brand">
-          {t("story.kicker")}
+      <div ref={copyRef} className="relative max-w-2xl">
+        <RevealHeading className="font-display text-[2.7rem] leading-[0.98] font-medium tracking-[-0.03em] sm:text-6xl lg:text-[5.2rem]">
+          {lead}
+          {accent && (
+            <>
+              <br />
+              <span className="fx-accent text-brand">{accent}</span>
+            </>
+          )}
+        </RevealHeading>
+
+        <ScrollLitText
+          text={t("story.p1")}
+          className="mt-10 max-w-xl font-display text-[1.45rem] leading-[1.45] tracking-[-0.005em] sm:text-[1.75rem]"
+        />
+        <p data-fade="22" className="mt-6 max-w-lg leading-[1.75] text-muted">
+          {t("story.p2")}
         </p>
-        <h2 data-fade className="mt-3 font-display text-4xl font-semibold leading-tight sm:text-6xl">
-          {t("story.title")}
-        </h2>
-        <p data-fade="22" className="mt-6 leading-relaxed text-muted">{t("story.p1")}</p>
-        <p data-fade="22" className="mt-4 leading-relaxed text-muted">{t("story.p2")}</p>
-
-        <div ref={statsRef} className="mt-10 grid grid-cols-3 gap-3" style={{ perspective: "1000px" }}>
-          {stats.map((stat) => (
-            <Panel key={stat.l} data-reveal className="px-4 py-5 text-center">
-              <p className="fx-gold-text font-display text-4xl font-bold">{stat.n}</p>
-              <p className="mt-1 text-xs text-muted">{stat.l}</p>
-            </Panel>
-          ))}
-        </div>
       </div>
     </section>
   );

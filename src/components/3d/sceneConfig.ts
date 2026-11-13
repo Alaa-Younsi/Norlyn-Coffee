@@ -29,14 +29,15 @@ import type { SceneBounds } from "@/lib/scrollProgress";
 /** Fraction of the story act spent morphing the cup into the capsule. */
 const CUP_MORPH = [0.16, 0.68] as const;
 /**
- * The capsule→machine morph plays out on the PINNED variants screen during
- * its last stop, while the object is parked on the empty start side — fully
- * on camera, with the last variant's copy beside it, and it starts brewing
- * the moment it forms. (Fractions of the pinned span: the last variant's
- * copy arrives at 1 − 1/colorCount.) Morphing during the transit to the
- * tail — the old timing — hid the payoff below the fold.
+ * The pinned variants screen has colorCount + 1 equal chapters: one per
+ * capsule, then a final "machine" chapter. Every capsule — the last one
+ * included — keeps its own colour and its own copy for a whole chapter, and
+ * the capsule→machine morph plays ONLY inside that final chapter, while the
+ * copy beside it talks about the machine. (It used to start 5% into the last
+ * capsule's stretch, so "Moriva Noir" was shown next to a machine.)
+ * Fractions of the machine chapter:
  */
-const MACHINE_MORPH = [0.8, 0.99] as const;
+const MACHINE_MORPH = [0.12, 0.85] as const;
 /** Fraction of the outro act spent dissolving the machine. */
 const EXIT_MORPH = [0.04, 0.5] as const;
 
@@ -114,7 +115,10 @@ export function computeSceneState(
   // by 55%, the incoming one only starts at 45% — minimal ghost overlap, and
   // the energy burst covers the handover.
   const m1 = segment(storyP, CUP_MORPH[0], CUP_MORPH[1]);
-  const m2 = segment(pinnedP, MACHINE_MORPH[0], MACHINE_MORPH[1]);
+  // chapters on the pinned screen: one per capsule, then the machine
+  const chapters = Math.max(1, colorCount) + 1;
+  const machineP = segment(pinnedP, (chapters - 1) / chapters, 1);
+  const m2 = segment(machineP, MACHINE_MORPH[0], MACHINE_MORPH[1]);
   const m3 = segment(outroP, EXIT_MORPH[0], EXIT_MORPH[1]);
 
   const fadeOut = (m: number) => 1 - easeInOut(segment(m, 0, 0.55));
@@ -229,7 +233,8 @@ export function computeSceneState(
 
   // same normalization as the section's own trigger, so the capsule recolors
   // exactly when the copy switches
-  const colorPos = clamp(pinnedP * colorCount - 0.0001, 0, colorCount - 1);
+  // capsule chapters only — the machine chapter keeps the last colour
+  const colorPos = clamp(pinnedP * chapters - 0.0001, 0, colorCount - 1);
 
   // the machine starts pouring as soon as it has formed — still parked on the
   // sticky variants screen, so the brew happens in full view

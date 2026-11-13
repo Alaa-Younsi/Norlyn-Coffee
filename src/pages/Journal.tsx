@@ -1,26 +1,26 @@
-import { useRef } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Clock } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { CreditsFilm } from "@/components/brand/CreditsFilm";
+import type { FilmScene } from "@/components/brand/CreditsFilm";
 import { Panel } from "@/components/ui/Panel";
 import { ImageSlot } from "@/components/ui/ImageSlot";
 import { Mascot } from "@/components/mascot/Mascot";
-import { CoffeeRing } from "@/components/effects/CoffeeRing";
-import { FloatingBeans } from "@/components/effects/FloatingBeans";
-import { ScrollProgressBar } from "@/components/effects/ScrollProgressBar";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { usePublishedArticles } from "@/hooks/useSiteContent";
 import { useSeo } from "@/hooks/useSeo";
-import { useRevealOnScroll } from "@/hooks/useScrollFX";
 import { formatDate } from "@/lib/format";
 import { pickLang } from "@/lib/localized";
-import { dbSrcSet } from "@/lib/media";
-import type { Article } from "@/types/db";
 
+/**
+ * The journal as a programme of films: a title card, then one scene per
+ * article — its cover full-bleed and pushing in, its number, tag and date as
+ * the credit, its title, its first lines, and the way in. Played by the
+ * scroll (CreditsFilm). With nothing published yet it falls back to a quiet
+ * card.
+ */
 export function Journal() {
   const { t, lang } = useLanguage();
   const { data: articles, isLoading } = usePublishedArticles();
-  const rootRef = useRef<HTMLElement>(null);
-  useRevealOnScroll(rootRef, [articles?.length]);
 
   useSeo({
     title: `${t("blog.metaTitle")} — Norlyn Coffee`,
@@ -28,141 +28,74 @@ export function Journal() {
   });
 
   const rows = articles ?? [];
-  const [lead, ...rest] = rows;
 
-  return (
-    <main ref={rootRef} className="relative min-h-screen overflow-x-clip pb-24 pt-28">
-      <ScrollProgressBar />
-      <FloatingBeans count={7} seed={11} />
-      <CoffeeRing className="fx-spin-slow -start-24 top-32 w-72 opacity-10" />
+  if (isLoading) {
+    return <main className="min-h-screen pt-40 text-center text-sm text-muted">{t("common.loading")}</main>;
+  }
 
-      <header className="mx-auto max-w-3xl px-6 text-center">
-        <p className="text-xs uppercase tracking-[0.35em] text-brand sm:text-sm">
-          {t("blog.kicker")}
-        </p>
-        <h1 className="mt-4 font-display text-5xl font-semibold sm:text-6xl">
-          <span className="fx-accent fx-gold-text-deep">{t("blog.title")}</span>
+  if (rows.length === 0) {
+    return (
+      <main className="mx-auto min-h-screen max-w-3xl px-6 pb-24 pt-32">
+        <h1 className="font-display text-[3.4rem] leading-[0.95] font-medium tracking-[-0.035em] sm:text-7xl">
+          {t("blog.title")}
         </h1>
-        <p className="mt-5 text-balance font-display text-lg leading-relaxed text-ink/75 sm:text-xl">
-          {t("blog.subtitle")}
-        </p>
-      </header>
+        <ImageSlot slot="blog.hero" ratio="16/9" priority sizes="(min-width: 768px) 48rem, 92vw" className="mt-10" />
+        {/* public copy only — a visitor must never be told to go and publish
+            something from the admin panel */}
+        <Panel className="mt-8 flex flex-col items-center p-10 text-center">
+          <Mascot emotion="calm" palette={["calm"]} size={80} />
+          <p className="mt-3 font-display text-xl">{t("blog.empty")}</p>
+          <p className="mt-2 text-sm text-muted">{t("blog.emptyHint")}</p>
+        </Panel>
+      </main>
+    );
+  }
 
-      {isLoading && (
-        <p className="mt-16 text-center text-sm text-muted">{t("common.loading")}</p>
-      )}
-
-      {/* The `blog.hero` slot is the page's picture only while there is nothing
-          to read — once articles exist the lead article's own cover is the
-          banner, and stacking two full-width images would just push the first
-          headline below the fold. */}
-      {!isLoading && rows.length === 0 && (
-        <div className="mx-auto mt-12 max-w-3xl px-6">
-          <ImageSlot slot="blog.hero" ratio="16/9" priority sizes="(min-width: 768px) 48rem, 92vw" />
-          <Panel className="mt-8 flex flex-col items-center p-10 text-center">
-            {/* public copy only — a visitor must never be told to go and
-                publish something from the admin panel */}
-            <Mascot emotion="calm" palette={["calm"]} size={80} />
-            <p className="mt-3 font-display text-xl">{t("blog.empty")}</p>
-            <p className="mt-2 text-sm text-muted">{t("blog.emptyHint")}</p>
-          </Panel>
-        </div>
-      )}
-
-      {lead && (
-        <section className="mx-auto mt-12 max-w-6xl px-6">
+  const scenes: FilmScene[] = [
+    {
+      id: "title",
+      slot: "blog.hero",
+      dim: 0.66,
+      title: t("blog.title"),
+      body: t("blog.subtitle"),
+    },
+    ...rows.map((article, i): FilmScene => {
+      const tag = pickLang(lang, article.tag_fr, article.tag_ar, article.tag_en);
+      const meta = [
+        article.published_at ? formatDate(article.published_at, lang) : null,
+        `${article.read_minutes} ${t("blog.minutes")}`,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      return {
+        id: article.id,
+        src: article.cover_url ?? undefined,
+        creditsFirst: true,
+        dim: 0.66,
+        credits: [
+          {
+            role: `${String(i + 1).padStart(2, "0")}${tag ? ` — ${tag}` : ""}`,
+            name: <span className="text-lg text-on-shade/70 sm:text-xl">{meta}</span>,
+          },
+        ],
+        title: pickLang(lang, article.title_fr, article.title_ar, article.title_en),
+        body: pickLang(lang, article.excerpt_fr, article.excerpt_ar, article.excerpt_en),
+        extra: (
           <Link
-            to={`/journal/${lead.slug}`}
-            className="group grid gap-6 md:grid-cols-2 md:items-center"
+            to={`/journal/${article.slug}`}
+            className="group inline-flex items-center gap-3 border-b border-on-shade/40 pb-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-on-shade transition-colors hover:border-gold-hi"
           >
-            <div className="overflow-hidden rounded-3xl border border-line bg-panel-2">
-              {lead.cover_url ? (
-                <img
-                  src={lead.cover_url}
-                  srcSet={dbSrcSet(lead.cover_url)}
-                  sizes="(min-width: 768px) 50vw, 90vw"
-                  alt=""
-                  loading="eager"
-                  fetchPriority="high"
-                  decoding="async"
-                  className="aspect-[16/10] w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                />
-              ) : (
-                <ImageSlot slot="blog.hero" ratio="16/10" priority rounded="rounded-none" />
-              )}
-            </div>
-            <div className="text-start">
-              <span className="text-xs uppercase tracking-[0.3em] text-brand">
-                {t("blog.featured")}
-              </span>
-              <h2 className="mt-3 font-display text-3xl font-semibold leading-tight sm:text-4xl">
-                {pickLang(lang, lead.title_fr, lead.title_ar, lead.title_en)}
-              </h2>
-              <p className="mt-3 text-base leading-relaxed text-muted">
-                {pickLang(lang, lead.excerpt_fr, lead.excerpt_ar, lead.excerpt_en)}
-              </p>
-              <ArticleMeta article={lead} />
-              <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-brand">
-                {t("blog.readMore")}
-                <ArrowRight size={15} className="rtl:rotate-180" />
-              </span>
-            </div>
+            {t("blog.readMore")}
+            <ArrowRight size={15} className="transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
           </Link>
-        </section>
-      )}
+        ),
+      };
+    }),
+  ];
 
-      {rest.length > 0 && (
-        <section className="mx-auto mt-16 grid max-w-6xl gap-6 px-6 sm:grid-cols-2 lg:grid-cols-3">
-          {rest.map((article) => (
-            <Link key={article.id} to={`/journal/${article.slug}`} data-reveal className="group">
-              <Panel className="h-full overflow-hidden">
-                <div className="overflow-hidden bg-panel-2">
-                  {article.cover_url ? (
-                    <img
-                      src={article.cover_url}
-                      srcSet={dbSrcSet(article.cover_url)}
-                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 90vw"
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                      className="aspect-[4/3] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                    />
-                  ) : (
-                    <div className="fx-podium aspect-[4/3] w-full" />
-                  )}
-                </div>
-                <div className="p-6 text-start">
-                  {(article.tag_fr || article.tag_ar) && (
-                    <span className="text-[11px] uppercase tracking-[0.25em] text-brand">
-                      {pickLang(lang, article.tag_fr, article.tag_ar, article.tag_en)}
-                    </span>
-                  )}
-                  <h3 className="mt-2 font-display text-xl leading-snug">
-                    {pickLang(lang, article.title_fr, article.title_ar, article.title_en)}
-                  </h3>
-                  <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">
-                    {pickLang(lang, article.excerpt_fr, article.excerpt_ar, article.excerpt_en)}
-                  </p>
-                  <ArticleMeta article={article} />
-                </div>
-              </Panel>
-            </Link>
-          ))}
-        </section>
-      )}
-    </main>
-  );
-}
-
-function ArticleMeta({ article }: { article: Article }) {
-  const { t, lang } = useLanguage();
   return (
-    <p className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted">
-      {article.published_at && <span>{formatDate(article.published_at, lang)}</span>}
-      <span className="inline-flex items-center gap-1">
-        <Clock size={12} />
-        <span dir="ltr">{article.read_minutes}</span> {t("blog.minutes")}
-      </span>
-    </p>
+    <main className="relative">
+      <CreditsFilm scenes={scenes} label={t("blog.title")} runtime={60 + rows.length * 42} />
+    </main>
   );
 }

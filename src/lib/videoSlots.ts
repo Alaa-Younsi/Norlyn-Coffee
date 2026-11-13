@@ -41,6 +41,8 @@ export interface VideoSlotDef {
 export const HERO_VIDEO_SLOT = "home.hero";
 /** The espresso loop beside the buy form on every product page. */
 export const PRODUCT_VIDEO_SLOT = "product.loop";
+/** the second square beside it — plays the first film until it gets its own */
+export const PRODUCT_VIDEO_SLOT_2 = "product.loop.2";
 
 export const VIDEO_SLOTS: VideoSlotDef[] = [
   {
@@ -63,7 +65,19 @@ export const VIDEO_SLOTS: VideoSlotDef[] = [
     hint_fr: "La même boucle sur TOUTES les fiches produit, à côté du formulaire.",
     hint_ar: "نفس المقطع في كل صفحات المنتجات، بجانب نموذج الطلب.",
     hint_en: "The same loop on EVERY product page, beside the order form.",
-    ratio: "4/3",
+    ratio: "1/1",
+    fallbackSrc: "/videos/espresso.mp4",
+    fallbackPoster: MEDIA.life.espressoGlass,
+  },
+  {
+    slot: PRODUCT_VIDEO_SLOT_2,
+    label_fr: "Produit — vidéo 2",
+    label_ar: "المنتج — الفيديو 2",
+    label_en: "Product — video 2",
+    hint_fr: "Le second carré à côté du premier sur les fiches produit. Tant qu’il est vide, il reprend la vidéo 1.",
+    hint_ar: "المربع الثاني بجانب الأول في صفحات المنتجات. ما دام فارغاً، يعرض الفيديو 1.",
+    hint_en: "The second square beside the first on product pages. Until it is filled, it plays video 1.",
+    ratio: "1/1",
     fallbackSrc: "/videos/espresso.mp4",
     fallbackPoster: MEDIA.life.espressoGlass,
   },

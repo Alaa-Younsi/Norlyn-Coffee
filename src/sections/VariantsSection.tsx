@@ -1,15 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { FloatingBeans } from "@/components/effects/FloatingBeans";
 import { useDriftIn } from "@/hooks/useScrollFX";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { useTheme } from "@/theme/ThemeProvider";
+import { useSurfaceTone } from "@/hooks/useSurfaceTone";
 import { readableAccent } from "@/lib/contrast";
 import { formatPrice } from "@/lib/format";
 import { ScrollTrigger } from "@/lib/gsap";
 import { dbSize } from "@/lib/media";
+import { getLenisInstance } from "@/lib/lenis";
 import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/db";
@@ -29,11 +31,56 @@ export function VariantsSection({ products, show3D }: VariantsSectionProps) {
   return <Variants3D products={products} />;
 }
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+/** The name swap: letters leave upward into a blur, the next name swings up out of its mask. */
+function SwapName({ text, color, lang }: { text: string; color: string; lang: string }) {
+  // letters live inside unbreakable word boxes, so a long name wraps between
+  // words ("Nos machines à espresso"), never mid-word; Arabic animates by word
+  const words = text.split(" ");
+  let glyph = 0;
+  return (
+    <span className="block [perspective:700px]" style={{ color }}>
+      <span className="sr-only">{text}</span>
+      {words.map((word, w) => {
+        const pieces = lang === "ar" ? [word] : Array.from(word);
+        return (
+          <Fragment key={`${w}-${word}`}>
+            <span aria-hidden className="inline-block whitespace-nowrap">
+              {pieces.map((piece, k) => {
+                const order = glyph++;
+                return (
+                  <span
+                    key={`${k}-${piece}`}
+                    className="inline-block pb-[0.12em] -mb-[0.12em] align-bottom [clip-path:inset(-1em_-0.4em_0_-0.4em)]"
+                  >
+                    <motion.span
+                      className="inline-block origin-bottom"
+                      initial={{ y: "110%", rotateX: -75 }}
+                      animate={{ y: 0, rotateX: 0, filter: "blur(0px)" }}
+                      exit={{ y: "-110%", rotateX: 40, filter: "blur(8px)" }}
+                      transition={{ duration: 0.65, delay: order * 0.03, ease: EASE }}
+                    >
+                      {piece}
+                    </motion.span>
+                  </span>
+                );
+              })}
+            </span>
+            {w < words.length - 1 && " "}
+          </Fragment>
+        );
+      })}
+    </span>
+  );
+}
+
 function Variants3D({ products }: { products: Product[] }) {
   const { t, lang } = useLanguage();
-  const { theme } = useTheme();
+  const theme = useSurfaceTone();
   const zoneRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
+  const fillRefs = useRef<Array<HTMLSpanElement | null>>([]);
   const [index, setIndex] = useState(0);
   const count = products.length;
   // the capsule swoops to the start side as this zone arrives — the copy
@@ -48,113 +95,246 @@ function Variants3D({ products }: { products: Product[] }) {
       start: "top top",
       end: "bottom bottom",
       onUpdate: (self) => {
-        setIndex(Math.min(count - 1, Math.floor(self.progress * count)));
+        // count capsule chapters, then the machine chapter (index === count)
+        const position = self.progress * (count + 1);
+        setIndex(Math.min(count, Math.floor(position)));
+        // each chapter's bar fills with the scroll through its own stretch
+        fillRefs.current.forEach((fill, i) => {
+          if (fill) fill.style.transform = `scaleX(${Math.min(1, Math.max(0, position - i)).toFixed(3)})`;
+        });
       },
     });
     return () => trigger.kill();
   }, [count]);
 
-  const product = products[index];
+  // jump to the middle of a capsule's stretch of the zone
+  const goTo = (i: number) => {
+    const zone = zoneRef.current;
+    if (!zone) return;
+    const span = zone.offsetHeight - window.innerHeight;
+    const y = zone.getBoundingClientRect().top + window.scrollY + ((i + 0.5) / (count + 1)) * span;
+    const lenis = getLenisInstance();
+    if (lenis) lenis.scrollTo(y, { duration: 1.2 });
+    else window.scrollTo({ top: y, behavior: "smooth" });
+  };
+
+  // the last chapter is the machine: the capsule morphs into it on the 3D
+  // layer, so the copy talks about the machine instead of a capsule
+  const isMachine = index >= count;
+  const product = products[Math.min(index, count - 1)];
+  const chapterKey = isMachine ? "machine" : product?.id;
   if (!product) return null;
-  const name = pickLang(lang, product.name_fr, product.name_ar, product.name_en);
-  const description = pickLang(lang, product.description_fr, product.description_ar, product.description_en);
+  const name = isMachine ? t("about.machines.title") : pickLang(lang, product.name_fr, product.name_ar, product.name_en);
+  const description = isMachine
+    ? t("about.machines.text")
+    : pickLang(lang, product.description_fr, product.description_ar, product.description_en);
+  const accent = readableAccent(product.accent_color, theme);
+  const beans = Math.round(((product.intensity ?? 0) / 100) * 5);
+
+  // the intensity scale, drawn once and reused
+  const beanRow = (
+    <span className="flex items-center gap-1" aria-label={`${beans}/5`}>
+      {Array.from({ length: 5 }, (_, i) => (
+        <motion.svg
+          key={`${product.id}-${i}`}
+          viewBox="0 0 12 16"
+          className="h-4 w-3"
+          aria-hidden
+          initial={{ scale: 0.4, rotate: -30 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 260, damping: 13, delay: 0.3 + i * 0.07 }}
+        >
+          <ellipse
+            cx="6"
+            cy="8"
+            rx="5.2"
+            ry="7.2"
+            fill={i < beans ? accent : "none"}
+            stroke={i < beans ? accent : "rgb(var(--c-line))"}
+          />
+          <path
+            d="M6 1.4c-1.5 2.3 1.5 4.7 0 6.6s-1.5 4.3 0 6.6"
+            fill="none"
+            stroke={i < beans ? "rgb(var(--c-bg))" : "rgb(var(--c-line))"}
+            strokeWidth="0.9"
+            strokeLinecap="round"
+          />
+        </motion.svg>
+      ))}
+    </span>
+  );
 
   return (
-    <div ref={zoneRef} id="variants" style={{ height: `${count * 110}vh` }} className="relative">
-      <div className="sticky top-0 flex h-screen items-center">
+    <div ref={zoneRef} id="variants" style={{ height: `${(count + 1) * 110}vh` }} className="relative">
+      {/*
+        Desktop geometry, tied to the 3D capsule rather than to a grid.
+
+        On this pinned screen the scene parks the capsule at world x = −1.5,
+        y = 0.08 (sceneConfig.ts), seen by a 35° camera at z = 6. On screen that
+        is x = 50vw − 39.65vh (it depends on the aspect ratio, so it must be
+        computed in CSS, not guessed in %) and y = 47.9% of the viewport. So:
+          - the copy block is centred on the capsule's centre line (shifted up
+            4.2vh to land on 47.9%) and MIRRORS the capsule around the screen's
+            centre: its own centre sits at x = 50vw + 39.65vh;
+          - a gold leader runs from the capsule's edge to the copy;
+          - the capsule's own caption (its number, its intensity) hangs under it.
+        RTL mirrors all of it through logical `start-*` (the scene mirrors x).
+        Phones keep the stacked layout: capsule on top, copy below.
+      */}
+      <div className="sticky top-0 h-screen overflow-hidden">
         <FloatingBeans count={6} seed={4} />
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 px-6 md:grid-cols-2">
-          {/* start column intentionally empty — the 3D capsule floats there
-              (on phones the capsule hovers above the copy instead) */}
-          <div className="hidden md:block" />
-          <div ref={copyRef} className="relative mt-[26vh] md:mt-0">
-            {/* soft wash of the active variant's accent behind the copy — the
-                content visibly answers the capsule's recolor */}
-            <div
-              className="pointer-events-none absolute -inset-x-10 -inset-y-8 -z-10 rounded-[3rem] blur-3xl transition-colors duration-700"
-              style={{
-                background: `radial-gradient(60% 55% at 50% 40%, ${product.accent_color ?? "#b08439"}2e, transparent 75%)`,
-              }}
-              aria-hidden
-            />
-            <p className="text-sm uppercase tracking-[0.3em] text-brand">{t("variants.kicker")}</p>
-            <h2 className="mt-2 font-display text-3xl font-semibold sm:text-5xl">
-              {t("variants.title")}
-            </h2>
 
-            <div className="relative mt-8 min-h-64 md:min-h-72">
-              <AnimatePresence mode="popLayout" initial={false}>
-                {/* transform-only swap: opacity never animated on content */}
-                <motion.div
-                  key={product.id}
-                  initial={{ y: 46 }}
-                  animate={{ y: 0 }}
-                  exit={{ y: -46, opacity: 0 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        {/* the leader, capsule edge → name */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute top-[47.9%] hidden h-px start-[calc(50vw-26.65vh)] w-[calc(66.3vh-min(17rem,21vw)-1.5rem)] bg-gradient-to-r from-transparent via-brand/50 to-brand/80 md:block rtl:bg-gradient-to-l"
+        />
+
+        {/* the capsule's caption, centred under it */}
+        <div className="pointer-events-none absolute top-[72vh] hidden start-[calc(50vw-39.65vh)] -translate-x-1/2 text-center md:block rtl:translate-x-1/2">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={chapterKey}
+              initial={{ y: 10, filter: "blur(4px)" }}
+              animate={{ y: 0, filter: "blur(0px)" }}
+              exit={{ y: -8, opacity: 0 }}
+              transition={{ duration: 0.45, ease: EASE }}
+            >
+              {!isMachine && (
+                <>
+                  <span className="block font-mono text-[11px] tracking-[0.3em] text-muted">
+                    0{index + 1} / 0{count}
+                  </span>
+                  <span className="mt-2 flex justify-center">{beanRow}</span>
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div
+          ref={copyRef}
+          className="max-md:absolute max-md:inset-x-0 max-md:bottom-0 max-md:px-6 max-md:pb-10 md:absolute md:inset-y-0 md:start-[calc(50vw+39.65vh-min(17rem,21vw))] md:flex md:w-[min(34rem,42vw)] md:flex-col md:justify-center md:pb-[4.2vh]"
+        >
+          {/* top row: the section's question, sitting just above the name */}
+          <div className="md:pb-5">
+            <h2 className="font-display text-lg italic text-muted sm:text-xl">{t("variants.title")}</h2>
+          </div>
+
+          {/* middle row: the name, on the capsule's centre line */}
+          <h3 className="relative mt-4 font-display text-[3.2rem] leading-[0.95] font-medium tracking-[-0.035em] text-ink sm:text-7xl md:mt-0 lg:text-[5.25rem]">
+            <AnimatePresence mode="wait" initial={false}>
+              <SwapName key={chapterKey} text={name} color="currentColor" lang={lang} />
+            </AnimatePresence>
+          </h3>
+
+          {/* bottom row: the tasting note, the facts, the actions, the index */}
+          <div className="md:pt-6">
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div key={chapterKey}>
+                <motion.p
+                  className="mt-6 font-display text-xl leading-[1.5] italic text-ink/75 sm:text-[1.3rem] md:mt-0"
+                  initial={{ y: 18, filter: "blur(6px)" }}
+                  animate={{ y: 0, filter: "blur(0px)" }}
+                  exit={{ y: -12, opacity: 0 }}
+                  transition={{ duration: 0.6, delay: 0.18, ease: EASE }}
                 >
-                  {/* the raw pack colour is the hue, not the ink: Noir is
-                      near-black and would vanish on the dark theme */}
-                  <h3
-                    className="font-display text-4xl font-bold sm:text-6xl"
-                    style={{ color: readableAccent(product.accent_color, theme) }}
-                  >
-                    {name}
-                  </h3>
-                  <p className="mt-4 max-w-md leading-relaxed text-muted">{description}</p>
+                  {description}
+                </motion.p>
 
-                  <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-3">
-                    <div>
-                      <dt className="text-xs uppercase tracking-widest text-muted">
-                        {t("variants.intensity")}
-                      </dt>
-                      <dd className="mt-1.5 flex items-center gap-1.5">
-                        {Array.from({ length: 5 }, (_, i) => (
-                          <span
-                            key={i}
-                            className="h-2 w-7 rounded-full transition-colors"
-                            style={{
-                              backgroundColor:
-                                i < Math.round(((product.intensity ?? 0) / 100) * 5)
-                                  ? (product.accent_color ?? "rgb(var(--c-brand))")
-                                  : "rgb(var(--c-line))",
-                            }}
-                          />
-                        ))}
-                      </dd>
-                    </div>
-                    {product.dosage && (
-                      <div>
-                        <dt className="text-xs uppercase tracking-widest text-muted">
-                          {t("variants.dosage")}
-                        </dt>
-                        <dd className="mt-1 font-display text-2xl">{product.dosage}</dd>
-                      </div>
-                    )}
-                  </dl>
-
-                  <div className="mt-7 flex items-center gap-4">
-                    <span className="font-display text-3xl text-brand">
-                      {formatPrice(product.price)}
-                    </span>
-                    <Link to={`/product/${product.slug}`}>
-                      <Button>{t("variants.order")}</Button>
-                    </Link>
+                {!isMachine && (
+                <motion.dl
+                  className="mt-8 grid grid-cols-3 border-y border-line"
+                  initial={{ y: 18 }}
+                  animate={{ y: 0 }}
+                  exit={{ y: -12, opacity: 0 }}
+                  transition={{ duration: 0.6, delay: 0.26, ease: EASE }}
+                >
+                  <div className="py-4 pe-4">
+                    <dt className="text-[10px] uppercase tracking-[0.28em] text-muted">
+                      {t("variants.intensity")}
+                    </dt>
+                    <dd className="mt-3">{beanRow}</dd>
                   </div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
+                  <div className="border-s border-line px-4 py-4">
+                    <dt className="text-[10px] uppercase tracking-[0.28em] text-muted">
+                      {t("variants.dosage")}
+                    </dt>
+                    <dd className="mt-2 font-display text-2xl">{product.dosage ?? "—"}</dd>
+                  </div>
+                  <div className="border-s border-line py-4 ps-4">
+                    <dt className="text-[10px] uppercase tracking-[0.28em] text-muted">
+                      {t("variants.price")}
+                    </dt>
+                    <dd className="mt-2 font-display text-2xl">{formatPrice(product.price)}</dd>
+                  </div>
+                </motion.dl>
+                )}
 
-            <div className="mt-8 flex gap-2">
-              {products.map((p, i) => (
-                <span
-                  key={p.id}
-                  className={cn(
-                    "h-1.5 rounded-full transition-all duration-300",
-                    i === index ? "w-10 bg-brand" : "w-4 bg-line",
+                <motion.div
+                  className="mt-7 flex flex-wrap items-center gap-x-7 gap-y-4"
+                  initial={{ y: 18 }}
+                  animate={{ y: 0 }}
+                  exit={{ y: -12, opacity: 0 }}
+                  transition={{ duration: 0.6, delay: 0.32, ease: EASE }}
+                >
+                  <Link to={isMachine ? "/about" : `/product/${product.slug}`} className="group inline-block">
+                    <Button className="gap-3 pe-2">
+                      {isMachine ? t("variants.machineCta") : t("variants.order")}
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-cream/15 transition-transform duration-500 group-hover:-rotate-45 rtl:group-hover:rotate-45">
+                        <ArrowRight size={15} className="rtl:-scale-x-100" />
+                      </span>
+                    </Button>
+                  </Link>
+                  {!isMachine && (
+                    <Link
+                      to={`/product/${product.slug}`}
+                      className="border-b border-ink/30 pb-1 text-xs font-semibold uppercase tracking-[0.22em] text-ink transition-colors hover:border-brand"
+                    >
+                      {t("variants.view")}
+                    </Link>
                   )}
-                />
+                </motion.div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* chapter index — same width as the spec grid above it, so the
+                block has one left edge and one right edge */}
+            <nav
+              className="mt-8 grid gap-4"
+              style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}
+              aria-label={t("variants.title")}
+            >
+              {products.map((p, i) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => goTo(i)}
+                  aria-current={i === index ? "true" : undefined}
+                  className="group cursor-pointer text-start"
+                >
+                  <span className="block h-px w-full overflow-hidden bg-line">
+                    <span
+                      ref={(el) => {
+                        fillRefs.current[i] = el;
+                      }}
+                      className="block h-full w-full origin-left scale-x-0 bg-gold-hi rtl:origin-right"
+                    />
+                  </span>
+                  <span className="mt-3 flex items-baseline gap-2">
+                    <span className="font-display text-xs tabular-nums text-brand">0{i + 1}</span>
+                    <span
+                      className={cn(
+                        "truncate text-xs transition-colors duration-300",
+                        i === index ? "text-ink" : "text-muted group-hover:text-ink",
+                      )}
+                    >
+                      {pickLang(lang, p.name_fr, p.name_ar, p.name_en)}
+                    </span>
+                  </span>
+                </button>
               ))}
-            </div>
+            </nav>
           </div>
         </div>
       </div>
@@ -164,7 +344,7 @@ function Variants3D({ products }: { products: Product[] }) {
 
 function Variants2D({ products }: { products: Product[] }) {
   const { t, lang } = useLanguage();
-  const { theme } = useTheme();
+  const theme = useSurfaceTone();
   return (
     <section id="variants" className="mx-auto max-w-7xl px-6 py-20">
       <p className="text-sm uppercase tracking-[0.3em] text-brand">{t("variants.kicker")}</p>

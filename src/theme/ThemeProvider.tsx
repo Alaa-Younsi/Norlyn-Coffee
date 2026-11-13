@@ -1,55 +1,39 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect } from "react";
 import type { ReactNode } from "react";
 
-type Theme = "light" | "dark";
+/**
+ * The site is dark-only (Nov 2026). There is no light mode and no toggle: the
+ * palette in index.css is built for espresso and gold, and index.html already
+ * boots with `data-theme="dark"`, so this provider only re-asserts it.
+ *
+ * `useTheme()` keeps its old shape (`theme` is always "dark") so the code that
+ * adapts colours to the surface — readableAccent, the admin charts — needs no
+ * second branch.
+ */
+type Theme = "dark";
 
 interface ThemeContextValue {
   theme: Theme;
-  toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextValue | null>(null);
-
-const STORAGE_KEY = "norlyn-theme";
-
-function readStoredTheme(): Theme {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === "dark" || stored === "light") return stored;
-  } catch {
-    // fall through to brand default
-  }
-  // brand default is the cream "latte" look — dark stays one click away
-  return "light";
-}
+const VALUE: ThemeContextValue = { theme: "dark" };
+const ThemeContext = createContext<ThemeContextValue>(VALUE);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(readStoredTheme);
-
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
-
-  const toggleTheme = useCallback(() => {
-    setTheme((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
-      try {
-        localStorage.setItem(STORAGE_KEY, next);
-      } catch {
-        // storage unavailable — theme just won't persist
-      }
-      return next;
-    });
+    document.documentElement.dataset.theme = "dark";
+    try {
+      // a stored "light" from before the switch must not linger anywhere
+      localStorage.removeItem("norlyn-theme");
+    } catch {
+      // storage unavailable — nothing to clean up
+    }
   }, []);
 
-  const value = useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme]);
-
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return <ThemeContext.Provider value={VALUE}>{children}</ThemeContext.Provider>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components -- context + hook belong together
 export function useTheme(): ThemeContextValue {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
-  return ctx;
+  return useContext(ThemeContext);
 }

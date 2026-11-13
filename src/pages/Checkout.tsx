@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
+import { Mascot } from "@/components/mascot/Mascot";
 import { Panel } from "@/components/ui/Panel";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -47,10 +48,12 @@ export function Checkout() {
 
   if (items.length === 0) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 px-6">
-        <p className="text-muted">{t("cart.empty")}</p>
+      <main className="flex min-h-screen flex-col items-center justify-center gap-6 px-6 text-center">
+        {/* nothing in the cup yet */}
+        <Mascot emotion="sleepy" palette={["sleepy"]} size={110} />
+        <p className="font-display text-3xl italic sm:text-4xl">{t("cart.empty")}</p>
         <Link to="/shop">
-          <Button variant="outline">{t("cart.continue")}</Button>
+          <Button size="lg">{t("cart.continue")}</Button>
         </Link>
       </main>
     );
@@ -58,7 +61,7 @@ export function Checkout() {
 
   return (
     <main className="mx-auto min-h-screen max-w-5xl px-6 pb-24 pt-28">
-      <h1 className="font-display text-4xl font-semibold sm:text-5xl">{t("checkout.title")}</h1>
+      <h1 className="font-display text-[3rem] leading-[0.98] font-medium tracking-[-0.03em] sm:text-6xl lg:text-7xl">{t("checkout.title")}</h1>
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_360px]">
         <Panel className="p-6">
           <h2 className="mb-5 font-display text-2xl">{t("checkout.contact")}</h2>

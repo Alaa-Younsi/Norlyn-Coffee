@@ -1,11 +1,11 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { ScrollProgressBar } from "@/components/effects/ScrollProgressBar";
+import { HeroBackdrop } from "@/components/brand/HeroBackdrop";
 import { ScrollMascot } from "@/components/mascot/ScrollMascot";
 import { HeroSection } from "@/sections/HeroSection";
 import { StorySection } from "@/sections/StorySection";
 import { VariantsSection } from "@/sections/VariantsSection";
 import { FeaturedSection } from "@/sections/FeaturedSection";
-import { GallerySection } from "@/sections/GallerySection";
+import { CinematicPour } from "@/sections/CinematicPour";
 import { HowItWorksSection } from "@/sections/HowItWorksSection";
 import { ReviewsSection } from "@/sections/ReviewsSection";
 import { NewsletterSection } from "@/sections/NewsletterSection";
@@ -61,6 +61,28 @@ export function Landing() {
   const onFirstFrame = useCallback(() => setSceneDrawn(true), []);
 
   /*
+    The 3D story ends when the scroll stage leaves through the bottom of the
+    screen — by then the machine has dissolved. Past that point (the film, the
+    newsletter, the footer) the canvas used to keep rendering an empty scene
+    every frame, which on a phone was a full WebGL pass competing with the
+    film's scrub. Now the loop stops and the layer is hidden; scrolling back
+    into the stage wakes it.
+  */
+  const [sceneAwake, setSceneAwake] = useState(true);
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const trigger = ScrollTrigger.create({
+      trigger: stage,
+      start: "top top",
+      end: "bottom bottom",
+      onLeave: () => setSceneAwake(false),
+      onEnterBack: () => setSceneAwake(true),
+    });
+    return () => trigger.kill();
+  }, []);
+
+  /*
     And a bound on the canvas specifically. `allow3D` says the visitor has not
     asked us not to animate — it does not say their browser will hand out a
     WebGL context, and when it refuses, nothing ever draws a first frame and
@@ -90,17 +112,19 @@ export function Landing() {
 
   return (
     <>
-      <ScrollProgressBar />
+      {/* the plane BEHIND the cup: the giant mark and the light it stands in */}
+      <HeroBackdrop />
       {/* fixed 3D layer UNDER the copy (z-10 vs stage z-20) so text and CTAs
           always stay readable and clickable above the capsule */}
       {show3D && (
-        <div className="pointer-events-none fixed inset-0 z-10" aria-hidden>
+        <div className={`pointer-events-none fixed inset-0 z-10 ${sceneAwake ? "" : "invisible"}`} aria-hidden>
           <Suspense fallback={null}>
             <Scene
               colors={colors}
               dirSign={dir === "rtl" ? -1 : 1}
               compact={flags.isMobile}
               onFirstFrame={onFirstFrame}
+              active={sceneAwake}
             />
           </Suspense>
         </div>
@@ -125,7 +149,6 @@ export function Landing() {
         </div>
         <div data-act="tail" data-mascot="love">
           <FeaturedSection products={products ?? []} />
-          <GallerySection />
         </div>
         {/* The exit act needs scroll room to play out: progress hits 1 when the
             stage's bottom reaches the viewport's bottom, so if the stage ended
@@ -145,6 +168,9 @@ export function Landing() {
           every measured act boundary and re-time the whole morph. After it,
           the object has already dissolved and this is the last thing before
           the footer. */}
+      {/* the scroll-driven film: outside the stage too — it pins for several
+          screens, and the machine has long dissolved by the time it plays */}
+      <CinematicPour />
       <NewsletterSection />
     </>
   );

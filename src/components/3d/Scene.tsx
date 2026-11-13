@@ -22,6 +22,12 @@ interface SceneProps {
   compact: boolean;
   /** fired once the canvas has genuinely drawn — see <FirstFrame> */
   onFirstFrame?: () => void;
+  /**
+   * false once the 3D story is over (the scroll stage has scrolled out and the
+   * machine has dissolved): the render loop stops entirely instead of drawing
+   * an empty scene 60 times a second behind the film and the footer.
+   */
+  active?: boolean;
 }
 
 /**
@@ -140,12 +146,29 @@ function Rig({ colors, dirSign, compact }: SceneProps) {
 
     const material = materialRef.current;
     if (material) {
-      const idx = Math.floor(state.colorPos);
-      const frac = state.colorPos - idx;
-      colorA.current.set(colors[idx]);
-      colorB.current.set(colors[Math.min(idx + 1, colors.length - 1)]);
-      targetColor.current.copy(colorA.current).lerp(colorB.current, frac);
-      material.color.lerp(targetColor.current, 1 - Math.exp(-6 * Math.min(delta, 0.05)));
+      // Hold each variant's colour for its whole stretch and blend only in a
+      // short window CENTRED on the switch. The copy changes name exactly at
+      // the integer boundary (floor), so a colour that drifted linearly across
+      // the stretch was already mostly the next pack while the text still
+      // named this one. Now the two flip together: 50/50 at the boundary.
+      const BLEND = 0.07;
+      const last = colors.length - 1;
+      const k = Math.floor(state.colorPos);
+      const f = state.colorPos - k;
+      let from = k;
+      let to = k;
+      let t = 0;
+      if (f > 1 - BLEND && k < last) {
+        to = k + 1;
+        t = (f - (1 - BLEND)) / (2 * BLEND);
+      } else if (f < BLEND && k > 0) {
+        from = k - 1;
+        t = 0.5 + f / (2 * BLEND);
+      }
+      colorA.current.set(colors[Math.min(from, last)]);
+      colorB.current.set(colors[Math.min(to, last)]);
+      targetColor.current.copy(colorA.current).lerp(colorB.current, t);
+      material.color.lerp(targetColor.current, 1 - Math.exp(-14 * Math.min(delta, 0.05)));
     }
 
     // `fade` is 1 for all but the last half-percent of the stage. Writing the
@@ -262,7 +285,7 @@ const COMPACT_DPR = [1.25, 1.6, 2] as const;
 /** where a phone starts before the monitor has an opinion — one rung down from native */
 const COMPACT_START = 1;
 
-export function Scene({ colors, dirSign, compact, onFirstFrame }: SceneProps) {
+export function Scene({ colors, dirSign, compact, onFirstFrame, active = true }: SceneProps) {
   // never render ABOVE the screen's own pixel density — that is pure
   // supersampling the visitor pays for and cannot see
   const ladder = useMemo(() => {
@@ -284,6 +307,7 @@ export function Scene({ colors, dirSign, compact, onFirstFrame }: SceneProps) {
   return (
     <Canvas
       dpr={compact ? dpr : [1, 1.75]}
+      frameloop={active ? "always" : "never"}
       camera={{ position: [0, 0, 6], fov: 35 }}
       // MSAA is on everywhere now. It used to be a desktop luxury, but the
       // cup's gold filet is a sub-pixel-thin torus and without it the lip and

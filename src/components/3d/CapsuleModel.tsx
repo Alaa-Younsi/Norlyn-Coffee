@@ -4,8 +4,10 @@ import * as THREE from "three";
 
 /**
  * Procedural Nespresso-style capsule modeled on the Moriva product photos:
- * a smooth conical body rising from a slim silver rim, topped by a FACETED
- * crown (the signature look of the real capsules), silver foil underneath.
+ * a smooth conical body rising from a slim silver rim into a softly domed,
+ * SMOOTH crown, silver foil underneath. Body and crown are one lathe with
+ * shared normals, so the light runs over the shoulder without a seam — the
+ * polished anodised-aluminium look of the real capsules.
  * No external model file — nothing to download.
  */
 
@@ -22,12 +24,17 @@ const BODY_PROFILE: Array<[number, number]> = [
   [0.455, 0.82],
 ];
 
-// faceted crown: continues the shoulder up to a small flat top
+// smooth crown: continues the shoulder up to a gently rounded top. Extra
+// points through the curve keep the highlight from stepping across it.
 const CROWN_PROFILE: Array<[number, number]> = [
-  [0.455, 0.82],
+  [0.44, 0.88],
+  [0.42, 0.94],
   [0.4, 0.98],
+  [0.36, 1.04],
   [0.3, 1.1],
+  [0.24, 1.14],
   [0.17, 1.17],
+  [0.09, 1.192],
   [0.001, 1.2],
 ];
 
@@ -39,18 +46,11 @@ interface CapsuleModelProps {
 }
 
 export function CapsuleModel({ materialRef, initialColor }: CapsuleModelProps) {
+  // body + crown as ONE lathe: shared vertices at the shoulder mean shared
+  // normals, so there is no seam line where the two used to meet
   const bodyGeometry = useMemo(() => {
-    const points = BODY_PROFILE.map(([r, y]) => new THREE.Vector2(r, y));
-    const geo = new THREE.LatheGeometry(points, 64);
-    geo.translate(0, -HALF_HEIGHT, 0);
-    return geo;
-  }, []);
-
-  // few radial segments + per-face normals = the crisp metallic facets
-  const crownGeometry = useMemo(() => {
-    const points = CROWN_PROFILE.map(([r, y]) => new THREE.Vector2(r, y));
-    const geo = new THREE.LatheGeometry(points, 16).toNonIndexed();
-    geo.computeVertexNormals();
+    const points = [...BODY_PROFILE, ...CROWN_PROFILE].map(([r, y]) => new THREE.Vector2(r, y));
+    const geo = new THREE.LatheGeometry(points, 96);
     geo.translate(0, -HALF_HEIGHT, 0);
     return geo;
   }, []);
@@ -83,7 +83,6 @@ export function CapsuleModel({ materialRef, initialColor }: CapsuleModelProps) {
   return (
     <group>
       <mesh geometry={bodyGeometry} material={material} castShadow />
-      <mesh geometry={crownGeometry} material={material} castShadow />
 
       {/* slim silver rim hugging the flange, like the aluminium lip */}
       <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -HALF_HEIGHT + 0.04, 0]}>

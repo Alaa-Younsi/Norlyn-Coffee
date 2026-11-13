@@ -1,7 +1,10 @@
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { SplitText } from 'gsap/SplitText'
+import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
 
-gsap.registerPlugin(ScrollTrigger)
+// all three are part of GSAP's free standard licence since 3.13
+gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin)
 
 // A phone's URL bar slides away on the first scroll down and slides back on the
 // first scroll up, and each slide is a viewport resize. By default that makes
@@ -12,4 +15,4 @@ gsap.registerPlugin(ScrollTrigger)
 // (a real rotation) still refresh.
 ScrollTrigger.config({ ignoreMobileResize: true })
 
-export { gsap, ScrollTrigger }
+export { gsap, ScrollTrigger, SplitText, DrawSVGPlugin }

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <!--
@@ -64,11 +64,9 @@
       module script does not execute until it and its whole import graph have
       downloaded, and the browser has drawn a frame long before that.
 
-      1. THEME. <ThemeProvider> reads the same key, but can only write
-         `data-theme` from an effect — one full paint after the document was
-         drawn in whatever theme the attribute above says. For a visitor who
-         chose dark that paint is a full-screen flash of cream, landing on the
-         splash screen, the very first thing they see.
+      1. THEME. Gone: the site is dark-only (Nov 2026), so `data-theme="dark"`
+         is simply written into the markup above and never changes. A stored
+         "light" choice from before is deliberately ignored.
 
       1b. LANGUAGE / DIRECTION. Same story for a returning Arabic visitor:
          <html lang="fr"> is hardcoded and <LanguageProvider> only fixes
@@ -92,15 +90,13 @@
     <script>
       try {
         var d = document.documentElement;
-        var t = localStorage.getItem("norlyn-theme");
-        if (t === "dark" || t === "light") d.dataset.theme = t;
         var l = localStorage.getItem("norlyn-lang");
         if (l === "fr" || l === "ar" || l === "en") {
           d.lang = l;
           d.dir = l === "ar" ? "rtl" : "ltr";
         }
       } catch (e) {
-        /* private mode — the light/fr defaults in the markup above stand */
+        /* private mode — the fr default in the markup above stands */
       }
       if ("scrollRestoration" in history) history.scrollRestoration = "manual";
     </script>

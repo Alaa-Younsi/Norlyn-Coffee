@@ -5,6 +5,9 @@ import { usePixel } from "@/components/MetaPixelProvider";
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/Panel";
 import { Mascot } from "@/components/mascot/Mascot";
+import { BeanConfetti } from "@/components/brand/BeanConfetti";
+import { PageTitle } from "@/components/brand/PageTitle";
+import { Reveal } from "@/components/brand/Reveal";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSeo } from "@/hooks/useSeo";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
@@ -56,11 +59,18 @@ export function OrderConfirmation() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center px-6 pb-24 pt-32 text-center">
-      <Mascot emotion="excited" palette={["excited"]} size={110} frameSize="lg" />
-      <h1 className="mt-4 font-display text-4xl font-semibold sm:text-5xl">{t("confirm.title")}</h1>
-      <p className="mt-2 text-muted">{t("confirm.sub")}</p>
+      {/* the cup is in love, and the beans fly */}
+      <div className="relative">
+        <BeanConfetti />
+        <Mascot emotion="love" palette={["love"]} size={120} frameSize="lg" />
+      </div>
+      <PageTitle text={t("confirm.title")} className="mt-6 text-[2.8rem] sm:text-6xl lg:text-7xl" delay={0.3} />
+      <Reveal as="p" index={3} className="mt-4 font-display text-xl italic text-ink/70">
+        {t("confirm.sub")}
+      </Reveal>
 
-      <Panel className="mt-8 w-full p-6 text-start">
+      <Reveal index={5} className="mt-10 w-full">
+      <Panel className="w-full p-6 text-start">
         <p className="text-sm text-muted">{t("confirm.number")}</p>
         <p className="font-display text-2xl tracking-wide text-brand" dir="ltr">
           {orderNumber}
@@ -119,6 +129,7 @@ export function OrderConfirmation() {
           <p className="mt-4 text-sm text-muted">{t("confirm.notFound")}</p>
         )}
       </Panel>
+      </Reveal>
 
       <Link to="/" className="mt-8">
         <Button variant="outline">{t("confirm.backHome")}</Button>

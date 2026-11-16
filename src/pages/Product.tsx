@@ -11,7 +11,7 @@ import { KineticLine } from "@/components/brand/KineticLine";
 import { Reveal } from "@/components/brand/Reveal";
 import { useTiltCards } from "@/hooks/useScrollFX";
 import { PRODUCT_VIDEO_SLOT, PRODUCT_VIDEO_SLOT_2 } from "@/lib/videoSlots";
-import { FloatingBeans } from "@/components/effects/FloatingBeans";
+import { ProductBackdrop } from "@/components/effects/ProductBackdrop";
 import { Steam } from "@/components/effects/Steam";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useTheme } from "@/theme/ThemeProvider";
@@ -148,7 +148,7 @@ export function Product() {
 
   return (
     <main className="relative min-h-screen overflow-x-clip pb-24 pt-24 sm:pt-28">
-      <FloatingBeans count={6} seed={13} />
+      <ProductBackdrop />
 
       <div className="relative mx-auto max-w-7xl px-6">
 

@@ -80,7 +80,7 @@ export const siteTranslations = {
 
     // --- the bio promise -----------------------------------------------
     "about.promise.kicker": "Notre engagement",
-    "about.promise.title": "100 % bio. 0 % sucre. 0 % produit chimique.",
+    "about.promise.title": "100 % bio. 0 % sucre. 0 % produit chimique.",
     "about.promise.text":
       "La gamme espresso est produite à partir de grains naturels et scellée dans une capsule en aluminium alimentaire pur, sans traitement chimique, fabriquée avec des experts certifiés. À notre connaissance, nous sommes les seuls en Algérie à le faire.",
     "about.promise.stat1": "Bio et naturel",
@@ -537,7 +537,7 @@ export const siteTranslations = {
 
     // --- the bio promise -----------------------------------------------
     "about.promise.kicker": "Our commitment",
-    "about.promise.title": "100 % organic. 0 % sugar. 0 % chemicals.",
+    "about.promise.title": "100 % organic. 0 % sugar. 0 % chemicals.",
     "about.promise.text":
       "The espresso range is made from natural beans and sealed in a capsule of pure food-grade aluminium, with no chemical treatment, manufactured with certified experts. To our knowledge, we are the only producer in Algeria doing this.",
     "about.promise.stat1": "Organic and natural",

@@ -49,7 +49,9 @@ const EXIT_MORPH = [0.04, 0.5] as const;
  * one world unit is always viewportHeight / 3.78 — at 0.66 the saucer spans
  * about 70% of a phone's width.
  */
-const COMPACT_SCALE = [0.66, 0.58, 0.5, 0.48, 0.35];
+// the variants value (0.78) is the pinned capsule screen: at 0.5 it was a
+// thumbnail over a quarter-screen of empty space above the copy
+const COMPACT_SCALE = [0.66, 0.58, 0.78, 0.48, 0.35];
 
 /**
  * The cup+saucer's midpoint in model space, below the group origin (the model
@@ -182,7 +184,7 @@ export function computeSceneState(
       // instead of leaving it half-buried behind them, and the last three ride
       // the top band the variants and featured sections reserve on mobile.
       track(
-        [0.38 - CUP_CENTROID * COMPACT_SCALE[0], -0.95, 1.25, 0.95, 1.5],
+        [0.38 - CUP_CENTROID * COMPACT_SCALE[0], -0.95, 0.87, 0.95, 1.5],
         [approach, crossStep, transitStep, outroP],
       )
     : // ends low enough in the tail act that its base and drip tray clear the
@@ -200,7 +202,7 @@ export function computeSceneState(
   // presence, but a phone has no gutter — at the act scale that framed the
   // capsule the machine lands on the section heading. Shrink it as it forms,
   // on phones only.
-  const machineFit = compact ? lerp(1, 0.62, machineFormed) : 1;
+  const machineFit = compact ? lerp(1, 0.5, machineFormed) : 1;
 
   // a morph pinches the object in slightly, then it springs back out; the
   // crossing also shrinks it mid-flight so the swoop reads as depth

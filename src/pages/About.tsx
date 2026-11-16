@@ -27,21 +27,21 @@ const FLAVOURS: Array<keyof typeof MEDIA.capsule> = ["hazelnut", "vanilla", "car
  */
 function FoilLids({ items }: { items: Array<{ value: string; label: string }> }) {
   return (
-    <ul className="flex flex-wrap justify-center gap-6 sm:gap-10">
+    <ul className="flex justify-center gap-4 sm:gap-8 lg:gap-10">
       {items.map((item) => (
-        <li key={item.label} className="flex w-32 flex-col items-center sm:w-40">
+        <li key={item.label} className="flex w-[5.5rem] flex-col items-center sm:w-28 lg:w-32">
           <span
             className="flex aspect-square w-full items-center justify-center rounded-full border border-white/40 bg-[radial-gradient(circle_at_35%_30%,#fbfbfd,#c9cbd1_45%,#8d9097_80%,#c3c5cb)] shadow-[inset_0_2px_6px_rgb(255_255_255/0.8),inset_0_-6px_14px_rgb(0_0_0/0.25),0_18px_30px_-12px_rgb(0_0_0/0.7)]"
           >
             {/* the figure pressed into the foil */}
             <span
-              className="font-display text-3xl font-medium text-[#5d6068] [text-shadow:0_1px_0_rgb(255_255_255/0.85),0_-1px_0_rgb(0_0_0/0.25)] sm:text-4xl"
+              className="font-display text-xl font-medium text-[#5d6068] [text-shadow:0_1px_0_rgb(255_255_255/0.85),0_-1px_0_rgb(0_0_0/0.25)] sm:text-3xl"
               dir="ltr"
             >
               {item.value}
             </span>
           </span>
-          <span className="mt-4 text-center font-display text-base italic text-on-shade/80">{item.label}</span>
+          <span className="mt-3 text-center font-display text-sm leading-snug italic text-on-shade/80 sm:text-base">{item.label}</span>
         </li>
       ))}
     </ul>
@@ -123,9 +123,9 @@ export function About() {
       extra: (
         <FoilLids
           items={[
-            { value: "100 %", label: t("about.promise.stat1") },
-            { value: "0 %", label: t("about.promise.stat2") },
-            { value: "0 %", label: t("about.promise.stat3") },
+            { value: "100 %", label: t("about.promise.stat1") },
+            { value: "0 %", label: t("about.promise.stat2") },
+            { value: "0 %", label: t("about.promise.stat3") },
           ]}
         />
       ),

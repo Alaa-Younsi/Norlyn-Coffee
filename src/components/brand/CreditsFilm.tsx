@@ -204,7 +204,7 @@ export function CreditsFilm({ scenes, label }: { scenes: FilmScene[]; label: str
         {scene.title && (
           <h2
             data-film-line
-            className="font-display text-[2.5rem] leading-[0.98] font-medium tracking-[-0.03em] text-balance sm:text-7xl lg:text-[6rem]"
+            className="font-display text-[2.5rem] leading-[0.98] font-medium tracking-[-0.03em] text-balance sm:text-[min(4.5rem,10vh)] lg:text-[min(6rem,11vh)]"
           >
             {scene.title}
           </h2>
@@ -212,14 +212,14 @@ export function CreditsFilm({ scenes, label }: { scenes: FilmScene[]; label: str
         {scene.body && (
           <div
             data-film-line
-            className="mt-5 max-w-2xl font-display text-lg leading-[1.6] italic text-on-shade/85 sm:mt-7 sm:text-2xl"
+            className="mt-5 max-w-2xl font-display text-lg leading-[1.6] italic text-on-shade/85 sm:mt-6 sm:text-xl lg:text-2xl [@media(max-height:820px)]:lg:text-xl"
           >
             {scene.body}
           </div>
         )}
         {scene.creditsFirst ? null : creditsBlock}
         {scene.extra && (
-          <div data-film-line className="mt-8 sm:mt-10">
+          <div data-film-line className="mt-7 sm:mt-8">
             {scene.extra}
           </div>
         )}

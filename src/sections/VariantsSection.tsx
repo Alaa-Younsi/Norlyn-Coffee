@@ -32,8 +32,13 @@ export function VariantsSection({ products, show3D }: VariantsSectionProps) {
 }
 
 const EASE = [0.22, 1, 0.36, 1] as const;
+/** exits are short and accelerate away, so the next variant never waits on a lingering one */
+const EASE_IN = [0.55, 0, 0.75, 0.2] as const;
+/** the copy swaps on a clean fade + lift: no blur, it read as smudged mid-change */
+const swapIn = (delay: number) => ({ opacity: 1, y: 0, transition: { duration: 0.5, delay, ease: EASE } });
+const SWAP_OUT = { opacity: 0, y: -8, transition: { duration: 0.22, ease: EASE_IN } };
 
-/** The name swap: letters leave upward into a blur, the next name swings up out of its mask. */
+/** The name swap: letters slide up out of their mask, the next name swings up into it. */
 function SwapName({ text, color, lang }: { text: string; color: string; lang: string }) {
   // letters live inside unbreakable word boxes, so a long name wraps between
   // words ("Nos machines à espresso"), never mid-word; Arabic animates by word
@@ -56,10 +61,9 @@ function SwapName({ text, color, lang }: { text: string; color: string; lang: st
                   >
                     <motion.span
                       className="inline-block origin-bottom"
-                      initial={{ y: "110%", rotateX: -75 }}
-                      animate={{ y: 0, rotateX: 0, filter: "blur(0px)" }}
-                      exit={{ y: "-110%", rotateX: 40, filter: "blur(8px)" }}
-                      transition={{ duration: 0.65, delay: order * 0.03, ease: EASE }}
+                      initial={{ y: "105%", rotateX: -45 }}
+                      animate={{ y: 0, rotateX: 0, transition: { duration: 0.55, delay: order * 0.018, ease: EASE } }}
+                      exit={{ y: "-105%", transition: { duration: 0.26, delay: order * 0.008, ease: EASE_IN } }}
                     >
                       {piece}
                     </motion.span>
@@ -181,10 +185,9 @@ function Variants3D({ products }: { products: Product[] }) {
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={chapterKey}
-              initial={{ y: 10, filter: "blur(4px)" }}
-              animate={{ y: 0, filter: "blur(0px)" }}
-              exit={{ y: -8, opacity: 0 }}
-              transition={{ duration: 0.45, ease: EASE }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={swapIn(0.1)}
+              exit={SWAP_OUT}
             >
               {!isMachine && (
                 <>
@@ -205,7 +208,7 @@ function Variants3D({ products }: { products: Product[] }) {
 
         <div
           ref={copyRef}
-          className="max-md:absolute max-md:inset-x-0 max-md:bottom-0 max-md:px-6 max-md:pb-7 md:absolute md:inset-y-0 md:start-[calc(50vw+39.65vh-min(17rem,21vw))] md:flex md:w-[min(34rem,42vw)] md:flex-col md:justify-center md:pb-[4.2vh]"
+          className="max-md:absolute max-md:inset-x-0 max-md:bottom-0 max-md:px-6 max-md:pb-[max(1.75rem,10vh)] md:absolute md:inset-y-0 md:start-[calc(50vw+39.65vh-min(17rem,21vw))] md:flex md:w-[min(34rem,42vw)] md:flex-col md:justify-center md:pb-[4.2vh]"
         >
           {/* top row: the section's question, sitting just above the name */}
           <div className="md:pb-5">
@@ -225,10 +228,9 @@ function Variants3D({ products }: { products: Product[] }) {
               <motion.div key={chapterKey}>
                 <motion.p
                   className="mt-4 line-clamp-3 font-display text-[1.05rem] leading-[1.45] italic text-ink/75 sm:text-[1.3rem] md:mt-0 md:line-clamp-none"
-                  initial={{ y: 18, filter: "blur(6px)" }}
-                  animate={{ y: 0, filter: "blur(0px)" }}
-                  exit={{ y: -12, opacity: 0 }}
-                  transition={{ duration: 0.6, delay: 0.18, ease: EASE }}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={swapIn(0.12)}
+                  exit={SWAP_OUT}
                 >
                   {description}
                 </motion.p>
@@ -236,10 +238,9 @@ function Variants3D({ products }: { products: Product[] }) {
                 {!isMachine && (
                 <motion.dl
                   className="mt-5 grid grid-cols-3 border-y border-line md:mt-8 [&>div]:max-md:py-3"
-                  initial={{ y: 18 }}
-                  animate={{ y: 0 }}
-                  exit={{ y: -12, opacity: 0 }}
-                  transition={{ duration: 0.6, delay: 0.26, ease: EASE }}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={swapIn(0.18)}
+                  exit={SWAP_OUT}
                 >
                   <div className="py-4 pe-4">
                     <dt className="text-[10px] uppercase tracking-[0.28em] text-muted">
@@ -275,10 +276,9 @@ function Variants3D({ products }: { products: Product[] }) {
 
                 <motion.div
                   className="mt-5 flex flex-wrap items-center gap-x-7 gap-y-4 md:mt-7"
-                  initial={{ y: 18 }}
-                  animate={{ y: 0 }}
-                  exit={{ y: -12, opacity: 0 }}
-                  transition={{ duration: 0.6, delay: 0.32, ease: EASE }}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={swapIn(0.24)}
+                  exit={SWAP_OUT}
                 >
                   <Link to={isMachine ? "/about" : `/product/${product.slug}`} className="group inline-block">
                     <Button className="gap-3 pe-2">

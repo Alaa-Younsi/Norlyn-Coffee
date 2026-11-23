@@ -73,7 +73,7 @@ export type Tone = "none" | "surface" | "accent" | "gradient" | "dark" | "image"
 export type Pad = "none" | "sm" | "md" | "lg" | "xl";
 export type Width = "narrow" | "normal" | "wide" | "full";
 export type HideOn = "none" | "mobile" | "desktop";
-export type CtaTarget = "checkout" | "cart" | "price" | "top";
+export type CtaTarget = "checkout" | "cart" | "price" | "offers" | "top";
 export type MediaFx = "none" | "float" | "parallax" | "kenburns" | "tilt";
 export type IconKey =
   | "leaf"
@@ -268,6 +268,34 @@ export interface CheckoutData {
   showSummary: boolean;
 }
 
+/** one option in an offer picker — a pack, by slug (stable across environments) */
+export interface OfferItem {
+  slug: string;
+  /** ribbon, e.g. "Le plus populaire" */
+  badge: L10n;
+  /** a line under the price, e.g. "Le meilleur prix par coffret" */
+  note: L10n;
+  highlight: boolean;
+}
+
+export interface OffersData {
+  eyebrow: L10n;
+  title: L10n;
+  subtitle: L10n;
+  /** empty = automatic: every published pack made of the same product(s) */
+  items: OfferItem[];
+  /** slug picked when the page opens ("" = the highlighted one, else the first) */
+  preselect: string;
+  style: "cards" | "list";
+  /** what one unit is called: "1 100 DA / coffret" */
+  unitLabel: L10n;
+  showPerUnit: boolean;
+  /** "first" = saving vs the first option's per-unit rate · "compare" = the pack's crossed-out price */
+  savings: "first" | "compare" | "none";
+  cta: L10n;
+  ctaTarget: CtaTarget;
+}
+
 export interface DividerData {
   style: "line" | "beans" | "dots" | "wave" | "space";
   size: "sm" | "md" | "lg";
@@ -297,6 +325,7 @@ export interface BlockDataMap {
   text: TextData;
   cta: CtaData;
   checkout: CheckoutData;
+  offers: OffersData;
   divider: DividerData;
   image: ImageData;
 }
@@ -331,6 +360,7 @@ export const BLOCK_TYPES: BlockType[] = [
   "faq",
   "text",
   "cta",
+  "offers",
   "checkout",
   "divider",
 ];

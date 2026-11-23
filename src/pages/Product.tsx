@@ -23,10 +23,35 @@ import { formatPrice } from "@/lib/format";
 import { usePixel } from "@/components/MetaPixelProvider";
 import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
-import { intensityBeans, printedIntensity } from "@/lib/intensity";
+import { intensityBeans, mixedIntensities, printedIntensity } from "@/lib/intensity";
 import { PageRenderer } from "@/components/pageBuilder/PageRenderer";
 import { useProductPage } from "@/hooks/usePacks";
-import { normalizePage } from "@/lib/pageBuilder/defaults";
+import { DEFAULT_THEME, createBlock, normalizePage } from "@/lib/pageBuilder/defaults";
+import type { Block, PageDoc } from "@/lib/pageBuilder/types";
+
+/**
+ * The buy box of a packs-only product (0023) with no personalised page: the
+ * page builder's own offer picker + order form, so the shopper can only pick
+ * one of the product's packs — exactly what place_order accepts.
+ */
+function packsOnlyDoc(): PageDoc {
+  const offers = createBlock("offers");
+  const checkout = createBlock("checkout");
+  const tight = { pad: "none", width: "full", align: "start", anim: "none" } as const;
+  return {
+    version: 1,
+    theme: { ...DEFAULT_THEME, bgFx: "none", grain: false, cursorGlow: false, scrollProgress: false, stickyBar: false, anim: "none" },
+    blocks: [
+      {
+        ...offers,
+        ...tight,
+        data: { ...offers.data, style: "list", eyebrow: {}, title: {}, subtitle: {}, cta: {}, unitLabel: { fr: "boîte", ar: "علبة", en: "box" } },
+      } as Block,
+      { ...checkout, ...tight, pad: "md", data: { ...checkout.data, style: "card", showSummary: false } } as Block,
+    ],
+  };
+}
+const PACKS_ONLY_DOC = packsOnlyDoc();
 
 export function Product() {
   const { slug } = useParams();
@@ -158,6 +183,7 @@ export function Product() {
 
   const beans = intensityBeans(product.slug, product.intensity);
   const level = printedIntensity(product.slug);
+  const mixed = mixedIntensities(product.slug);
   const related = (allProducts ?? []).filter((p) => p.id !== product.id).slice(0, 4);
 
   return (
@@ -221,6 +247,14 @@ export function Product() {
             <dl className="mt-10 grid max-w-lg grid-cols-3 border-y border-line">
               <div className="py-4 pe-4">
                 <dt className="text-[10px] uppercase tracking-[0.28em] text-muted">{t("variants.intensity")}</dt>
+                {mixed ? (
+                  <dd className="mt-2 font-display text-xl leading-tight">
+                    {t("pb.mixed")}
+                    <span className="mt-0.5 block text-sm tabular-nums" style={{ color: titleAccent }} dir="ltr">
+                      {mixed.join(" · ")}
+                    </span>
+                  </dd>
+                ) : (
                 <dd className="mt-1.5 flex items-center gap-1" aria-label={level !== null ? String(level) : `${beans}/5`}>
                   {level !== null && (
                     <span className="me-1.5 font-display text-2xl leading-none tabular-nums" style={{ color: titleAccent }} dir="ltr">
@@ -247,6 +281,7 @@ export function Product() {
                     </svg>
                   ))}
                 </dd>
+                )}
               </div>
               <div className="border-s border-line px-4 py-4">
                 <dt className="text-[10px] uppercase tracking-[0.28em] text-muted">{t("variants.dosage")}</dt>
@@ -277,62 +312,74 @@ export function Product() {
               </ol>
             )}
 
-            {!out && (
-              <div className="mt-10 flex max-w-lg items-center gap-4">
-                <div className="flex items-center gap-4 rounded-full border border-line px-4 py-3">
-                  <button
-                    type="button"
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="cursor-pointer text-muted hover:text-ink"
-                    aria-label={t("product.decrease")}
-                  >
-                    <Minus size={15} />
-                  </button>
-                  <span className="w-6 text-center font-display text-lg tabular-nums" aria-live="polite">
-                    {quantity}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setQuantity((q) => Math.min(MAX_LINE_QTY, q + 1))}
-                    className="cursor-pointer text-muted hover:text-ink"
-                    aria-label={t("product.increase")}
-                  >
-                    <Plus size={15} />
-                  </button>
+            {product.packs_only ? (
+              <section className="mt-10 max-w-lg">
+                <p className="mb-4 text-sm text-muted">{t("pb.packsOnly")}</p>
+                <div className="overflow-hidden rounded-[2rem] border border-line">
+                  <PageRenderer doc={PACKS_ONLY_DOC} source={{ kind: "product", product }} catalogue={allProducts ?? [product]} className="p-4 sm:p-6" />
                 </div>
-                <Button onClick={handleAdd} variant={added ? "outline" : "gold"} size="lg" className="flex-1 gap-3">
-                  {added ? (
-                    <>
-                      <Check size={17} />
-                      {t("product.added")}
-                    </>
-                  ) : (
-                    t("product.addToCart")
-                  )}
-                </Button>
-              </div>
-            )}
-
-            {/* quick-buy — bypasses the cart entirely */}
-            {!out && (
-              <section className="mt-12 max-w-lg rounded-[2rem] border border-line bg-panel/60 p-6 sm:p-8">
-                <h2 className="font-display text-2xl">{t("product.orderNow")}</h2>
-                <p className="mb-6 mt-1.5 text-sm text-muted">{t("product.orderNowSub")}</p>
-                <CheckoutForm
-                  compact
-                  intent="focus"
-                  intentKey={product.id}
-                  lines={[
-                    {
-                      product_id: product.id,
-                      quantity,
-                      price: Number(product.price),
-                      name: product.name_fr,
-                    },
-                  ]}
-                  onSuccess={(orderNumber) => navigate(`/order/${orderNumber}`)}
-                />
               </section>
+            ) : (
+              <>
+              {!out && (
+                <div className="mt-10 flex max-w-lg items-center gap-4">
+                  <div className="flex items-center gap-4 rounded-full border border-line px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      className="cursor-pointer text-muted hover:text-ink"
+                      aria-label={t("product.decrease")}
+                    >
+                      <Minus size={15} />
+                    </button>
+                    <span className="w-6 text-center font-display text-lg tabular-nums" aria-live="polite">
+                      {quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setQuantity((q) => Math.min(MAX_LINE_QTY, q + 1))}
+                      className="cursor-pointer text-muted hover:text-ink"
+                      aria-label={t("product.increase")}
+                    >
+                      <Plus size={15} />
+                    </button>
+                  </div>
+                  <Button onClick={handleAdd} variant={added ? "outline" : "gold"} size="lg" className="flex-1 gap-3">
+                    {added ? (
+                      <>
+                        <Check size={17} />
+                        {t("product.added")}
+                      </>
+                    ) : (
+                      t("product.addToCart")
+                    )}
+                  </Button>
+                </div>
+              )}
+  
+              {/* quick-buy — bypasses the cart entirely */}
+              {!out && (
+                <section className="mt-12 max-w-lg rounded-[2rem] border border-line bg-panel/60 p-6 sm:p-8">
+                  <h2 className="font-display text-2xl">{t("product.orderNow")}</h2>
+                  <p className="mb-6 mt-1.5 text-sm text-muted">{t("product.orderNowSub")}</p>
+                  <CheckoutForm
+                    compact
+                    intent="focus"
+                    intentKey={product.id}
+                    lines={[
+                      {
+                        product_id: product.id,
+                        quantity,
+                        price: Number(product.price),
+                        name: product.name_fr,
+                      },
+                    ]}
+                    onSuccess={(orderNumber) => navigate(`/order/${orderNumber}`)}
+                  />
+                </section>
+              )}
+  
+              </>
             )}
 
             {product.video_url && (

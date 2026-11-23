@@ -27,6 +27,7 @@ import type { Block, PageDoc } from "@/lib/pageBuilder/types";
 import type { Lang, Product } from "@/types/db";
 import { cn } from "@/lib/utils";
 import { BlockSettings } from "./BlockSettings";
+import { useAdminPacks } from "@/hooks/usePacks";
 import { EditLangSwitch, IconBtn } from "./fields";
 import { EditLangContext, tri, useTx } from "./editorI18n";
 import { BLOCK_META } from "./labels";
@@ -54,6 +55,8 @@ interface PageEditorProps {
  */
 export function PageEditor({ doc, onChange, source, catalogue }: PageEditorProps) {
   const tx = useTx();
+  // drafts too, so an offer picker previews packs that aren't published yet
+  const { data: adminPacks } = useAdminPacks();
   const [editLang, setEditLang] = useState<Lang>("fr");
   const [device, setDevice] = useState<Device>("desktop");
   const [panel, setPanel] = useState<"blocks" | "theme">("blocks");
@@ -199,6 +202,7 @@ export function PageEditor({ doc, onChange, source, catalogue }: PageEditorProps
             doc={doc}
             source={source}
             catalogue={catalogue}
+            packs={adminPacks}
             preview
             selectedId={fullscreen ? null : selectedId}
             onSelectBlock={fullscreen ? undefined : select}

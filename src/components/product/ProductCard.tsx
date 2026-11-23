@@ -6,7 +6,7 @@ import { readableAccent } from "@/lib/contrast";
 import { formatPrice } from "@/lib/format";
 import { dbSrcSet } from "@/lib/media";
 import { pickLang } from "@/lib/localized";
-import { intensityBeans, printedIntensity } from "@/lib/intensity";
+import { intensityBeans, mixedIntensities, printedIntensity } from "@/lib/intensity";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/db";
 
@@ -48,6 +48,7 @@ export function ProductCard({ product }: { product: Product }) {
   const accent = product.accent_color ?? "#b08439";
   const beans = intensityBeans(product.slug, product.intensity);
   const level = printedIntensity(product.slug);
+  const mixed = mixedIntensities(product.slug);
   // the raw pack colour lights the plinth; the beans need one that reads on the page
   const tone = useSurfaceTone();
   const beanColor = readableAccent(accent, tone);
@@ -97,7 +98,15 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="mt-5 flex items-start justify-between gap-4 px-1">
           <div className="min-w-0">
             <h3 className="font-display text-xl leading-tight sm:text-2xl">{name}</h3>
-            {product.intensity !== null && (
+            {mixed && (
+              <p className="mt-2 text-xs text-muted">
+                {t("pb.mixed")} ·{" "}
+                <span className="font-display text-sm tabular-nums" style={{ color: beanColor }} dir="ltr">
+                  {mixed.join(" · ")}
+                </span>
+              </p>
+            )}
+            {!mixed && product.intensity !== null && (
               <div
                 className="mt-2 flex items-center gap-1"
                 role="img"

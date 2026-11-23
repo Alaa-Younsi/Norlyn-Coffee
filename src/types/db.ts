@@ -59,6 +59,8 @@ export interface Product {
   video_url: string | null;
   featured: boolean;
   status: ProductStatus;
+  /** 0023: only orderable inside a pack (absent before that migration runs) */
+  packs_only?: boolean;
   created_at: string;
   updated_at: string;
   product_images?: ProductImage[];

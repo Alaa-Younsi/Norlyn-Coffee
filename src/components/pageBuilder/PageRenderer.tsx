@@ -9,7 +9,9 @@ import { pickLang } from "@/lib/localized";
 import { packLineTotal, packQuote } from "@/lib/packPricing";
 import { safeUrl } from "@/lib/pageBuilder/defaults";
 import { isLightTheme, siteTokens } from "@/lib/pageBuilder/tokens";
-import type { CtaTarget, PageDoc } from "@/lib/pageBuilder/types";
+import { defaultOfferId, resolveOffers } from "@/lib/pageBuilder/offers";
+import type { BlockOf, CtaTarget, PageDoc } from "@/lib/pageBuilder/types";
+import { usePublishedPacks } from "@/hooks/usePacks";
 import { MAX_LINE_QTY, useCart } from "@/store/cart";
 import type { Pack, Product } from "@/types/db";
 import { cn } from "@/lib/utils";
@@ -25,6 +27,8 @@ interface PageRendererProps {
   source: PageSource;
   /** every product a pack may reference (with images) */
   catalogue: Product[];
+  /** the packs an offers block may list — defaults to the published ones (the editor passes drafts too) */
+  packs?: Pack[];
   /** admin preview: fake checkout, no fixed chrome */
   preview?: boolean;
   className?: string;
@@ -42,6 +46,7 @@ export function PageRenderer({
   doc,
   source,
   catalogue,
+  packs,
   preview = false,
   className,
   selectedId,
@@ -60,9 +65,51 @@ export function PageRenderer({
 
   const byId = useMemo(() => new Map(catalogue.map((p) => [p.id, p])), [catalogue]);
 
-  const value = useMemo((): Omit<PageContextValue, "go" | "addToCart" | "setQty" | "qty" | "lineTotal" | "checkoutLines"> => {
-    if (source.kind === "pack") {
-      const pack = source.pack;
+  // ---- offers: a visible "offers" block turns the page into a picker
+  const { data: publishedPacks } = usePublishedPacks();
+  const allPacks = useMemo(() => packs ?? publishedPacks ?? [], [packs, publishedPacks]);
+  const offersData = doc.blocks.find((b): b is BlockOf<"offers"> => b.type === "offers" && b.visible)?.data;
+  const offers = useMemo(
+    () => resolveOffers(offersData, source, allPacks, byId, lang, openedAt, preview),
+    [offersData, source, allPacks, byId, lang, openedAt, preview],
+  );
+  const basePackId = source.kind === "pack" ? source.pack.id : null;
+  const [pickedId, setPickedId] = useState<string | null>(null);
+  const offerId =
+    (pickedId && offers.some((o) => o.id === pickedId) ? pickedId : null) ?? defaultOfferId(offers, offersData, basePackId);
+  const selected = offers.find((o) => o.id === offerId) ?? null;
+  // what the price / cart / order form sell: the chosen offer, else the page's own pack
+  const sellPack: Pack | null = selected?.pack ?? (source.kind === "pack" ? source.pack : null);
+  const selectOffer = useCallback((id: string) => {
+    setPickedId(id);
+    setQty(1);
+  }, []);
+
+  const value = useMemo((): Omit<
+    PageContextValue,
+    "go" | "addToCart" | "setQty" | "qty" | "lineTotal" | "checkoutLines" | "offers" | "offerId" | "selectOffer"
+  > => {
+    const identity =
+      source.kind === "pack"
+        ? {
+            name: pickLang(lang, source.pack.name_fr, source.pack.name_ar ?? source.pack.name_fr, source.pack.name_en),
+            tagline: pickLang(lang, source.pack.tagline_fr ?? "", source.pack.tagline_ar ?? "", source.pack.tagline_en),
+          }
+        : {
+            name: pickLang(lang, source.product.name_fr, source.product.name_ar, source.product.name_en),
+            tagline: pickLang(lang, source.product.description_fr ?? "", source.product.description_ar ?? "", source.product.description_en),
+          };
+    const shared = {
+      lang,
+      dir,
+      theme,
+      ...identity,
+      onOrdered: (orderNumber: string) => navigate(`/order/${orderNumber}`),
+      preview,
+    };
+
+    if (sellPack) {
+      const pack = sellPack;
       const items: PageItem[] = [];
       for (const it of pack.items ?? []) {
         const product = byId.get(it.product_id);
@@ -74,42 +121,56 @@ export function PageRenderer({
         const p = byId.get(id);
         return p && p.status === "active" ? Number(p.price) : undefined;
       });
-      const now = openedAt;
       const inWindow =
-        (!pack.starts_at || new Date(pack.starts_at).getTime() <= now) &&
-        (!pack.ends_at || new Date(pack.ends_at).getTime() > now);
+        (!pack.starts_at || new Date(pack.starts_at).getTime() <= openedAt) &&
+        (!pack.ends_at || new Date(pack.ends_at).getTime() > openedAt);
       const inStock = items.every((i) => i.product.stock >= i.quantity);
+      const pageCover =
+        source.kind === "pack"
+          ? safeUrl(source.pack.cover_url)
+          : ([...(source.product.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.url ?? "");
       return {
+        ...shared,
         kind: "pack",
-        lang,
-        dir,
-        theme,
-        name: pickLang(lang, pack.name_fr, pack.name_ar ?? pack.name_fr, pack.name_en),
-        tagline: pickLang(lang, pack.tagline_fr ?? "", pack.tagline_ar ?? "", pack.tagline_en),
-        coverUrl: safeUrl(pack.cover_url) || items[0]?.product.product_images?.[0]?.url || null,
+        coverUrl: pageCover || safeUrl(pack.cover_url) || items[0]?.product.product_images?.[0]?.url || null,
+        lineName: pickLang(lang, pack.name_fr, pack.name_ar ?? pack.name_fr, pack.name_en),
         unit: quote?.unit ?? null,
-        compare: quote?.compare ?? null,
+        // an offer picker prices its own savings; plain pack pages keep the pack's crossed-out price
+        compare: selected ? selected.was : (quote?.compare ?? null),
         list: quote?.list ?? null,
         tiers: pack.pricing?.tiers ?? [],
         freeShipping: Boolean(pack.pricing?.free_shipping),
         maxQty: pack.max_per_order ?? 10,
         items,
         available: Boolean(quote) && inWindow && inStock && (preview || pack.status === "published"),
-        onOrdered: (orderNumber: string) => navigate(`/order/${orderNumber}`),
-        preview,
       };
     }
-    const product = source.product;
+
+    // sellPack is null only for a product page without a usable offer
+    const product = source.kind === "product" ? source.product : null;
+    if (!product) {
+      return {
+        ...shared,
+        kind: "pack",
+        coverUrl: null,
+        lineName: identity.name,
+        unit: null,
+        compare: null,
+        list: null,
+        tiers: [],
+        freeShipping: false,
+        maxQty: 1,
+        items: [],
+        available: false,
+      };
+    }
     const price = Number(product.price);
     const compare = product.compare_at_price && Number(product.compare_at_price) > price ? Number(product.compare_at_price) : null;
     return {
+      ...shared,
       kind: "product",
-      lang,
-      dir,
-      theme,
-      name: pickLang(lang, product.name_fr, product.name_ar, product.name_en),
-      tagline: pickLang(lang, product.description_fr ?? "", product.description_ar ?? "", product.description_en),
       coverUrl: product.product_images?.[0]?.url ?? null,
+      lineName: identity.name,
       unit: price,
       compare,
       list: compare,
@@ -117,37 +178,37 @@ export function PageRenderer({
       freeShipping: false,
       maxQty: Math.max(1, Math.min(MAX_LINE_QTY, product.stock)),
       items: [{ product, quantity: 1, unitPrice: price }],
-      available: product.stock > 0 && product.status === "active",
-      onOrdered: (orderNumber: string) => navigate(`/order/${orderNumber}`),
-      preview,
+      // a packs-only product is never sold on its own (place_order refuses it too)
+      available: product.stock > 0 && product.status === "active" && !product.packs_only,
     };
-  }, [source, byId, lang, dir, theme, navigate, preview, openedAt]);
+  }, [source, sellPack, selected, byId, lang, dir, theme, navigate, preview, openedAt]);
 
   const lineTotal =
     value.unit === null ? null : value.kind === "pack" ? packLineTotal(value.unit, qty, { tiers: value.tiers }) : value.unit * qty;
 
   const checkoutLines: CheckoutLine[] = useMemo(() => {
     if (value.unit === null) return [];
-    if (source.kind === "pack") {
+    if (sellPack) {
       return [
         {
-          product_id: `pack:${source.pack.id}`,
-          pack_id: source.pack.id,
+          product_id: `pack:${sellPack.id}`,
+          pack_id: sellPack.id,
           quantity: qty,
           price: value.unit,
-          name: source.pack.name_fr,
+          name: sellPack.name_fr,
           tiers: value.tiers,
           free_shipping: value.freeShipping,
         },
       ];
     }
+    if (source.kind !== "product") return [];
     return [{ product_id: source.product.id, quantity: qty, price: value.unit, name: source.product.name_fr }];
-  }, [source, qty, value.unit, value.tiers, value.freeShipping]);
+  }, [source, sellPack, qty, value.unit, value.tiers, value.freeShipping]);
 
   const addToCart = useCallback(() => {
     if (preview || value.unit === null || !value.available) return;
-    if (source.kind === "pack") {
-      const pack = source.pack;
+    if (sellPack) {
+      const pack = sellPack;
       addItem(
         {
           productId: `pack:${pack.id}`,
@@ -157,7 +218,7 @@ export function PageRenderer({
           nameAr: pack.name_ar ?? pack.name_fr,
           nameEn: pack.name_en,
           price: value.unit,
-          imageUrl: value.coverUrl,
+          imageUrl: safeUrl(pack.cover_url) || value.coverUrl,
           tiers: value.tiers,
           freeShipping: value.freeShipping,
           maxQty: value.maxQty,
@@ -165,7 +226,7 @@ export function PageRenderer({
         qty,
       );
       pixel.track("add_to_cart", { content_ids: [pack.id], content_name: pack.name_fr, value: lineTotal ?? 0, num_items: qty });
-    } else {
+    } else if (source.kind === "product") {
       const p = source.product;
       addItem(
         {
@@ -181,7 +242,7 @@ export function PageRenderer({
       );
       pixel.track("add_to_cart", { content_ids: [p.id], content_name: p.name_fr, value: lineTotal ?? 0, num_items: qty });
     }
-  }, [preview, value, source, addItem, qty, pixel, lineTotal]);
+  }, [preview, value, source, sellPack, addItem, qty, pixel, lineTotal]);
 
   const scrollTo = useCallback((id: string) => {
     const el = rootRef.current?.querySelector<HTMLElement>(`#${id}`);
@@ -203,6 +264,7 @@ export function PageRenderer({
         return;
       }
       if (target === "price" && scrollTo("pb-price")) return;
+      if (target === "offers" && (scrollTo("pb-offers") || scrollTo("pb-price"))) return;
       if (scrollTo("pb-checkout")) return;
       // no order block on this page: take the basket route instead
       if (preview) return;
@@ -221,7 +283,7 @@ export function PageRenderer({
     return () => io.disconnect();
   }, [doc.blocks]);
 
-  const ctx: PageContextValue = { ...value, qty, setQty, lineTotal, addToCart, checkoutLines, go };
+  const ctx: PageContextValue = { ...value, qty, setQty, lineTotal, addToCart, checkoutLines, go, offers, offerId, selectOffer };
 
   // a light page also lightens the site header above it (outside this tree)
   const light = isLightTheme(theme);

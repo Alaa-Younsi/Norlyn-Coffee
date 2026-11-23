@@ -191,6 +191,19 @@ export function defaultData<K extends BlockType>(type: K): BlockDataMap[K] {
       style: "split",
       showSummary: true,
     },
+    offers: {
+      eyebrow: t("Nos offres", "عروضنا", "Our offers"),
+      title: t("Choisissez votre offre", "اختر عرضك", "Choose your offer"),
+      subtitle: t("Plus vous prenez, moins vous payez — livraison offerte.", "كلما أخذت أكثر دفعت أقل — التوصيل مجاني.", "The more you take, the less you pay — free delivery."),
+      items: [],
+      preselect: "",
+      style: "cards",
+      unitLabel: t("unité", "وحدة", "unit"),
+      showPerUnit: true,
+      savings: "first",
+      cta: t("Commander cette offre", "اطلب هذا العرض", "Order this offer"),
+      ctaTarget: "checkout",
+    },
     divider: { style: "beans", size: "md" },
     image: {
       media: img("/images/life/range-capsules-lg.webp"),
@@ -213,7 +226,7 @@ export function createBlock<K extends BlockType>(type: K): Block {
     tone: type === "marquee" ? "accent" : "none",
     pad: type === "divider" || type === "marquee" ? "sm" : "lg",
     width: type === "hero" || type === "marquee" ? "full" : "normal",
-    align: type === "hero" || type === "cta" || type === "countdown" ? "center" : "start",
+    align: type === "hero" || type === "cta" || type === "countdown" || type === "offers" ? "center" : "start",
     hideOn: "none",
     data: defaultData(type),
   } as Block;

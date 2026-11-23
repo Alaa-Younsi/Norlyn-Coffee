@@ -28,3 +28,15 @@ export function intensityBeans(slug: string | null | undefined, intensity: numbe
   if (printed !== null) return Math.max(1, Math.round((printed / INTENSITY_SCALE) * 5));
   return Math.round(((intensity ?? 0) / 100) * 5);
 }
+
+/**
+ * Assortment boxes carry several intensities at once — the Coffret Mixte
+ * holds 5 of each bio espresso — so they show the whole range, not one number.
+ */
+const MIXED: Record<string, number[]> = {
+  "coffret-mixte-intensites": [8, 10, 11, 13],
+};
+
+export function mixedIntensities(slug: string | null | undefined): number[] | null {
+  return slug ? (MIXED[slug] ?? null) : null;
+}

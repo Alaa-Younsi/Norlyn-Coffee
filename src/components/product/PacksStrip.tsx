@@ -21,6 +21,8 @@ export function PacksStrip() {
   const cards = useMemo(() => {
     const map = new Map((catalogue ?? []).map((p) => [p.id, p]));
     return (packs ?? [])
+      // "Mis en avant dans la boutique" in the pack editor is what puts a pack here
+      .filter((p) => p.featured)
       .filter((p) => (!p.starts_at || new Date(p.starts_at).getTime() <= now) && (!p.ends_at || new Date(p.ends_at).getTime() > now))
       .map((pack) => {
         const quote = packQuote(pack.items ?? [], pack.pricing, (id) => {

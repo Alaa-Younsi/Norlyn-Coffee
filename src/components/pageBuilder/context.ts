@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 import type { CheckoutLine } from "@/components/checkout/CheckoutForm";
 import type { PackTier } from "@/lib/packPricing";
+import type { OfferOption } from "@/lib/pageBuilder/offers";
 import type { CtaTarget, Theme } from "@/lib/pageBuilder/types";
 import type { Lang, Product } from "@/types/db";
 
@@ -20,6 +21,8 @@ export interface PageContextValue {
   name: string;
   tagline: string;
   coverUrl: string | null;
+  /** what is actually being bought — the selected offer's name, or `name` */
+  lineName: string;
   /** one unit (one pack / one box) */
   unit: number | null;
   compare: number | null;
@@ -40,6 +43,10 @@ export interface PageContextValue {
   go: (target: CtaTarget) => void;
   /** admin preview: no real orders, no fixed-position chrome */
   preview: boolean;
+  /** the options of the page's "offers" block (empty when it has none) */
+  offers: OfferOption[];
+  offerId: string | null;
+  selectOffer: (id: string) => void;
 }
 
 export const PageContext = createContext<PageContextValue | null>(null);

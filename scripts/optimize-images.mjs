@@ -199,6 +199,8 @@ const MAP = [
   [F.root("album5.png"), "life/espresso-glass", "photo"],
   [F.capsule("WhatsApp Image 2026-06-23 at 3.42.05 PM.jpeg"), "life/beans-capsules", "photo"],
   [F.boite("album2.png"), "life/range-table", "photo"],
+  // the Coffret Mixte Intensités, open on the marble counter (square)
+  [F.boite("coffret-mixte.png"), "life/coffret-mixte", "photo"],
   [F.boite("WhatsApp Image 2026-06-23 at 3.48.02 PM (3).jpeg"), "life/range-fan", "photo"],
   [F.boite("WhatsApp Image 2026-06-23 at 3.48.02 PM (4).jpeg"), "life/range-capsules", "photo"],
   [F.boite("album6.png"), "life/aluminium-macro", "photo"],

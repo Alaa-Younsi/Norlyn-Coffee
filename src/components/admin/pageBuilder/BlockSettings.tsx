@@ -1,5 +1,6 @@
 import { ICON_KEYS, ANIMS } from "@/lib/pageBuilder/types";
-import type { Block, BlockDataMap, BlockOf, BlockType, GalleryItem, L10n, Media, StatItem, Testimonial } from "@/lib/pageBuilder/types";
+import type { Block, BlockDataMap, BlockOf, BlockType, GalleryItem, L10n, Media, OfferItem, StatItem, Testimonial } from "@/lib/pageBuilder/types";
+import { useAdminPacks } from "@/hooks/usePacks";
 import { pick } from "@/lib/pageBuilder/defaults";
 import { useContext } from "react";
 import {
@@ -656,6 +657,80 @@ function CheckoutForm({ d, set }: { d: BlockDataMap["checkout"]; set: Setter<"ch
   );
 }
 
+function OffersForm({ d, set }: { d: BlockDataMap["offers"]; set: Setter<"offers"> }) {
+  const { tx, cta } = useOpts();
+  const { data: packs } = useAdminPacks();
+  const packOptions = [
+    { value: "", label: tx(tri("— choisir un pack —", "— pick a pack —", "— اختر باقة —")) },
+    ...(packs ?? []).map((p) => ({
+      value: p.slug,
+      label: `${p.name_fr}${p.status === "draft" ? ` (${tx(tri("brouillon", "draft", "مسودة"))})` : ""}`,
+    })),
+  ];
+  const nameOf = (slug: string) => packs?.find((p) => p.slug === slug)?.name_fr ?? slug;
+  return (
+    <>
+      <TextField label={tx(tri("Sur-titre", "Eyebrow", "عنوان علوي"))} value={d.eyebrow} onChange={(v) => set({ eyebrow: v })} />
+      <TextField label={tx(tri("Titre", "Title", "العنوان"))} value={d.title} onChange={(v) => set({ title: v })} />
+      <TextField label={tx(tri("Sous-titre", "Subtitle", "العنوان الفرعي"))} value={d.subtitle} onChange={(v) => set({ subtitle: v })} />
+      <ListField<OfferItem>
+        label={tx(tri("Les offres (vide = automatique)", "The offers (empty = automatic)", "العروض (فارغ = تلقائي)"))}
+        items={d.items}
+        onChange={(items) => set({ items })}
+        create={(): OfferItem => ({ slug: "", badge: empty(), note: empty(), highlight: false })}
+        max={6}
+        title={(o) => (o.slug ? nameOf(o.slug) : "—")}
+        render={(o, update) => (
+          <div className="space-y-3">
+            <SelectField label={tx(tri("Pack", "Pack", "الباقة"))} value={o.slug} options={packOptions} onChange={(slug) => update({ ...o, slug })} />
+            <TextField label={tx(tri("Ruban", "Ribbon", "شريط"))} value={o.badge} onChange={(badge) => update({ ...o, badge })} />
+            <TextField label={tx(tri("Ligne sous le prix", "Line under the price", "سطر تحت السعر"))} value={o.note} onChange={(note) => update({ ...o, note })} />
+            <Toggle label={tx(tri("Mettre en avant (carte agrandie)", "Highlight (bigger card)", "إبراز (بطاقة أكبر)"))} value={o.highlight} onChange={(highlight) => update({ ...o, highlight })} />
+          </div>
+        )}
+      />
+      <p className="text-xs text-muted">
+        {tx(
+          tri(
+            "Automatique : tous les packs publiés composés du même produit que cette page, du plus petit au plus grand.",
+            "Automatic: every published pack made of the same product as this page, smallest first.",
+            "تلقائي: كل الباقات المنشورة المكوّنة من نفس منتج هذه الصفحة، من الأصغر إلى الأكبر.",
+          ),
+        )}
+      </p>
+      <SelectField
+        label={tx(tri("Sélectionnée à l'ouverture", "Selected when the page opens", "المختار عند الفتح"))}
+        value={d.preselect}
+        options={[{ value: "", label: tx(tri("La mise en avant, sinon la première", "The highlighted one, else the first", "المُبرز وإلا الأول")) }, ...packOptions.slice(1)]}
+        onChange={(preselect) => set({ preselect })}
+      />
+      <Choice
+        label={tx(tri("Style", "Style", "النمط"))}
+        value={d.style}
+        options={[
+          { value: "cards", label: tx(tri("Cartes côte à côte", "Cards side by side", "بطاقات متجاورة")) },
+          { value: "list", label: tx(tri("Liste à cocher", "Radio list", "قائمة اختيار")) },
+        ]}
+        onChange={(v) => set({ style: v })}
+      />
+      <TextField label={tx(tri("Nom d'une unité", "One unit is called", "اسم الوحدة"))} value={d.unitLabel} onChange={(v) => set({ unitLabel: v })} />
+      <Toggle label={tx(tri("Afficher le prix par unité", "Show the price per unit", "إظهار سعر الوحدة"))} value={d.showPerUnit} onChange={(v) => set({ showPerUnit: v })} />
+      <Choice
+        label={tx(tri("Économie affichée", "Saving shown", "التوفير المعروض"))}
+        value={d.savings}
+        options={[
+          { value: "first", label: tx(tri("Vs la 1re offre", "Vs the 1st offer", "مقارنة بالعرض الأول")) },
+          { value: "compare", label: tx(tri("Prix barré du pack", "Pack's crossed-out price", "السعر المشطوب للباقة")) },
+          { value: "none", label: tx(tri("Aucune", "None", "بدون")) },
+        ]}
+        onChange={(v) => set({ savings: v })}
+      />
+      <TextField label={tx(tri("Bouton", "Button", "الزر"))} value={d.cta} onChange={(v) => set({ cta: v })} />
+      <SelectField label={tx(tri("Le bouton mène…", "The button goes…", "الزر يؤدي إلى…"))} value={d.ctaTarget} options={cta} onChange={(v) => set({ ctaTarget: v })} />
+    </>
+  );
+}
+
 function DividerForm({ d, set }: { d: BlockDataMap["divider"]; set: Setter<"divider"> }) {
   const { tx } = useOpts();
   return (
@@ -717,6 +792,8 @@ function TypeForm({ block, onChange }: { block: Block; onChange: (b: Block) => v
       return <TextForm d={block.data} set={setter(block)} />;
     case "cta":
       return <CtaForm d={block.data} set={setter(block)} />;
+    case "offers":
+      return <OffersForm d={block.data} set={setter(block)} />;
     case "checkout":
       return <CheckoutForm d={block.data} set={setter(block)} />;
     case "divider":

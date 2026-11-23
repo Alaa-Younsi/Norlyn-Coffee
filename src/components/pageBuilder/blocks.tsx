@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { AnimatePresence, motion, useInView } from "framer-motion";
-import { ArrowRight, Check, ChevronDown, Minus, Plus, ShoppingBag, Star } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Minus, Plus, ShoppingBag, Star, Truck } from "lucide-react";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import { CoffeeBeanIcon } from "@/components/effects/CoffeeBeanIcon";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -31,7 +31,7 @@ const TONE = {
   image: "bg-cover bg-center",
 } as const;
 
-const SECTION_ID: Partial<Record<Block["type"], string>> = { price: "pb-price", checkout: "pb-checkout" };
+const SECTION_ID: Partial<Record<Block["type"], string>> = { price: "pb-price", checkout: "pb-checkout", offers: "pb-offers" };
 
 function useAnim(block: Block): Anim {
   const { theme } = usePage();
@@ -1035,9 +1035,221 @@ function Cta({ block }: { block: BlockOf<"cta"> }) {
   );
 }
 
+// ----------------------------------------------------------------- offers
+function OffersBlock({ block }: { block: BlockOf<"offers"> }) {
+  const { lang, offers, offerId, selectOffer, preview } = usePage();
+  const { t } = useLanguage();
+  const d = block.data;
+  const unitLabel = pick(d.unitLabel, lang);
+
+  const header = (
+    <div className={cn("mb-10 @3xl:mb-14", block.align === "center" && "mx-auto max-w-2xl")}>
+      <Eyebrow>{pick(d.eyebrow, lang)}</Eyebrow>
+      <H2>{pick(d.title, lang)}</H2>
+      {pick(d.subtitle, lang) && <p className="mt-4 text-lg text-[var(--pb-muted)]">{pick(d.subtitle, lang)}</p>}
+    </div>
+  );
+
+  if (offers.length === 0) {
+    return (
+      <Section block={block}>
+        {header}
+        {preview && (
+          <p className="rounded-[var(--pb-radius)] border border-dashed border-[color-mix(in_srgb,var(--pb-text)_25%,transparent)] p-8 text-sm text-[var(--pb-muted)]">
+            {t("pb.notFound")}
+          </p>
+        )}
+      </Section>
+    );
+  }
+
+  const cols = offers.length >= 4 ? "@3xl:grid-cols-4" : offers.length === 3 ? "@3xl:grid-cols-3" : offers.length === 2 ? "@3xl:grid-cols-2" : "";
+
+  return (
+    <Section block={block}>
+      {header}
+      <div
+        role="radiogroup"
+        aria-label={pick(d.title, lang)}
+        className={cn(d.style === "cards" ? cn("grid items-stretch gap-5 @3xl:gap-6", cols) : "mx-auto flex max-w-2xl flex-col gap-3")}
+      >
+        {offers.map((o, i) => {
+          const active = o.id === offerId;
+          const badge = pick(o.badge, lang);
+          const note = pick(o.note, lang);
+          const perUnit = d.showPerUnit && o.units > 1 && unitLabel;
+          const savingChip = o.saving > 0 && (
+            <span className="inline-flex items-center rounded-full bg-[var(--pb-accent)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--pb-bg)]">
+              {t("pb.saveAmount").replace("{amount}", formatPrice(o.saving))}
+            </span>
+          );
+          const shipChip = o.freeShipping && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-[var(--pb-muted)]">
+              <Truck size={13} className="text-[var(--pb-accent)]" />
+              {t("pb.freeDelivery")}
+            </span>
+          );
+
+          if (d.style === "list") {
+            return (
+              <motion.button
+                key={o.id}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                disabled={!o.available}
+                onClick={() => selectOffer(o.id)}
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className={cn(
+                  "relative flex cursor-pointer items-center gap-4 rounded-[var(--pb-radius)] border bg-[var(--pb-surface)] p-4 text-start transition-colors @3xl:p-5 disabled:cursor-not-allowed disabled:opacity-45",
+                  active ? "border-[var(--pb-accent)]" : "border-[color-mix(in_srgb,var(--pb-text)_14%,transparent)] hover:border-[color-mix(in_srgb,var(--pb-accent)_55%,transparent)]",
+                )}
+              >
+                {active && (
+                  <motion.span
+                    layoutId={`pb-offer-${block.id}`}
+                    aria-hidden
+                    className="absolute inset-0 rounded-[var(--pb-radius)] bg-[color-mix(in_srgb,var(--pb-accent)_10%,transparent)] shadow-[0_0_0_1px_var(--pb-accent),0_24px_60px_-30px_var(--pb-accent)]"
+                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                  />
+                )}
+                <span
+                  aria-hidden
+                  className={cn(
+                    "relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                    active ? "border-[var(--pb-accent)] bg-[var(--pb-accent)] text-[var(--pb-bg)]" : "border-[color-mix(in_srgb,var(--pb-text)_30%,transparent)]",
+                  )}
+                >
+                  {active && <Check size={14} strokeWidth={3} />}
+                </span>
+                <span className="relative min-w-0 flex-1">
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="font-display text-xl">{o.name}</span>
+                    {badge && (
+                      <span className="rounded-full border border-[var(--pb-accent)] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--pb-accent)]">
+                        {badge}
+                      </span>
+                    )}
+                  </span>
+                  <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--pb-muted)]">
+                    {perUnit && (
+                      <span dir="ltr" className="tabular-nums">
+                        {formatPrice(Math.round(o.perUnit))} {t("pb.perUnit").replace("{unit}", unitLabel)}
+                      </span>
+                    )}
+                    {note && <span>{note}</span>}
+                    {shipChip}
+                  </span>
+                </span>
+                <span className="relative shrink-0 text-end">
+                  {o.was && <span className="block text-xs text-[var(--pb-muted)] line-through">{formatPrice(o.was)}</span>}
+                  <span className="block font-display text-2xl tabular-nums">{formatPrice(o.unit)}</span>
+                  {o.saving > 0 && (
+                    <span className="mt-0.5 block text-[11px] font-semibold text-[var(--pb-accent)]">
+                      {t("pb.saveAmount").replace("{amount}", formatPrice(o.saving))}
+                    </span>
+                  )}
+                </span>
+              </motion.button>
+            );
+          }
+
+          return (
+            <motion.button
+              key={o.id}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              disabled={!o.available}
+              onClick={() => selectOffer(o.id)}
+              initial={{ opacity: 0, y: 40, rotateX: 14 }}
+              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+              whileHover={o.available ? { y: -6 } : undefined}
+              whileTap={{ scale: 0.98 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ delay: i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className={cn(
+                "group relative flex cursor-pointer flex-col rounded-[calc(var(--pb-radius)*1.15)] border bg-[var(--pb-surface)] p-6 text-center [transform-perspective:1200px] disabled:cursor-not-allowed disabled:opacity-45 @3xl:p-7",
+                o.highlight && "@3xl:-my-4 @3xl:py-10",
+                active ? "border-transparent" : "border-[color-mix(in_srgb,var(--pb-text)_12%,transparent)]",
+              )}
+            >
+              {active && (
+                <motion.span
+                  layoutId={`pb-offer-${block.id}`}
+                  aria-hidden
+                  className="pointer-events-none absolute -inset-px rounded-[calc(var(--pb-radius)*1.15)] border-2 border-[var(--pb-accent)] shadow-[0_30px_80px_-30px_var(--pb-accent)]"
+                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                />
+              )}
+              {o.highlight && (
+                <span aria-hidden className="pb-orb pointer-events-none absolute left-1/2 top-10 h-40 w-40 -translate-x-1/2 rounded-full bg-[var(--pb-accent)] opacity-20 blur-3xl" />
+              )}
+              {badge && (
+                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[linear-gradient(120deg,var(--pb-accent),var(--pb-accent2))] px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--pb-bg)] shadow-lg">
+                  {badge}
+                </span>
+              )}
+
+              {/* the number of boxes, big */}
+              <span className="relative mx-auto mt-2 flex items-end gap-2">
+                <span className="font-display text-7xl leading-[0.8] tabular-nums text-[var(--pb-accent)]">{o.units}</span>
+                {unitLabel && <span className="pb-1 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--pb-muted)]">× {unitLabel}</span>}
+              </span>
+              <span className="relative mt-4 font-display text-2xl leading-tight">{o.name}</span>
+              {o.tagline && <span className="relative mt-1 text-sm text-[var(--pb-muted)]">{o.tagline}</span>}
+
+              <span aria-hidden className="relative mx-auto my-6 h-px w-16 bg-[linear-gradient(90deg,transparent,var(--pb-accent),transparent)]" />
+
+              <span className="relative block min-h-[1.25rem] text-sm text-[var(--pb-muted)] line-through">{o.was ? formatPrice(o.was) : ""}</span>
+              <motion.span
+                key={`${o.id}-${active}`}
+                initial={active ? { scale: 1.12 } : false}
+                animate={{ scale: 1 }}
+                className="relative block font-display text-5xl tabular-nums"
+              >
+                {formatPrice(o.unit)}
+              </motion.span>
+              {perUnit && (
+                <span dir="ltr" className="relative mt-2 block text-sm tabular-nums text-[var(--pb-muted)]">
+                  {formatPrice(Math.round(o.perUnit))} {t("pb.perUnit").replace("{unit}", unitLabel)}
+                </span>
+              )}
+              <span className="relative mt-4 flex min-h-[1.75rem] flex-wrap items-center justify-center gap-2">{savingChip}</span>
+              {note && <span className="relative mt-3 text-sm">{note}</span>}
+              <span className="relative mt-auto flex flex-col items-center gap-3 pt-6">
+                {shipChip}
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] transition-colors",
+                    active
+                      ? "bg-[var(--pb-accent)] text-[var(--pb-bg)]"
+                      : "border border-[color-mix(in_srgb,var(--pb-text)_22%,transparent)] text-[var(--pb-muted)] group-hover:border-[var(--pb-accent)] group-hover:text-[var(--pb-text)]",
+                  )}
+                >
+                  {active && <Check size={13} strokeWidth={3} />}
+                  {active ? t("pb.selected") : t("pb.choose")}
+                </span>
+              </span>
+            </motion.button>
+          );
+        })}
+      </div>
+      {pick(d.cta, lang) && (
+        <div className={cn("mt-10 @3xl:mt-14", block.align === "center" && "text-center")}>
+          <CtaButton label={pick(d.cta, lang)} target={d.ctaTarget} />
+        </div>
+      )}
+    </Section>
+  );
+}
+
 // --------------------------------------------------------------- checkout
 function CheckoutBlock({ block }: { block: BlockOf<"checkout"> }) {
-  const { lang, checkoutLines, onOrdered, preview, name, items, coverUrl, kind, available } = usePage();
+  const { lang, checkoutLines, onOrdered, preview, name, lineName, items, coverUrl, kind, available } = usePage();
   const { t } = useLanguage();
   const d = block.data;
   const form = !available ? (
@@ -1065,7 +1277,7 @@ function CheckoutBlock({ block }: { block: BlockOf<"checkout"> }) {
       <div className="mt-8 flex items-center gap-4">
         {coverUrl && <img src={coverUrl} alt="" className="h-20 w-20 rounded-2xl object-cover" />}
         <div className="flex-1">
-          <p className="font-display text-xl">{name}</p>
+          <p className="font-display text-xl">{lineName}</p>
           {kind === "pack" && (
             <p className="mt-1 text-xs text-[var(--pb-muted)]">
               {items.map((i) => `${pickLang(lang, i.product.name_fr, i.product.name_ar, i.product.name_en)} ×${i.quantity}`).join(" · ")}
@@ -1173,6 +1385,8 @@ export function BlockView({ block }: { block: Block }) {
       return <TextBlock block={block} />;
     case "cta":
       return <Cta block={block} />;
+    case "offers":
+      return <OffersBlock block={block} />;
     case "checkout":
       return <CheckoutBlock block={block} />;
     case "divider":
@@ -1183,7 +1397,7 @@ export function BlockView({ block }: { block: Block }) {
 }
 
 export function StickyBuyBar({ hidden }: { hidden: boolean }) {
-  const { name, unit, lineTotal, qty, go, available } = usePage();
+  const { lineName, unit, lineTotal, qty, go, available } = usePage();
   const { t } = useLanguage();
   if (unit === null || !available) return null;
   return (
@@ -1197,7 +1411,7 @@ export function StickyBuyBar({ hidden }: { hidden: boolean }) {
           className="fixed inset-x-3 bottom-3 z-50 flex items-center gap-3 rounded-full border border-[color-mix(in_srgb,var(--pb-text)_14%,transparent)] bg-[color-mix(in_srgb,var(--pb-surface)_92%,transparent)] p-2 ps-5 shadow-2xl backdrop-blur-md md:hidden"
         >
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs text-[var(--pb-muted)]">{name}</p>
+            <p className="truncate text-xs text-[var(--pb-muted)]">{lineName}</p>
             <p className="font-display text-lg leading-tight">{formatPrice(qty > 1 && lineTotal !== null ? lineTotal : unit)}</p>
           </div>
           <button

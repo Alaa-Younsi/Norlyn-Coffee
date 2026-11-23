@@ -36,6 +36,7 @@ interface FormState {
   accent_color: string;
   video_url: string;
   featured: boolean;
+  packs_only: boolean;
   status: ProductStatus;
 }
 
@@ -58,6 +59,7 @@ const EMPTY: FormState = {
   accent_color: "#b08439",
   video_url: "",
   featured: false,
+  packs_only: false,
   status: "draft",
 };
 
@@ -89,6 +91,7 @@ function toFormState(product: Product): FormState {
     accent_color: product.accent_color ?? "#b08439",
     video_url: product.video_url ?? "",
     featured: product.featured,
+    packs_only: Boolean(product.packs_only),
     status: product.status,
   };
 }
@@ -160,6 +163,7 @@ export function ProductForm() {
       key={product?.id ?? "new"}
       productId={isNew ? null : (id as string)}
       initial={product ? toFormState(product) : EMPTY}
+      packsOnlyKnown={Boolean(product && "packs_only" in product)}
       initialImages={
         product ? [...(product.product_images ?? [])].sort((a, b) => a.sort_order - b.sort_order) : []
       }
@@ -176,10 +180,13 @@ interface PendingImage {
 function ProductFormInner({
   productId,
   initial,
+  packsOnlyKnown,
   initialImages,
 }: {
   productId: string | null;
   initial: FormState;
+  /** the row came back with the 0023 column, so it is safe to write */
+  packsOnlyKnown: boolean;
   initialImages: ProductImage[];
 }) {
   const isNew = productId === null;
@@ -299,6 +306,9 @@ function ProductFormInner({
         accent_color: form.accent_color || null,
         video_url: form.video_url.trim() || null,
         featured: form.featured,
+        // only sent once it matters: before migration 0023 the column doesn't
+        // exist, and an unknown column would fail every product save
+        ...(form.packs_only || packsOnlyKnown ? { packs_only: form.packs_only } : {}),
         status: form.status,
       };
       if (!payload.name_fr || !Number.isFinite(payload.price) || payload.price < 0) {
@@ -493,6 +503,14 @@ function ProductFormInner({
                 onChange={(v) => set("featured", v)}
                 label={t("admin.products.featured")}
               />
+            </div>
+            <div className="rounded-xl border border-line px-4 py-2.5 sm:col-span-2">
+              <Switch
+                checked={form.packs_only}
+                onChange={(v) => set("packs_only", v)}
+                label={t("admin.products.packsOnly")}
+              />
+              <p className="mt-1.5 text-xs text-muted">{t("admin.products.packsOnlyHint")}</p>
             </div>
             <FieldWrapper label={t("admin.products.status")}>
               <div className="inline-flex w-full rounded-full border border-line bg-panel-2/60 p-1">

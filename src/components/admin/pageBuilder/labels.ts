@@ -16,6 +16,7 @@ import {
   ShoppingCart,
   Sparkles,
   CircleHelp,
+  Tags,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Anim, BgFx, BlockType, CtaTarget, IconKey, MediaFx, Pad, ThemePresetKey, Tone, Width } from "@/lib/pageBuilder/types";
@@ -38,6 +39,7 @@ export const BLOCK_META: Record<BlockType, { name: Tri; desc: Tri; icon: LucideI
   faq: { name: tri("FAQ", "FAQ", "أسئلة شائعة"), desc: tri("Accordéon animé", "Animated accordion", "أكورديون متحرك"), icon: CircleHelp },
   text: { name: tri("Texte", "Text", "نص"), desc: tri("Titre et paragraphes", "Heading and paragraphs", "عنوان وفقرات"), icon: AlignLeft },
   cta: { name: tri("Appel à l'action", "Call to action", "دعوة للشراء"), desc: tri("Bandeau lumineux + bouton", "Glowing banner + button", "شريط مضيء وزر"), icon: Megaphone },
+  offers: { name: tri("Choix d'offres", "Offer picker", "اختيار العروض"), desc: tri("3, 4 ou 5 boîtes… le client choisit, le formulaire suit", "3, 4 or 5 boxes… the shopper picks, the order form follows", "3 أو 4 أو 5 علب… يختار الزبون ويتبعه نموذج الطلب"), icon: Tags },
   checkout: { name: tri("Formulaire de commande", "Order form", "نموذج الطلب"), desc: tri("Le vrai formulaire, sur la page", "The real order form, on the page", "نموذج الطلب الحقيقي"), icon: ShoppingCart },
   divider: { name: tri("Séparateur", "Divider", "فاصل"), desc: tri("Ligne, grains, points, vague", "Line, beans, dots, wave", "خط، حبوب، نقاط"), icon: Minus },
 };
@@ -84,6 +86,7 @@ export const CTA_LABEL: Record<CtaTarget, Tri> = {
   checkout: tri("Vers le formulaire", "To the order form", "إلى نموذج الطلب"),
   cart: tri("Ajouter au panier", "Add to cart", "إضافة إلى السلة"),
   price: tri("Vers le prix", "To the price", "إلى السعر"),
+  offers: tri("Vers le choix d'offres", "To the offer picker", "إلى اختيار العروض"),
   top: tri("Haut de page", "Back to top", "أعلى الصفحة"),
 };
 

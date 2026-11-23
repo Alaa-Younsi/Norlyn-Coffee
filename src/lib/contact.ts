@@ -14,12 +14,11 @@
 export const CONTACT_EMAIL = "contact@norlyncoffee.com";
 
 /**
- * TODO(client): still the placeholder from the mockup — replace with the real
- * line before launch. `CONTACT_PHONE_TEL` must be the same number in E.164 so
- * a tap on a phone dials it.
+ * The official line (Nov 23 2026). `CONTACT_PHONE_TEL` must be the same number
+ * in E.164 so a tap on a phone dials it.
  */
-export const CONTACT_PHONE = "0770 00 00 00";
-export const CONTACT_PHONE_TEL = "+213770000000";
+export const CONTACT_PHONE = "0560 88 86 00";
+export const CONTACT_PHONE_TEL = "+213560888600";
 
 /** Postal city + country, as printed in the footer. */
 export const CONTACT_LOCATION = "Norlyn Coffee — Alger, Algérie";

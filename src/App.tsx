@@ -36,6 +36,8 @@ const OrderConfirmation = lazy(() =>
 );
 const NotFound = lazy(() => import("@/pages/NotFound").then((m) => ({ default: m.NotFound })));
 const Legal = lazy(() => import("@/pages/Legal").then((m) => ({ default: m.Legal })));
+// a sales page reached from an ad or the shop's packs strip — its own chunk
+const Pack = lazy(() => import("@/pages/Pack").then((m) => ({ default: m.Pack })));
 
 // admin never ships to shoppers
 const AdminApp = lazy(() =>
@@ -101,6 +103,7 @@ export function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/product/:slug" element={<Product />} />
+            <Route path="/pack/:slug" element={<Pack />} />
             <Route path="/about" element={<About />} />
             <Route path="/journal" element={<Journal />} />
             <Route path="/journal/:slug" element={<Article />} />

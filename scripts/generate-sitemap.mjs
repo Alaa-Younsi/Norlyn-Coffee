@@ -52,6 +52,8 @@ const articles = await fetchRows(
   "articles?select=slug,updated_at&status=eq.published",
   "article",
 );
+// published packs (0021) — fetchRows skips quietly until that migration runs
+const packs = await fetchRows("packs?select=slug,updated_at&status=eq.published", "pack");
 const today = new Date().toISOString().slice(0, 10);
 
 const urls = [
@@ -63,6 +65,10 @@ const urls = [
   ...articles.map((a) => ({
     loc: `${SITE_URL}/journal/${a.slug}`,
     lastmod: (a.updated_at ?? today).slice(0, 10),
+  })),
+  ...packs.map((p) => ({
+    loc: `${SITE_URL}/pack/${p.slug}`,
+    lastmod: (p.updated_at ?? today).slice(0, 10),
   })),
 ];
 

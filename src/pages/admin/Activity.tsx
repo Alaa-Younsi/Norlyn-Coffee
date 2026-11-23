@@ -23,6 +23,8 @@ const TABLE_SECTION: Record<string, string> = {
   products: "products",
   product_images: "products",
   product_costs: "finance",
+  packs: "products",
+  product_pages: "products",
   categories: "categories",
   orders: "orders",
   order_items: "orders",

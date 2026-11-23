@@ -112,8 +112,23 @@ export function AdminOrderDetail() {
                   className="h-12 w-12 rounded-lg border border-line object-contain"
                 />
               )}
-              <span className="min-w-0 flex-1 truncate">
-                {pickLang(lang, item.name_fr, item.name_ar, item.name_en)} × {item.quantity}
+              <span className="min-w-0 flex-1">
+                <span className="block truncate">
+                  {item.pack_id && (
+                    <span className="me-2 rounded-full bg-brand/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-brand">
+                      {t("pb.pack")}
+                    </span>
+                  )}
+                  {pickLang(lang, item.name_fr, item.name_ar, item.name_en)} × {item.quantity}
+                </span>
+                {/* what to put in the box — snapshotted when the order was placed */}
+                {item.pack_contents && item.pack_contents.length > 0 && (
+                  <span className="mt-1 block text-xs text-muted">
+                    {item.pack_contents
+                      .map((c) => `${c.name_fr} × ${c.quantity * item.quantity}`)
+                      .join(" · ")}
+                  </span>
+                )}
               </span>
               <span className="font-medium">{formatPrice(Number(item.price) * item.quantity)}</span>
             </li>

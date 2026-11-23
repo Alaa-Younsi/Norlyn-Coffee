@@ -16,6 +16,7 @@ import { pickLang } from "@/lib/localized";
 import { useHeaderStore } from "@/store/header";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/db";
+import { PacksStrip } from "@/components/product/PacksStrip";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -183,6 +184,8 @@ export function Shop() {
             </AnimatePresence>
           </motion.div>
         )}
+        {/* bundles only on the unfiltered shop — a search is looking for one box */}
+        {!search && !categoryId && <PacksStrip />}
       </div>
     </main>
   );

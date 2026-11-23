@@ -3,7 +3,8 @@ import { next } from "@vercel/edge";
 // Prerender-style OG tags for the two link surfaces a shopper actually shares:
 // a product page and a Journal article. Everything else falls through to the
 // SPA shell (index.html), whose static tags describe the store as a whole.
-export const config = { matcher: ["/product/:slug*", "/journal/:slug*"] };
+// Packs (0021) are ad-traffic sales pages — exactly the links that get shared.
+export const config = { matcher: ["/product/:slug*", "/journal/:slug*", "/pack/:slug*"] };
 
 const CRAWLER_RE =
   /facebookexternalhit|WhatsApp|Twitterbot|TelegramBot|Discordbot|LinkedInBot|Slackbot|Pinterest|vkShare|redditbot/i;
@@ -132,6 +133,37 @@ async function fetchArticle(
   };
 }
 
+async function fetchPack(
+  supabaseUrl: string,
+  anonKey: string,
+  slug: string,
+  ar: boolean,
+): Promise<OgData | null> {
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/packs?select=name_fr,name_ar,tagline_fr,tagline_ar,cover_url,slug&slug=eq.${slug}&status=eq.published&limit=1`,
+    { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` } },
+  );
+  // 404 before migration 0021 runs — fall through to the SPA shell
+  if (!res.ok) return null;
+  const rows = (await res.json()) as Array<{
+    name_fr: string;
+    name_ar: string | null;
+    tagline_fr: string | null;
+    tagline_ar: string | null;
+    cover_url: string | null;
+  }>;
+  const p = rows[0];
+  if (!p) return null;
+  const name = (ar && p.name_ar) || p.name_fr;
+  return {
+    title: `${name} — Norlyn Coffee`,
+    description: (ar ? p.tagline_ar : p.tagline_fr) ?? p.tagline_fr ?? "Une offre Moriva par Norlyn Coffee.",
+    image: p.cover_url ?? "/og-image.png",
+    // price is computed from the pack's rules — not a column to quote here
+    ogType: "article",
+  };
+}
+
 export default async function middleware(request: Request) {
   const userAgent = request.headers.get("user-agent") ?? "";
   if (!CRAWLER_RE.test(userAgent)) return next();
@@ -152,7 +184,9 @@ export default async function middleware(request: Request) {
         ? await fetchProduct(supabaseUrl, anonKey, slug, ar)
         : section === "journal"
           ? await fetchArticle(supabaseUrl, anonKey, slug, ar)
-          : null;
+          : section === "pack"
+            ? await fetchPack(supabaseUrl, anonKey, slug, ar)
+            : null;
     if (!data) return next();
 
     const origin = siteUrl(request);

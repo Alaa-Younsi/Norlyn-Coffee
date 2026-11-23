@@ -1,5 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { packLineTotal } from "@/lib/packPricing";
+import type { PackTier } from "@/lib/packPricing";
 
 export interface CartItem {
   productId: string;
@@ -16,6 +18,15 @@ export interface CartItem {
   price: number;
   imageUrl: string | null;
   quantity: number;
+  /**
+   * Pack lines (0021): `productId` is then `pack:<id>` — a line KEY, never
+   * sent as a product — and `packId` is what place_order receives. Tiers and
+   * free shipping are a display snapshot; the server re-prices everything.
+   */
+  packId?: string;
+  tiers?: PackTier[];
+  freeShipping?: boolean;
+  maxQty?: number;
 }
 
 interface CartState {
@@ -43,14 +54,14 @@ export const useCart = create<CartState>()(
             return {
               items: state.items.map((i) =>
                 i.productId === item.productId
-                  ? { ...i, quantity: Math.min(MAX_LINE_QTY, i.quantity + quantity) }
+                  ? { ...item, quantity: Math.min(item.maxQty ?? MAX_LINE_QTY, i.quantity + quantity) }
                   : i,
               ),
               isOpen: true,
             };
           }
           return {
-            items: [...state.items, { ...item, quantity: Math.min(MAX_LINE_QTY, quantity) }],
+            items: [...state.items, { ...item, quantity: Math.min(item.maxQty ?? MAX_LINE_QTY, quantity) }],
             isOpen: true,
           };
         }),
@@ -63,7 +74,7 @@ export const useCart = create<CartState>()(
               ? state.items.filter((i) => i.productId !== productId)
               : state.items.map((i) =>
                   i.productId === productId
-                    ? { ...i, quantity: Math.min(MAX_LINE_QTY, quantity) }
+                    ? { ...i, quantity: Math.min(i.maxQty ?? MAX_LINE_QTY, quantity) }
                     : i,
                 ),
         })),
@@ -78,8 +89,13 @@ export const useCart = create<CartState>()(
   ),
 );
 
+/** A pack line's quantity tiers apply to the LINE, exactly like pack_line_total(). */
+export function cartLineTotal(item: Pick<CartItem, "price" | "quantity" | "packId" | "tiers">): number {
+  return item.packId ? packLineTotal(item.price, item.quantity, { tiers: item.tiers }) : item.price * item.quantity;
+}
+
 export function cartSubtotal(items: CartItem[]): number {
-  return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  return items.reduce((sum, item) => sum + cartLineTotal(item), 0);
 }
 
 export function cartCount(items: CartItem[]): number {

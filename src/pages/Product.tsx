@@ -24,6 +24,9 @@ import { usePixel } from "@/components/MetaPixelProvider";
 import { pickLang } from "@/lib/localized";
 import { cn } from "@/lib/utils";
 import { intensityBeans, printedIntensity } from "@/lib/intensity";
+import { PageRenderer } from "@/components/pageBuilder/PageRenderer";
+import { useProductPage } from "@/hooks/usePacks";
+import { normalizePage } from "@/lib/pageBuilder/defaults";
 
 export function Product() {
   const { slug } = useParams();
@@ -32,6 +35,9 @@ export function Product() {
   const { theme } = useTheme();
   const { data: product, isLoading } = useProduct(slug);
   const { data: allProducts } = useProducts();
+  // a personalised page built in the admin (0021) — replaces or extends this one
+  const { data: customPage, isLoading: customLoading } = useProductPage(product?.id);
+  const customDoc = useMemo(() => (customPage ? normalizePage(customPage.page) : null), [customPage]);
   const addItem = useCart((s) => s.addItem);
   const [quantity, setQuantity] = useState(1);
   const [imageIndex, setImageIndex] = useState(0);
@@ -96,7 +102,7 @@ export function Product() {
       : undefined,
   });
 
-  if (isLoading) {
+  if (isLoading || (product && customLoading)) {
     return <main className="pt-40 text-center text-muted min-h-screen">{t("common.loading")}</main>;
   }
   if (!product) {
@@ -106,6 +112,14 @@ export function Product() {
         <Link to="/shop">
           <Button variant="outline">{t("product.backToShop")}</Button>
         </Link>
+      </main>
+    );
+  }
+
+  if (customDoc && customPage?.mode === "replace" && customDoc.blocks.length > 0) {
+    return (
+      <main className="min-h-screen">
+        <PageRenderer doc={customDoc} source={{ kind: "product", product }} catalogue={allProducts ?? [product]} className="pt-20" />
       </main>
     );
   }
@@ -359,6 +373,10 @@ export function Product() {
           </section>
         )}
       </div>
+
+      {customDoc && customPage?.mode === "extend" && customDoc.blocks.length > 0 && (
+        <PageRenderer doc={customDoc} source={{ kind: "product", product }} catalogue={allProducts ?? [product]} className="mt-24" />
+      )}
     </main>
   );
 }

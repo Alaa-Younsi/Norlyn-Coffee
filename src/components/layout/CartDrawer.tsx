@@ -3,7 +3,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
 import { Mascot } from "@/components/mascot/Mascot";
-import { useCart, cartCount, cartSubtotal } from "@/store/cart";
+import { useCart, cartCount, cartLineTotal, cartSubtotal } from "@/store/cart";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatPrice } from "@/lib/format";
 import { pickLang } from "@/lib/localized";
@@ -52,7 +52,10 @@ export function CartDrawer() {
                   <p className="truncate text-sm font-semibold">
                     {pickLang(lang, item.nameFr, item.nameAr, item.nameEn)}
                   </p>
-                  <p className="mt-0.5 text-sm text-brand font-medium">{formatPrice(item.price)}</p>
+                  <p className="mt-0.5 text-sm text-brand font-medium">
+                    {/* a pack's quantity tier discounts the whole line */}
+                    {formatPrice(item.packId ? cartLineTotal(item) : item.price)}
+                  </p>
                   <div className="mt-2 flex items-center gap-2">
                     <button
                       onClick={() => setQuantity(item.productId, item.quantity - 1)}

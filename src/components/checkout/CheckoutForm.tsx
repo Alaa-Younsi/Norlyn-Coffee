@@ -19,13 +19,21 @@ import type { MascotEmotion } from "@/lib/mascot";
 import { usePixel } from "@/components/MetaPixelProvider";
 import { cn } from "@/lib/utils";
 import type { DeliveryType } from "@/types/db";
+import { cartLineTotal } from "@/store/cart";
+import type { PackTier } from "@/lib/packPricing";
 
 export interface CheckoutLine {
+  /** a product id — or, on a pack line, the cart key (`pack:<id>`) */
   product_id: string;
+  /** set on pack lines: place_order receives `{ pack_id }` instead */
+  pack_id?: string;
   quantity: number;
   /** display-only — the server re-derives every price */
   price: number;
   name: string;
+  /** pack display snapshot (tier discount, free shipping) */
+  tiers?: PackTier[];
+  free_shipping?: boolean;
 }
 
 interface CheckoutFormProps {
@@ -98,7 +106,12 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
   const wilayaField = register("wilaya");
 
   const subtotal = useMemo(
-    () => lines.reduce((sum, line) => sum + line.price * line.quantity, 0),
+    () =>
+      lines.reduce(
+        (sum, line) =>
+          sum + cartLineTotal({ price: line.price, quantity: line.quantity, packId: line.pack_id, tiers: line.tiers }),
+        0,
+      ),
     [lines],
   );
 
@@ -109,7 +122,10 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
       : Number(selectedWilaya.home_price)
     : null;
   // the ONE shared shipping rule — mirrors place_order exactly
-  const shipping = wilayaFee !== null ? resolveShipping(wilayaFee, subtotal, settings) : null;
+  // a pack with free shipping makes the whole order ship free — as place_order does
+  const packFreeShip = lines.some((l) => l.pack_id && l.free_shipping);
+  const shipping =
+    wilayaFee !== null ? (packFreeShip ? 0 : resolveShipping(wilayaFee, subtotal, settings)) : null;
   const total = shipping !== null ? subtotal + shipping : null;
 
   const handleFormFocus = () => {
@@ -131,7 +147,9 @@ export function CheckoutForm({ lines, intent, intentKey, onSuccess, compact }: C
     setServerError(null);
     try {
       const { data, error } = await supabase.rpc("place_order", {
-        items: lines.map((l) => ({ product_id: l.product_id, quantity: l.quantity })),
+        items: lines.map((l) =>
+          l.pack_id ? { pack_id: l.pack_id, quantity: l.quantity } : { product_id: l.product_id, quantity: l.quantity },
+        ),
         customer: {
           name: values.name,
           phone: values.phone,

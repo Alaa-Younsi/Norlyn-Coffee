@@ -1,5 +1,6 @@
 import { adminTranslations } from "./translations.admin";
 import { siteTranslations } from "./translations.site";
+import { builderTranslations } from "./translations.builder";
 
 const core = {
   fr: {
@@ -726,9 +727,9 @@ const core = {
  * below still covers every key from every module.
  */
 export const translations = {
-  fr: { ...core.fr, ...adminTranslations.fr, ...siteTranslations.fr },
-  ar: { ...core.ar, ...adminTranslations.ar, ...siteTranslations.ar },
-  en: { ...core.en, ...adminTranslations.en, ...siteTranslations.en },
+  fr: { ...core.fr, ...adminTranslations.fr, ...siteTranslations.fr, ...builderTranslations.fr },
+  ar: { ...core.ar, ...adminTranslations.ar, ...siteTranslations.ar, ...builderTranslations.ar },
+  en: { ...core.en, ...adminTranslations.en, ...siteTranslations.en, ...builderTranslations.en },
 };
 
 // FR is the reference: every other language must carry every one of its keys.

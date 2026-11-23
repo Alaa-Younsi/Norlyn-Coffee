@@ -1,3 +1,5 @@
+import type { PackItem, PackPricing } from "@/lib/packPricing";
+
 export type ProductStatus = "active" | "draft";
 export type OrderStatus = "pending" | "confirmed" | "shipped" | "delivered" | "cancelled";
 export type DeliveryType = "home" | "office";
@@ -98,6 +100,17 @@ export interface OrderItem {
   image_url: string | null;
   /** Buy price frozen at sale time (0006) — margin must never re-join live. */
   unit_cost?: number;
+  /** set on a pack line (0021); product_id is then null */
+  pack_id?: string | null;
+  /** what ONE pack contained, snapshotted at order time */
+  pack_contents?: PackContentLine[] | null;
+}
+
+export interface PackContentLine {
+  product_id: string;
+  slug: string;
+  name_fr: string;
+  quantity: number;
 }
 
 export interface StoreSettings {
@@ -426,4 +439,41 @@ export interface TeamOverviewRow {
   last_sign_in_at: string | null;
   last_action_at: string | null;
   actions_7d: number;
+}
+
+// ------------------------------------------------------------ packs (0021)
+export type PackStatus = "draft" | "published";
+
+export interface Pack {
+  id: string;
+  slug: string;
+  status: PackStatus;
+  name_fr: string;
+  name_ar: string | null;
+  name_en: string | null;
+  tagline_fr: string | null;
+  tagline_ar: string | null;
+  tagline_en: string | null;
+  cover_url: string | null;
+  items: PackItem[];
+  pricing: PackPricing;
+  starts_at: string | null;
+  ends_at: string | null;
+  max_per_order: number;
+  featured: boolean;
+  sort_order: number;
+  /** raw page document — always pass through normalizePage() */
+  page: unknown;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ProductPageMode = "replace" | "extend";
+
+export interface ProductPage {
+  product_id: string;
+  enabled: boolean;
+  mode: ProductPageMode;
+  page: unknown;
+  updated_at: string;
 }

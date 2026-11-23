@@ -21,6 +21,9 @@ import { AdminMessages } from "./Messages";
 import { AdminNewsletter } from "./Newsletter";
 import { AdminFinance } from "./Finance";
 import { AdminStoreLedger } from "./StoreLedger";
+import { AdminPacks } from "./Packs";
+import { AdminPackEditor } from "./PackEditor";
+import { AdminProductPages, AdminProductPageEditor } from "./ProductPages";
 
 /** Lazy-loaded as one chunk — admin code never ships to shoppers. */
 export function AdminApp() {
@@ -33,6 +36,10 @@ export function AdminApp() {
           <Route path="products" element={<AdminProducts />} />
           <Route path="products/new" element={<ProductForm />} />
           <Route path="products/:id" element={<ProductForm />} />
+          <Route path="packs" element={<AdminPacks />} />
+          <Route path="packs/:id" element={<AdminPackEditor />} />
+          <Route path="pages" element={<AdminProductPages />} />
+          <Route path="pages/:productId" element={<AdminProductPageEditor />} />
           <Route path="categories" element={<AdminCategories />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="orders/:id" element={<AdminOrderDetail />} />

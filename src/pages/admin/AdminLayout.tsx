@@ -82,7 +82,7 @@ export function AdminLayout() {
     (section: AdminSection) => {
       if (section.ownerOnly) return isOwner;
       if (section.always) return true;
-      return hasSection(section.key);
+      return hasSection(section.grant ?? section.key);
     },
     [isOwner, hasSection],
   );

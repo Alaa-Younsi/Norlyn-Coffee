@@ -5,7 +5,7 @@ import { Mascot } from "@/components/mascot/Mascot";
 import { Panel } from "@/components/ui/Panel";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { useCart, cartSubtotal } from "@/store/cart";
+import { useCart, cartLineTotal, cartSubtotal } from "@/store/cart";
 import { useSeo } from "@/hooks/useSeo";
 import { formatPrice } from "@/lib/format";
 import { pickLang } from "@/lib/localized";
@@ -39,9 +39,12 @@ export function Checkout() {
     () =>
       items.map((item) => ({
         product_id: item.productId,
+        pack_id: item.packId,
         quantity: item.quantity,
         price: item.price,
         name: item.nameFr,
+        tiers: item.tiers,
+        free_shipping: item.freeShipping,
       })),
     [items],
   );
@@ -94,7 +97,7 @@ export function Checkout() {
                 <span className="min-w-0 flex-1 truncate">
                   {pickLang(lang, item.nameFr, item.nameAr, item.nameEn)} × {item.quantity}
                 </span>
-                <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
+                <span className="font-medium">{formatPrice(cartLineTotal(item))}</span>
               </li>
             ))}
           </ul>

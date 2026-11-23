@@ -625,3 +625,72 @@ html[data-theme="dark"] .fx-gold-text-deep {
     scroll-behavior: auto !important;
   }
 }
+
+/* ============================================================ page builder
+   Custom pack / product pages (components/pageBuilder). Transform-only
+   loops, all switched off under prefers-reduced-motion below. */
+@keyframes pb-kenburns {
+  0% { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.14) translate(-2%, -2%); }
+}
+.pb-kenburns { animation: pb-kenburns 16s ease-in-out infinite alternate; }
+
+@keyframes pb-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: -100% 50%; }
+}
+.pb-shimmer { animation: pb-shimmer 5s linear infinite; }
+
+@keyframes pb-caret { 50% { opacity: 0; } }
+.pb-caret { animation: pb-caret 0.9s steps(1) infinite; }
+
+@keyframes pb-orb {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(6%, 8%) scale(1.12); }
+}
+.pb-orb { animation: pb-orb 18s ease-in-out infinite; }
+.pb-orb-2 { animation-duration: 23s; animation-direction: reverse; }
+.pb-orb-3 { animation-duration: 29s; }
+
+@keyframes pb-aurora { to { transform: rotate(360deg); } }
+.pb-aurora { animation: pb-aurora 40s linear infinite; }
+.pb-spin { animation: pb-aurora 80s linear infinite; }
+
+@keyframes pb-marquee { to { transform: translateX(-100%); } }
+@keyframes pb-marquee-rev { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+.pb-marquee { animation: pb-marquee 28s linear infinite; }
+.pb-marquee-rev { animation-name: pb-marquee-rev; }
+[dir="rtl"] .pb-marquee { animation-direction: reverse; }
+
+@keyframes pb-pulse-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--pb-accent) 55%, transparent); }
+  100% { box-shadow: 0 0 0 18px transparent; }
+}
+.pb-pulse { animation: pb-pulse-ring 1.8s ease-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pb-kenburns,
+  .pb-shimmer,
+  .pb-caret,
+  .pb-orb,
+  .pb-aurora,
+  .pb-spin,
+  .pb-marquee,
+  .pb-pulse {
+    animation: none !important;
+  }
+}
+
+/* a light custom page (page builder) lightens the fixed header above it —
+   PageRenderer publishes the page palette as --pbh-* on <html> */
+html[data-pb-light] header {
+  --c-bg: var(--pbh-bg);
+  --c-panel: var(--pbh-panel);
+  --c-line: var(--pbh-line);
+  --c-ink: var(--pbh-ink);
+  --c-muted: var(--pbh-muted);
+  --c-brand: var(--pbh-brand);
+}
+html[data-pb-light] header .norlyn-logo {
+  filter: none;
+}

@@ -1,5 +1,7 @@
 import {
   AtSign,
+  Gift,
+  Paintbrush,
   BarChart3,
   FolderTree,
   History,
@@ -41,12 +43,19 @@ export interface AdminSection {
   always?: boolean;
   /** only the owner */
   ownerOnly?: boolean;
+  /**
+   * Reuses ANOTHER section's grant instead of adding a checkbox (and a
+   * create-worker redeploy): packs and product pages ride on 'products'.
+   */
+  grant?: string;
 }
 
 export const ADMIN_SECTIONS: AdminSection[] = [
   { key: "dashboard", route: "/admin", exact: true, labelKey: "admin.nav.dashboard", icon: LayoutDashboard, always: true },
   { key: "orders", route: "/admin/orders", labelKey: "admin.nav.orders", icon: ShoppingCart },
   { key: "products", route: "/admin/products", labelKey: "admin.nav.products", icon: Package },
+  { key: "packs", route: "/admin/packs", labelKey: "admin.nav.packs", icon: Gift, grant: "products" },
+  { key: "pages", route: "/admin/pages", labelKey: "admin.nav.pages", icon: Paintbrush, grant: "products" },
   { key: "categories", route: "/admin/categories", labelKey: "admin.nav.categories", icon: FolderTree },
   { key: "delivery", route: "/admin/delivery", labelKey: "admin.nav.delivery", icon: Truck },
   { key: "reviews", route: "/admin/reviews", labelKey: "admin.nav.reviews", icon: Star },
@@ -64,7 +73,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
 ];
 
 /** What the owner can tick for a worker. */
-export const GRANTABLE_SECTIONS = ADMIN_SECTIONS.filter((s) => !s.always && !s.ownerOnly);
+export const GRANTABLE_SECTIONS = ADMIN_SECTIONS.filter((s) => !s.always && !s.ownerOnly && !s.grant);
 
 /**
  * Resolve a pathname to its section key. The exact `/admin` overview is tried

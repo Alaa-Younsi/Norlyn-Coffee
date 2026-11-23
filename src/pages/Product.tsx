@@ -27,14 +27,16 @@ import { intensityBeans, mixedIntensities, printedIntensity } from "@/lib/intens
 import { PageRenderer } from "@/components/pageBuilder/PageRenderer";
 import { useProductPage } from "@/hooks/usePacks";
 import { DEFAULT_THEME, createBlock, normalizePage } from "@/lib/pageBuilder/defaults";
-import type { Block, PageDoc } from "@/lib/pageBuilder/types";
+import type { Block, OffersData, PageDoc } from "@/lib/pageBuilder/types";
 
 /**
- * The buy box of a packs-only product (0023) with no personalised page: the
- * page builder's own offer picker + order form, so the shopper can only pick
- * one of the product's packs — exactly what place_order accepts.
+ * The buy box of a packs-only product (0023): the page builder's own offer
+ * picker + order form, so the shopper can only pick one of the product's
+ * packs — exactly what place_order accepts. When the product's personalised
+ * page (extend mode) has an "offers" block, that block's ribbons, notes and
+ * highlight are used HERE, in the buy box, instead of further down the page.
  */
-function packsOnlyDoc(): PageDoc {
+function packsOnlyDoc(fromPage?: OffersData): PageDoc {
   const offers = createBlock("offers");
   const checkout = createBlock("checkout");
   const tight = { pad: "none", width: "full", align: "start", anim: "none" } as const;
@@ -45,13 +47,23 @@ function packsOnlyDoc(): PageDoc {
       {
         ...offers,
         ...tight,
-        data: { ...offers.data, style: "list", eyebrow: {}, title: {}, subtitle: {}, cta: {}, unitLabel: { fr: "boîte", ar: "علبة", en: "box" } },
+        data: {
+          ...offers.data,
+          unitLabel: { fr: "boîte", ar: "علبة", en: "box" },
+          ...fromPage,
+          // a narrow column: always the compact list, no heading, no extra button
+          style: "list",
+          eyebrow: {},
+          title: {},
+          subtitle: {},
+          cta: {},
+        },
       } as Block,
       { ...checkout, ...tight, pad: "md", data: { ...checkout.data, style: "card", showSummary: false } } as Block,
     ],
   };
 }
-const PACKS_ONLY_DOC = packsOnlyDoc();
+
 
 export function Product() {
   const { slug } = useParams();
@@ -63,6 +75,18 @@ export function Product() {
   // a personalised page built in the admin (0021) — replaces or extends this one
   const { data: customPage, isLoading: customLoading } = useProductPage(product?.id);
   const customDoc = useMemo(() => (customPage ? normalizePage(customPage.page) : null), [customPage]);
+  const packsOnly = Boolean(product?.packs_only);
+  // packs-only: the page's offers block moves up into the buy box…
+  const buyDoc = useMemo(() => {
+    if (!packsOnly) return null;
+    const block = customDoc?.blocks.find((b) => b.type === "offers" && b.visible);
+    return packsOnlyDoc(block?.type === "offers" ? block.data : undefined);
+  }, [packsOnly, customDoc]);
+  // …and is not shown a second time below
+  const extendDoc = useMemo(
+    () => (customDoc && packsOnly ? { ...customDoc, blocks: customDoc.blocks.filter((b) => b.type !== "offers") } : customDoc),
+    [customDoc, packsOnly],
+  );
   const addItem = useCart((s) => s.addItem);
   const [quantity, setQuantity] = useState(1);
   const [imageIndex, setImageIndex] = useState(0);
@@ -312,11 +336,11 @@ export function Product() {
               </ol>
             )}
 
-            {product.packs_only ? (
+            {buyDoc ? (
               <section className="mt-10 max-w-lg">
                 <p className="mb-4 text-sm text-muted">{t("pb.packsOnly")}</p>
                 <div className="overflow-hidden rounded-[2rem] border border-line">
-                  <PageRenderer doc={PACKS_ONLY_DOC} source={{ kind: "product", product }} catalogue={allProducts ?? [product]} className="p-4 sm:p-6" />
+                  <PageRenderer doc={buyDoc} source={{ kind: "product", product }} catalogue={allProducts ?? [product]} className="p-3 sm:p-6" />
                 </div>
               </section>
             ) : (
@@ -421,8 +445,8 @@ export function Product() {
         )}
       </div>
 
-      {customDoc && customPage?.mode === "extend" && customDoc.blocks.length > 0 && (
-        <PageRenderer doc={customDoc} source={{ kind: "product", product }} catalogue={allProducts ?? [product]} className="mt-24" />
+      {extendDoc && customPage?.mode === "extend" && extendDoc.blocks.length > 0 && (
+        <PageRenderer doc={extendDoc} source={{ kind: "product", product }} catalogue={allProducts ?? [product]} className="mt-24" />
       )}
     </main>
   );

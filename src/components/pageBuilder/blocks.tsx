@@ -1104,7 +1104,7 @@ function OffersBlock({ block }: { block: BlockOf<"offers"> }) {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                 className={cn(
-                  "relative flex cursor-pointer items-center gap-4 rounded-[var(--pb-radius)] border bg-[var(--pb-surface)] p-4 text-start transition-colors @3xl:p-5 disabled:cursor-not-allowed disabled:opacity-45",
+                  "relative flex cursor-pointer items-center gap-3 rounded-[var(--pb-radius)] border bg-[var(--pb-surface)] p-3.5 text-start transition-colors @md:gap-4 @md:p-5 disabled:cursor-not-allowed disabled:opacity-45",
                   active ? "border-[var(--pb-accent)]" : "border-[color-mix(in_srgb,var(--pb-text)_14%,transparent)] hover:border-[color-mix(in_srgb,var(--pb-accent)_55%,transparent)]",
                 )}
               >
@@ -1125,15 +1125,15 @@ function OffersBlock({ block }: { block: BlockOf<"offers"> }) {
                 >
                   {active && <Check size={14} strokeWidth={3} />}
                 </span>
-                <span className="relative min-w-0 flex-1">
-                  <span className="flex flex-wrap items-center gap-2">
-                    <span className="font-display text-xl">{o.name}</span>
-                    {badge && (
-                      <span className="rounded-full border border-[var(--pb-accent)] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--pb-accent)]">
-                        {badge}
-                      </span>
-                    )}
-                  </span>
+                {/* narrow (a product page's buy box, a phone): the price drops under the name */}
+                <span className="relative flex min-w-0 flex-1 flex-col gap-2 @md:flex-row @md:items-center @md:gap-4">
+                <span className="min-w-0 flex-1">
+                  {badge && (
+                    <span className="mb-1 inline-block rounded-full border border-[var(--pb-accent)] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--pb-accent)]">
+                      {badge}
+                    </span>
+                  )}
+                  <span className="block font-display text-lg leading-tight @md:text-xl">{o.name}</span>
                   <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--pb-muted)]">
                     {perUnit && (
                       <span dir="ltr" className="tabular-nums">
@@ -1144,14 +1144,15 @@ function OffersBlock({ block }: { block: BlockOf<"offers"> }) {
                     {shipChip}
                   </span>
                 </span>
-                <span className="relative shrink-0 text-end">
-                  {o.was && <span className="block text-xs text-[var(--pb-muted)] line-through">{formatPrice(o.was)}</span>}
-                  <span className="block font-display text-2xl tabular-nums">{formatPrice(o.unit)}</span>
+                <span className="flex shrink-0 flex-wrap items-baseline gap-x-2.5 @md:block @md:text-end">
+                  <span className="whitespace-nowrap font-display text-2xl tabular-nums @md:order-2 @md:block">{formatPrice(o.unit)}</span>
+                  {o.was && <span className="text-xs text-[var(--pb-muted)] line-through @md:order-1 @md:block">{formatPrice(o.was)}</span>}
                   {o.saving > 0 && (
-                    <span className="mt-0.5 block text-[11px] font-semibold text-[var(--pb-accent)]">
+                    <span className="text-[11px] font-semibold text-[var(--pb-accent)] @md:order-3 @md:mt-0.5 @md:block">
                       {t("pb.saveAmount").replace("{amount}", formatPrice(o.saving))}
                     </span>
                   )}
+                </span>
                 </span>
               </motion.button>
             );
